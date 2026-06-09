@@ -1,6 +1,7 @@
 from flask import Flask, render_template, jsonify, request
 from config import Config
 from extensions import db
+from models import User # important: import user
 from sqlalchemy import func
 
 # Explicitly import the blueprints directly from their route files
@@ -155,4 +156,6 @@ app.register_blueprint(farmer_bp, url_prefix='/farmer')
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()
+        print("Database created!")
     app.run(host='0.0.0.0', port=5000, debug=True)
+   
