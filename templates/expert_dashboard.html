@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agrosphere Expert Workspace</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <style>
+        body { margin: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f8f9fa; color: #333; }
+        .wrapper { display: flex; min-height: 100vh; }
+        .sidebar { width: 260px; background: #ffffff; border-right: 1px solid #e9ecef; padding: 25px 20px; display: flex; flex-direction: column; gap: 30px; }
+        .brand { font-size: 22px; font-weight: bold; color: #2e7d32; display: flex; align-items: center; gap: 8px; }
+        .menu { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 8px; }
+        .menu-item { padding: 12px 15px; border-radius: 8px; cursor: pointer; color: #495057; font-weight: 500; display: flex; align-items: center; gap: 10px; transition: all 0.2s; }
+        .menu-item:hover { background: #f1f3f5; color: #212529; }
+        .menu-item.active { background: #e8f5e9; color: #2e7d32; font-weight: 600; }
+        .main-content { flex: 1; padding: 40px; }
+        .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #dee2e6; padding-bottom: 20px; margin-bottom: 30px; }
+        .view-section { display: none; }
+        .view-section.active { display: block; }
+        .card { background: #ffffff; border-radius: 12px; border: 1px solid #e9ecef; padding: 24px; box-shadow: 0 4px 6px rgba(0,0,0,0.02); margin-bottom: 25px; }
+        textarea, input, select { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #ced4da; margin-top: 8px; margin-bottom: 15px; box-sizing: border-box; }
+        .btn { background-color: #2e7d32; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: bold; }
+        .btn:hover { background-color: #1b5e20; }
+        .btn-logout { background: #f8f9fa; border: 1px solid #ced4da; padding: 8px 16px; border-radius: 6px; cursor: pointer; }
+        .btn-logout:hover { color: #dc3545; border-color: #dc3545; }
+        .q-card { border-left: 5px solid #2e7d32; background: #fafafa; padding: 15px; margin-bottom: 15px; border-radius: 4px; }
+    </style>
+</head>
+<body>
+
+    <div class="wrapper">
+        <div class="sidebar">
+            <div class="brand">🌱 Agrosphere</div>
+            <ul class="menu">
+                <li class="menu-item active" onclick="switchTab('tasks', this)">📋 Farmer Requests</li>
+                <li class="menu-item" onclick="switchTab('publish', this)">✍️ Write Article</li>
+            </ul>
+        </div>
+
+        <div class="main-content">
+            <div class="header">
+                <div>
+                    <h1 id="expertWelcome">Expert Workspace</h1>
+                    <p style="margin: 5px 0 0 0; color: #6c757d;">Consultation & Knowledge Portal</p>
+                </div>
+                <button class="btn-logout" onclick="handleSignOut()">Sign Out</button>
+            </div>
+
+            <div id="view-tasks" class="view-section active">
+                <h2>Assigned Consultation Requests</h2>
+                <div id="tasksContainer">Loading requests...</div>
+            </div>
+
+            <div id="view-publish" class="view-section">
+                <div class="card">
+                    <h2>Publish Educational Article</h2>
+                    <p style="color: #6c757d;">Share technical agricultural insights directly into the community feed.</p>
+                    
+                    <label>Article Title</label>
+                    <input type="text" id="articleTitle" placeholder="e.g., Managing Maize Lethal Necrosis Disease">
+
+                    <label>Category Tag</label>
+                    <select id="articleCategory">
+                        <option value="Crop Disease">Crop Disease</option>
+                        <option value="Animal Health">Animal Health</option>
+                        <option value="Soil Management">Soil Management</option>
+                        <option value="Dairy Farm Production">Dairy Farm Production</option>
+                    </select>
+
+                    <label>Content Body</label>
+                    <textarea id="articleContent" rows="8" placeholder="Type your full knowledge text here..."></textarea>
+
+                    <button class="btn" onclick="publishArticle()">Publish Article</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Dynamically get logged expert ID, fallback to 2 for local sandboxed testing
+        const currentExpertId = localStorage.getItem('user_id') || 2; 
+
+        function switchTab(tabName, element) {
+            document.querySelectorAll('.view-section').forEach(v => v.classList.remove('active'));
+            document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active'));
+            document.getElementById(`view-${tabName}`).classList.add('active');
+            element.classList.add('active');
+        }
+
+        // LOAD ASSIGNED QUESTIONS
+        async function loadTasks() {
+            try {
+                const response = await fetch(`/expert/tasks/${currentExpertId}`);
+                const tasks = await response.json();
+                const container = document.getElementById('tasksContainer');
+                container.innerHTML = '';
+
+                if (!tasks || tasks.length === 0) {
+                    container.innerHTML = '<p style="color: #888;">No assigned farmer requests found at the moment.</p>';
+                    return;
+                }
+
+                tasks.forEach(t => {
+                    if(t.status !== 'answered') {
+                        container.innerHTML += `
+                            <div class="card q-card">
+                                <p style="font-size: 13px; color: #6c757d; margin: 0;"><b>Farmer:</b> ${t.farmer_name} | <b>Category:</b> ${t.category}</p>
+                                <p style="font-size: 16px; font-weight: 500; margin: 10px 0;">${t.question}</p>
+                                <textarea id="answer-text-${t.id}" rows="3" placeholder="Type your professional expert advice here..."></textarea>
+                                <button class="btn" style="margin-top: 5px;" onclick="submitExpertAnswer(${t.id})">Submit Secure Answer</button>
+                            </div>
+                        `;
+                    }
+                });
+                
+                // If everything evaluated is already resolved
+                if (container.innerHTML === '') {
+                     container.innerHTML = '<p style="color: #888;">No pending farmer requests found at the moment.</p>';
+                }
+            } catch (err) {
+                console.error(err);
+                document.getElementById('tasksContainer').innerHTML = '<p style="color: red;">Error connecting to API.</p>';
+            }
+        }
+
+        // POST ADVICE CORRECTION
+        async function submitExpertAnswer(qid) {
+            const answerTextField = document.getElementById(`answer-text-${qid}`);
+            if (!answerTextField || !answerTextField.value.trim()) {
+                alert("Please write your answer response before clicking submit.");
+                return;
+            }
+
+            try {
+                const response = await fetch(`/expert/answer-question/${qid}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ answer: answerTextField.value.trim() })
+                });
+
+                const result = await response.json();
+                if (response.ok) {
+                    alert("Success: Answer forwarded to administration preview suite!");
+                    loadTasks(); // Instantly update view without reloading page
+                } else {
+                    alert("Error: " + result.error);
+                }
+            } catch (err) {
+                alert("Failed to submit solution.");
+            }
+        }
+
+        // PUBLISH KNOWLEDGE PIECES
+        async function publishArticle() {
+            const title = document.getElementById('articleTitle').value.trim();
+            const content = document.getElementById('articleContent').value.trim();
+            const category = document.getElementById('articleCategory').value;
+
+            if(!title || !content) {
+                alert("Please fill out both title and content blocks.");
+                return;
+            }
+
+            try {
+                const response = await fetch('/expert/publish-article', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        title: title, 
+                        content: content, 
+                        category: category, 
+                        expert_id: parseInt(currentExpertId) 
+                    })
+                });
+
+                const result = await response.json();
+                if(response.ok) {
+                    alert(result.message);
+                    document.getElementById('articleTitle').value = '';
+                    document.getElementById('articleContent').value = '';
+                } else {
+                    alert("Error: " + result.error);
+                }
+            } catch(e) {
+                alert("Failed to submit article.");
+            }
+        }
+
+        function handleSignOut() {
+            localStorage.clear();
+            window.location.href = '/';
+        }
+
+        window.onload = loadTasks;
+    </script>
+</body>
+</html>

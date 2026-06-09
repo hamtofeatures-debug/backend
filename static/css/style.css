@@ -1,0 +1,5 @@
+.form-container {
+    width: 90%;          /* Uses up most of the screen width on a mobile phone */
+    max-width: 450px;    /* Stops it from getting awkwardly wide on a computer screen */
+    margin: 0 auto;      /* Centers the container */
+}

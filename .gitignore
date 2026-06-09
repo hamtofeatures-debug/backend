@@ -1,0 +1,6 @@
+venv/
+_pycache_/
+*.pyc
+instance/
+.env
+Git-2.25.0-64-bit.exe

@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agrosphere Workspace</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <style>
+        /* Modern layout fallback rules for structural safety */
+        body { margin: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f8f9fa; color: #333; }
+        .wrapper { display: flex; min-height: 100vh; }
+        .sidebar { width: 260px; background: #ffffff; border-right: 1px solid #e9ecef; padding: 25px 20px; display: flex; flex-direction: column; gap: 30px; }
+        .brand { font-size: 22px; font-weight: bold; color: #2e7d32; display: flex; align-items: center; gap: 8px; }
+        .menu { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 8px; }
+        .menu-item { padding: 12px 15px; border-radius: 8px; cursor: pointer; color: #495057; font-weight: 500; display: flex; align-items: center; gap: 10px; transition: all 0.2s; }
+        .menu-item:hover { background: #f1f3f5; color: #212529; }
+        .menu-item.active { background: #e8f5e9; color: #2e7d32; font-weight: 600; }
+        .main-content { flex: 1; padding: 40px; }
+        .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #dee2e6; padding-bottom: 20px; margin-bottom: 30px; }
+        .user-badge { display: flex; align-items: center; gap: 12px; }
+        .badge-tag { background: #e8f5e9; color: #2e7d32; padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: bold; }
+        .view-section { display: none; }
+        .view-section.active { display: block; }
+        .metrics-row { display: flex; gap: 24px; margin-bottom: 35px; }
+        .metric-card { flex: 1; background: #ffffff; border: 1px solid #e9ecef; border-radius: 12px; padding: 24px; box-shadow: 0 4px 6px rgba(0,0,0,0.02); }
+        .metric-card p { margin: 0; color: #6c757d; font-size: 13px; text-transform: uppercase; font-weight: bold; letter-spacing: 0.5px; }
+        .metric-card h3 { margin: 12px 0 0 0; font-size: 32px; color: #212529; font-weight: 700; }
+        .card-grid { display: flex; gap: 30px; align-items: flex-start; }
+        .main-card { flex: 2; background: #ffffff; border-radius: 12px; border: 1px solid #e9ecef; padding: 24px; box-shadow: 0 4px 6px rgba(0,0,0,0.02); }
+        .side-card { flex: 1; background: #ffffff; border-radius: 12px; border: 1px solid #e9ecef; padding: 24px; box-shadow: 0 4px 6px rgba(0,0,0,0.02); }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; background: #ffffff; }
+        th { background-color: #f8f9fa; color: #495057; font-weight: 600; padding: 14px; text-align: left; border-bottom: 2px solid #dee2e6; }
+        td { padding: 14px; border-bottom: 1px solid #dee2e6; color: #212529; }
+        .btn-logout { background: #f8f9fa; border: 1px solid #ced4da; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: 500; transition: all 0.2s; }
+        .btn-logout:hover { background: #e9ecef; color: #dc3545; border-color: #dc3545; }
+        
+        /* Action Buttons styling */
+        .btn-approve { background-color: #2e7d32; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-weight: bold; margin-right: 5px; }
+        .btn-reject { background-color: #c62828; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-weight: bold; }
+        .btn-approve:hover { background-color: #1b5e20; }
+        .btn-reject:hover { background-color: #b71c1c; }
+
+        /* Expert Layout Components */
+        .task-card { background: #fff; border: 1px solid #e9ecef; border-radius: 8px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.01); }
+        .task-meta { display: flex; gap: 15px; font-size: 13px; color: #6c757d; margin-bottom: 10px; }
+        .task-textarea { width: 100%; padding: 12px; border-radius: 6px; border: 1px solid #ced4da; font-family: inherit; margin-top: 10px; resize: vertical; box-sizing: border-box; }
+        .btn-submit-ans { background-color: #2e7d32; color: #fff; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: bold; margin-top: 10px; transition: background 0.2s; }
+        .btn-submit-ans:hover { background-color: #1b5e20; }
+    </style>
+</head>
+<body>
+
+    <div class="wrapper">
+        <div class="sidebar">
+            <div class="brand">🌱 Agrosphere</div>
+            <ul class="menu" id="dynamicMenu">
+                <li class="menu-item active" onclick="switchTab('overview', this)">📊 Overview</li>
+            </ul>
+        </div>
+
+        <div class="main-content">
+            <div class="header">
+                <div>
+                    <h1 id="welcomeTitle" style="margin: 0; font-size: 24px;">Welcome Back!</h1>
+                    <p id="workspaceSubtitle" style="margin: 5px 0 0 0; color: #6c757d;">Administrative Control Panel</p>
+                </div>
+                <div class="user-badge">
+                    <span id="navAdminName" style="font-weight: 500;">User Account</span>
+                    <span class="badge-tag" id="roleBadgeTag">ADMIN</span>
+                    <button class="btn-logout" onclick="handleSignOut()">Sign Out</button>
+                </div>
+            </div>
+
+            <div id="view-overview" class="view-section">
+                <div class="metrics-row">
+                    <div class="metric-card">
+                        <p>Total Users</p>
+                        <h3 id="totalUsersCount">...</h3>
+                    </div>
+                    <div class="metric-card">
+                        <p>Registered Farmers</p>
+                        <h3 id="totalFarmersCount">...</h3>
+                    </div>
+                    <div class="metric-card">
+                        <p>Active Experts</p>
+                        <h3 id="totalExpertsCount">...</h3>
+                    </div>
+                </div>
+
+                <div class="card-grid">
+                    <div class="main-card">
+                        <h3 style="margin-top: 0; color: #212529;">Incoming Farmer Inquiries</h3>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Farmer Name</th>
+                                    <th>Question Text</th>
+                                    <th>Status</th>
+                                    <th>Assigned Expert</th>
+                                    <th>Action (Assign)</th>
+                                </tr>
+                            </thead>
+                            <tbody id="questionsTableBody">
+                                <tr>
+                                    <td colspan="5" style="text-align: center; color: #888;">Loading inquiries...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="side-card">
+                        <h3 style="margin-top: 0; color: #212529;">Your Account</h3>
+                        <p style="margin: 15px 0 8px 0;"><b>Name:</b> <span id="profileName">...</span></p>
+                        <p style="margin: 0 0 8px 0;"><b>Email:</b> <span id="profileEmail">...</span></p>
+                        <p style="margin: 0;"><b>Role Authority:</b> <span style="color: #2e7d32; font-weight: bold;">Full Access</span></p>
+                    </div>
+                </div>
+            </div>
+
+            <div id="view-users" class="view-section">
+                <div class="main-card">
+                    <h3 style="margin-top: 0;">Registered System Accounts</h3>
+                    <p style="color: #6c757d; font-size: 14px;">Review and manage platform users currently active on Agrosphere.</p>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>User ID</th>
+                                <th>Full Name</th>
+                                <th>Email Address</th>
+                                <th>System Role</th>
+                            </tr>
+                        </thead>
+                        <tbody id="allUsersTableBody">
+                            <tr>
+                                <td colspan="4" style="text-align: center; color: #888;">Loading platform profiles...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div id="view-reviews" class="view-section">
+                <div class="main-card">
+                    <h3 style="margin-top: 0;">Expert Solutions Awaiting Verification</h3>
+                    <p style="color: #6c757d; font-size: 14px;">Verify completed expert answers before they are published to the public knowledge feed.</p>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Farmer</th>
+                                <th>Inquiry Question</th>
+                                <th>Expert Contributor</th>
+                                <th>Submitted Answer</th>
+                                <th>Moderation Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="reviewsTableBody">
+                            <tr>
+                                <td colspan="5" style="text-align: center; color: #888;">Loading moderation pipeline...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div id="view-tasks" class="view-section">
+                <div class="main-card" style="width: 100%; box-sizing: border-box;">
+                    <h3 style="margin-top: 0;">📋 Assigned Farmer Consultations</h3>
+                    <p style="color: #6c757d; font-size: 14px; margin-bottom: 20px;">Provide diagnostic feedback and guidance for queries assigned directly to your desk.</p>
+                    <div id="expertTasksContainer">
+                        <p style="color:#888;">Loading your consulting queue...</p>
+                    </div>
+                </div>
+            </div>
+
+            <div id="view-publish" class="view-section">
+                <div class="main-card" style="width: 100%; max-width: 800px;">
+                    <h3 style="margin-top: 0;">✍️ Publish a Community Knowledge Article</h3>
+                    <p style="color: #6c757d; font-size: 14px; margin-bottom: 20px;">Share agricultural management insights, zero-grazing tips, or biological system advice.</p>
+                    
+                    <label style="display:block; font-weight:600; margin-bottom:5px;">Article Title</label>
+                    <input type="text" id="artTitle" placeholder="e.g., Managing Sudden Weight Loss & Feed Drop in Cattle" style="width:100%; padding:10px; border:1px solid #ced4da; border-radius:6px; margin-bottom:15px; box-sizing: border-box;">
+
+                    <label style="display:block; font-weight:600; margin-bottom:5px;">Target Category</label>
+                    <select id="artCategory" style="width:100%; padding:10px; border:1px solid #ced4da; border-radius:6px; margin-bottom:15px; box-sizing: border-box;">
+                        <option value="Animal Health">Animal Health & Production</option>
+                        <option value="Dairy Science">Dairy Management</option>
+                        <option value="Crop Protection">Crop Protection & Entomology</option>
+                        <option value="General Agriculture">General Agriculture</option>
+                    </select>
+
+                    <label style="display:block; font-weight:600; margin-bottom:5px;">Article Content Body</label>
+                    <textarea id="artContent" rows="8" placeholder="Write comprehensive, step-by-step educational analysis..." class="task-textarea" style="margin-bottom:15px;"></textarea>
+
+                    <button class="btn-submit-ans" onclick="publishExpertArticle()">Publish to Community Board</button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+    // Extract session reference values dynamically
+    const currentUserId = localStorage.getItem('user_id') || 1; 
+    let currentUserRole = 'admin'; 
+
+    // Tab switching engine
+    function switchTab(tabName, element) {
+        document.querySelectorAll('.view-section').forEach(view => view.classList.remove('active'));
+        if (element) {
+            document.querySelectorAll('.menu-item').forEach(item => item.classList.remove('active'));
+            element.classList.add('active');
+        }
+        
+        const targetView = document.getElementById(`view-${tabName}`);
+        if(targetView) targetView.classList.add('active');
+
+        // Trigger dynamic fetches depending on loaded tab
+        if (tabName === 'users') {
+            loadAllUsersList();
+        } else if (tabName === 'reviews') {
+            loadPendingReviewsList();
+        } else if (tabName === 'overview') {
+            loadAdminDashboard();
+        } else if (tabName === 'tasks') {
+            loadExpertTasksQueue();
+        }
+    }
+
+    // Role Initialization Logic
+    async function initializeWorkspaceView() {
+        try {
+            const profileResponse = await fetch(`/admin/user`);
+            if (profileResponse.ok) {
+                const usersList = await profileResponse.json();
+                const matchedUser = usersList.find(u => u.id == currentUserId) || usersList[0];
+                
+                if (matchedUser) {
+                    currentUserRole = matchedUser.role.toLowerCase();
+                    
+                    document.getElementById('welcomeTitle').innerText = `Welcome, ${matchedUser.fullname}!`;
+                    document.getElementById('navAdminName').innerText = matchedUser.fullname;
+                    // FIX: Changed from .toUpperCase to valid .toUpperCase() native JS method execution
+                    document.getElementById('roleBadgeTag').innerText = matchedUser.role.toUpperCase();
+                    document.getElementById('profileName').innerText = matchedUser.fullname;
+                    document.getElementById('profileEmail').innerText = matchedUser.email;
+                }
+            }
+            
+            buildSidebarMenu();
+        } catch (err) {
+            console.error("Workspace initialization failure:", err);
+            buildSidebarMenu(); 
+        }
+    }
+
+    // Dynamic sidebar builder according to user permissions
+    function buildSidebarMenu() {
+        const menuContainer = document.getElementById('dynamicMenu');
+        menuContainer.innerHTML = '';
+
+        if (currentUserRole === 'expert') {
+            document.getElementById('workspaceSubtitle').innerText = "Specialized Agricultural Expert Workspace";
+            menuContainer.innerHTML = `
+                <li class="menu-item active" onclick="switchTab('tasks', this)">📋 Assigned Tasks</li>
+                <li class="menu-item" onclick="switchTab('publish', this)">✍️ Write Article</li>
+            `;
+            switchTab('tasks', null);
+        } else {
+            document.getElementById('workspaceSubtitle').innerText = "Administrative Control Panel";
+            menuContainer.innerHTML = `
+                <li class="menu-item active" onclick="switchTab('overview', this)">📊 Overview</li>
+                <li class="menu-item" onclick="switchTab('users', this)">👥 All Users</li>
+                <li class="menu-item" onclick="switchTab('reviews', this)">🔍 Pending Reviews</li>
+            `;
+            switchTab('overview', null);
+        }
+    }
+
+    // =====================================================================
+    // CORE ADMIN PIPELINE MANAGEMENT FUNCTIONS
+    // =====================================================================
+    async function loadAdminDashboard() {
+        try {
+            const profileResponse = await fetch(`/admin/user`);
+            if (profileResponse.ok) {
+                const usersList = await profileResponse.json();
+                document.getElementById('totalUsersCount').innerText = usersList.length;
+                document.getElementById('totalFarmersCount').innerText = usersList.filter(u => u.role === 'farmer').length;
+                document.getElementById('totalExpertsCount').innerText = usersList.filter(u => u.role === 'expert').length;
+            }
+
+            const qResponse = await fetch('/admin/questions');
+            const qData = await qResponse.json();
+            
+            const eResponse = await fetch('/admin/experts');
+            const eExperts = await eResponse.json();
+
+            const tableBody = document.getElementById('questionsTableBody');
+            tableBody.innerHTML = ''; 
+
+            if (!qData || qData.length === 0) {
+                tableBody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: #888;">No questions submitted yet.</td></tr>`;
+                return;
+            }
+
+            qData.forEach(q => {
+                let expertOptions = `<option value="">-- Assign Expert --</option>`;
+                if(eExperts) {
+                    eExperts.forEach(exp => {
+                        const isSelected = q.assigned_expert_id === exp.id ? "selected" : "";
+                        expertOptions += `<option value="${exp.id}" ${isSelected}>${exp.fullname}</option>`;
+                    });
+                }
+
+                tableBody.innerHTML += `
+                    <tr>
+                        <td><b>${q.farmer_name}</b></td>
+                        <td>${q.question}</td>
+                        <td><span style="padding: 4px 8px; border-radius: 4px; font-size: 12px; background: #e9ecef;">${q.status}</span></td>
+                        <td style="color: #2e7d32; font-weight: bold;">${q.assigned_expert ? q.assigned_expert : "Unassigned"}</td>
+                        <td>
+                            <select onchange="assignExpert(${q.id}, this.value)" style="padding: 6px; border-radius: 6px; border: 1px solid #ced4da;">
+                                ${expertOptions}
+                            </select>
+                        </td>
+                    </tr>
+                `;
+            });
+        } catch (error) {
+            console.error("Dashboard engine failure:", error);
+        }
+    }
+
+    async function loadAllUsersList() {
+        try {
+            const response = await fetch('/admin/user'); 
+            const users = await response.json();
+            const tableBody = document.getElementById('allUsersTableBody');
+            tableBody.innerHTML = '';
+
+            users.forEach(user => {
+                tableBody.innerHTML += `
+                    <tr>
+                        <td>#${user.id}</td>
+                        <td><b>${user.fullname}</b></td>
+                        <td>${user.email}</td>
+                        <td><span class="badge-tag">${user.role.toUpperCase()}</span></td>
+                    </tr>
+                `;
+            });
+        } catch (error) {
+            document.getElementById('allUsersTableBody').innerHTML = `<tr><td colspan="4" style="text-align: center; color: #dc3545;">Failed to load system accounts.</td></tr>`;
+        }
+    }
+
+   
+
+    async function handleModeration(questionId, actionState) {
+        try {
+            const response = await fetch(`/admin/questions/${questionId}/verify`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: actionState })
+            });
+            const result = await response.json();
+            if(response.ok) {
+                alert(result.message);
+                loadPendingReviewsList();
+            } else {
+                alert("Error: " + result.error);
+            }
+        } catch (error) {
+            console.error("Moderation error:", error);
+        }
+    }
+
+   async function publishAnswer(questionId) {
+    if (!confirm("Are you sure you want to publish this answer to the public feed?")) return;
+
+    try {
+        const response = await fetch(`/admin/questions/${questionId}/publish`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }
+        });
+        
+        const result = await response.json();
+        
+        if (response.ok) {
+            alert("Success: " + result.message);
+            // Reload the dashboard to update the UI (e.g., change button state)
+            loadAdminDashboard();
+        } else {
+            alert("Error: " + result.error);
+        }
+    } catch (error) {
+        console.error("Transmission error:", error);
+    }
+}
+
+    // =====================================================================
+    // CORE EXPERT DASHBOARD MANAGEMENT FUNCTIONS
+    // =====================================================================
+    async function loadExpertTasksQueue() {
+        const container = document.getElementById('expertTasksContainer');
+        try {
+            const response = await fetch(`/expert/tasks/${currentUserId}`);
+            if(!response.ok) {
+                container.innerHTML = `<p style="color:#c62828;">Error loading workspace consulting items.</p>`;
+                return;
+            }
+            const tasks = await response.json();
+            container.innerHTML = '';
+
+            if(tasks.length === 0) {
+                container.innerHTML = `<p style="color:#666; text-align:center; padding: 20px;">🎉 Great job! You have zero pending farm diagnostic assignments remaining.</p>`;
+                return;
+            }
+
+            tasks.forEach(task => {
+                // FIX: Check for uppercase 'ANSWERED' string matches from backend updates
+                const isAnswered = task.status === 'ANSWERED';
+                const verificationBadge = task.is_verified ? 
+                    `<span style="color:#2e7d32; font-weight:bold;">[✅ Published]</span>` : 
+                    (isAnswered ? `<span style="color:#f57c00; font-weight:bold;">[⏳ Pending Admin Approval]</span>` : `<span style="color:#c62828; font-weight:bold;">[❌ Unanswered Task]</span>`);
+
+                container.innerHTML += `
+                    <div class="task-card">
+                        <div class="task-meta">
+                            <span><b>Farmer:</b> ${task.farmer_name}</span>
+                            <span><b>Category:</b> ${task.category}</span>
+                            <span><b>Assigned On:</b> ${task.created_at || "Recent"}</span>
+                            <span>${verificationBadge}</span>
+                        </div>
+                        <p style="font-size:16px; margin: 10px 0; font-weight:500; color:#111;">"${task.question}"</p>
+                        
+                        <label style="display:block; font-size:13px; font-weight:bold; margin-top:15px; color:#444;">Your Diagnostic Solution Advice</label>
+                        <textarea id="answer-text-${task.id}" class="task-textarea" rows="4" placeholder="Write treatment prescriptions, containment procedures, or system advice clearly...">${task.answer || ""}</textarea>
+                        
+                        <button class="btn-submit-ans" onclick="submitExpertAnswer(${task.id})">
+                            ${isAnswered ? "Update Submitted Solution" : "Submit Secure Answer"}
+                        </button>
+                    </div>
+                `;
+            });
+        } catch (err) {
+            console.error(err);
+            container.innerHTML = `<p style="color:#c62828;">Could not connect to task pipeline.</p>`;
+        }
+    }
+
+    async function submitExpertAnswer(questionId) {
+        const textElement = document.getElementById(`answer-text-${questionId}`);
+        if(!textElement || !textElement.value.trim()) {
+            alert("Answer content cannot be empty.");
+            return;
+        }
+
+        try {
+            // FIX: Remapped the POST path to point directly to unified endpoint: '/expert/answer/<id>'
+            const response = await fetch(`/expert/answer/${questionId}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ answer: textElement.value.trim() })
+            });
+            const data = await response.json();
+            if(response.ok) {
+                alert("Success: " + data.message);
+                loadExpertTasksQueue();
+            } else {
+                alert("Error: " + data.error);
+            }
+        } catch (err) {
+            console.error(err);
+            alert("Error transmitting information to backend processing points.");
+        }
+    }
+
+    async function publishExpertArticle() {
+        const title = document.getElementById('artTitle').value.trim();
+        const category = document.getElementById('artCategory').value;
+        const content = document.getElementById('artContent').value.trim();
+
+        if (!title || !content) {
+            alert("Please complete both the title and content areas before publishing.");
+            return;
+        }
+
+        try {
+            const response = await fetch('/expert/publish-article', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ title, content, category, expert_id: currentUserId })
+            });
+            const data = await response.json();
+            if (response.ok) {
+                alert("Success: " + data.message);
+                document.getElementById('artTitle').value = '';
+                document.getElementById('artContent').value = '';
+                if(document.querySelector('.menu-item[onclick*="tasks"]')) {
+                    switchTab('tasks', document.querySelector('.menu-item[onclick*="tasks"]'));
+                }
+            } else {
+                alert("Error: " + data.error);
+            }
+        } catch (err) {
+            console.error(err);
+            alert("Could not connect to article publishing pipeline.");
+        }
+    }
+
+    function handleSignOut() {
+        localStorage.clear();
+        window.location.href = '/';
+    }
+
+    // Initialize workspace on execution start
+    window.onload = initializeWorkspaceView;
+    </script>
+</body>
+</html>

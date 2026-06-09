@@ -1,0 +1,846 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AGROSPHERE — Integrated Farms</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --green:#1D9E75;--green-dark:#0F6E56;--green-light:#E1F5EE;
+  --amber:#EF9F27;--amber-light:#FAEEDA;
+  --soil:#3B2A1A;--soil-mid:#6B4F35;
+  --white:#FFFFFF;--off:#F7F5F0;--border:#E0D8CC;
+  --text:#1a1a1a;--muted:#6B6560;
+  --danger:#E24B4A;--danger-light:#FCEBEB;
+  --purple:#5B21B6;--purple-light:#EDE9FE;
+  --blue:#1D4ED8;--blue-light:#DBEAFE;
+  --gold:#F59E0B;
+}
+body{font-family:'DM Sans',sans-serif;background:var(--off);color:var(--text);min-height:100vh;overflow-x:hidden}
+.screen{display:none;min-height:100vh}.screen.active{display:flex}
+
+/* LANDING */
+#landing{flex-direction:column;align-items:center;justify-content:center;background:var(--soil);position:relative;overflow:hidden}
+.land-bg{position:absolute;inset:0;background:radial-gradient(ellipse 80% 60% at 50% 110%,#2d5a3d 0%,transparent 70%),radial-gradient(ellipse 60% 40% at 80% 0%,#4a3520 0%,transparent 60%);pointer-events:none}
+.land-pattern{position:absolute;inset:0;opacity:.04;background-image:repeating-linear-gradient(0deg,#fff 0,#fff 1px,transparent 1px,transparent 40px),repeating-linear-gradient(90deg,#fff 0,#fff 1px,transparent 1px,transparent 40px)}
+.land-content{position:relative;z-index:1;text-align:center;padding:2rem}
+.land-title{font-family:'Syne',sans-serif;font-size:clamp(2.5rem,6vw,4.5rem);font-weight:800;color:#fff;line-height:1;letter-spacing:-1px}
+.land-title span{color:var(--amber)}
+.land-sub{font-size:1.1rem;color:rgba(255,255,255,.6);margin:1rem 0 2.5rem;font-weight:300;max-width:420px}
+.land-btns{display:flex;gap:1rem;flex-wrap:wrap;justify-content:center}
+.btn-primary{background:var(--green);color:#fff;border:none;padding:.85rem 2rem;border-radius:100px;font-family:'DM Sans',sans-serif;font-size:1rem;font-weight:500;cursor:pointer;transition:background .2s}
+.btn-primary:hover{background:var(--green-dark)}
+.btn-outline{background:transparent;color:#fff;border:1.5px solid rgba(255,255,255,.35);padding:.85rem 2rem;border-radius:100px;font-family:'DM Sans',sans-serif;font-size:1rem;cursor:pointer;transition:all .2s}
+.btn-outline:hover{border-color:#fff;background:rgba(255,255,255,.08)}
+.land-roles{display:flex;gap:1rem;margin-top:3rem;flex-wrap:wrap;justify-content:center}
+.role-pill{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);color:rgba(255,255,255,.7);padding:.4rem 1.1rem;border-radius:100px;font-size:.85rem}
+
+/* AUTH */
+#auth-screen{align-items:center;justify-content:center;background:var(--off);padding:1rem}
+.auth-box{background:var(--white);border-radius:20px;border:1px solid var(--border);width:100%;max-width:440px;padding:2.5rem;box-shadow:0 8px 40px rgba(0,0,0,.08)}
+.auth-logo{display:flex;align-items:center;gap:.6rem;margin-bottom:2rem}
+.auth-logo-icon{width:36px;height:36px;background:var(--green);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.2rem}
+.auth-logo-text{font-family:'Syne',sans-serif;font-size:1.1rem;font-weight:700;color:var(--soil)}
+.auth-title{font-family:'Syne',sans-serif;font-size:1.6rem;font-weight:700;color:var(--soil);margin-bottom:.3rem}
+.auth-sub{font-size:.9rem;color:var(--muted);margin-bottom:1.8rem}
+.tab-row{display:flex;margin-bottom:1.8rem;border:1px solid var(--border);border-radius:10px;overflow:hidden}
+.tab-btn{flex:1;padding:.6rem;background:transparent;border:none;font-family:'DM Sans',sans-serif;font-size:.9rem;cursor:pointer;color:var(--muted);transition:all .2s}
+.tab-btn.active{background:var(--green);color:#fff;font-weight:500}
+.form-group{margin-bottom:1.1rem}
+.form-group label{display:block;font-size:.82rem;font-weight:500;color:var(--soil-mid);margin-bottom:.4rem;text-transform:uppercase;letter-spacing:.5px}
+.form-group input,.form-group select,.form-group textarea{width:100%;padding:.75rem 1rem;border:1.5px solid var(--border);border-radius:10px;font-family:'DM Sans',sans-serif;font-size:.95rem;color:var(--text);background:var(--off);outline:none;transition:border-color .2s}
+.form-group input:focus,.form-group select:focus,.form-group textarea:focus{border-color:var(--green);background:#fff}
+.form-group textarea{resize:vertical;min-height:80px}
+.form-submit{width:100%;margin-top:1rem;padding:.9rem;background:var(--green);color:#fff;border:none;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:1rem;font-weight:500;cursor:pointer;transition:background .2s}
+.form-submit:hover{background:var(--green-dark)}
+.form-submit:disabled{opacity:.6;cursor:not-allowed}
+.auth-back{display:block;text-align:center;margin-top:1rem;font-size:.85rem;color:var(--muted);cursor:pointer;background:none;border:none;font-family:'DM Sans',sans-serif}
+.auth-back:hover{color:var(--green)}
+.msg{padding:.7rem 1rem;border-radius:8px;font-size:.87rem;margin-bottom:1rem;display:none}
+.msg.success{background:var(--green-light);color:var(--green-dark);display:block}
+.msg.error{background:var(--danger-light);color:var(--danger);display:block}
+
+/* DASHBOARD */
+#dashboard{flex-direction:column}
+.topbar{background:var(--white);border-bottom:1px solid var(--border);padding:0 2rem;height:60px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+.topbar-brand{font-family:'Syne',sans-serif;font-size:1.1rem;font-weight:700;color:var(--soil);display:flex;align-items:center;gap:.5rem}
+.topbar-dot{width:8px;height:8px;background:var(--green);border-radius:50%}
+.topbar-right{display:flex;align-items:center;gap:1rem}
+.role-badge{padding:.3rem .85rem;border-radius:100px;font-size:.78rem;font-weight:500;text-transform:uppercase;letter-spacing:.5px}
+.role-admin{background:var(--purple-light);color:var(--purple)}
+.role-farmer{background:var(--green-light);color:var(--green-dark)}
+.role-expert{background:var(--amber-light);color:#92400E}
+.btn-logout{background:transparent;border:1px solid var(--border);padding:.4rem .9rem;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:.85rem;cursor:pointer;color:var(--muted);transition:all .2s}
+.btn-logout:hover{border-color:var(--danger);color:var(--danger)}
+.dash-body{display:flex;flex:1}
+.sidebar{width:230px;background:var(--white);border-right:1px solid var(--border);padding:1.5rem 1rem;flex-shrink:0;min-height:calc(100vh - 60px)}
+.nav-label{font-size:.72rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin:1.2rem 0 .5rem .5rem}
+.nav-item{display:flex;align-items:center;gap:.7rem;padding:.65rem .9rem;border-radius:10px;cursor:pointer;font-size:.9rem;color:var(--soil-mid);transition:all .2s;margin-bottom:3px}
+.nav-item:hover{background:var(--off)}
+.nav-item.active{background:var(--green-light);color:var(--green-dark);font-weight:500}
+.main-content{flex:1;padding:2rem;overflow-y:auto}
+.page-title{font-family:'Syne',sans-serif;font-size:1.5rem;font-weight:700;color:var(--soil);margin-bottom:.3rem}
+.page-sub{font-size:.9rem;color:var(--muted);margin-bottom:2rem}
+
+/* CARDS */
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:1rem;margin-bottom:1.5rem}
+.stat-card{background:var(--white);border:1px solid var(--border);border-radius:14px;padding:1.2rem 1.4rem}
+.stat-label{font-size:.78rem;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:.4rem}
+.stat-value{font-family:'Syne',sans-serif;font-size:2rem;font-weight:700;color:var(--soil)}
+.stat-tag{font-size:.75rem;color:var(--green);margin-top:.2rem}
+.card{background:var(--white);border:1px solid var(--border);border-radius:14px;padding:1.4rem;margin-bottom:1rem}
+.card-title{font-size:1rem;font-weight:600;color:var(--soil);margin-bottom:1rem}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem}
+
+/* USER ROWS */
+.user-row{display:flex;align-items:center;justify-content:space-between;padding:.75rem 1rem;background:var(--off);border-radius:10px;margin-bottom:.5rem}
+.user-info{display:flex;align-items:center;gap:.8rem}
+.avatar{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.85rem;font-weight:600;flex-shrink:0}
+.av-g{background:var(--green-light);color:var(--green-dark)}
+.av-a{background:var(--amber-light);color:#92400E}
+.av-p{background:var(--purple-light);color:var(--purple)}
+.user-name{font-size:.9rem;font-weight:500;color:var(--soil)}
+.user-email{font-size:.78rem;color:var(--muted)}
+
+/* QUESTION CARDS */
+.q-card{background:var(--off);border-radius:12px;padding:1rem 1.2rem;margin-bottom:.8rem;border-left:4px solid var(--border)}
+.q-card.pending{border-left-color:var(--amber)}
+.q-card.assigned{border-left-color:var(--blue)}
+.q-card.pending_review{border-left-color:var(--purple)}
+.q-card.answered{border-left-color:var(--green)}
+.q-meta{font-size:.78rem;color:var(--muted);margin-bottom:.5rem;display:flex;flex-wrap:wrap;gap:.5rem;align-items:center}
+.q-text{font-size:.95rem;color:var(--soil);font-weight:500;line-height:1.5;margin-bottom:.5rem}
+.q-answer-box{background:var(--green-light);border-radius:10px;padding:.8rem 1rem;margin-top:.6rem}
+.q-answer-label{font-size:.75rem;font-weight:600;color:var(--green-dark);text-transform:uppercase;letter-spacing:.5px;margin-bottom:.3rem}
+.q-answer-text{font-size:.9rem;color:var(--green-dark);line-height:1.5}
+.q-reject-box{background:var(--danger-light);border-radius:10px;padding:.8rem 1rem;margin-top:.6rem}
+.q-reject-label{font-size:.75rem;font-weight:600;color:var(--danger);text-transform:uppercase;letter-spacing:.5px;margin-bottom:.3rem}
+.q-reject-text{font-size:.88rem;color:var(--danger)}
+.status-badge{padding:.25rem .7rem;border-radius:100px;font-size:.72rem;font-weight:600;text-transform:uppercase;letter-spacing:.4px;white-space:nowrap}
+.status-pending{background:var(--amber-light);color:#92400E}
+.status-assigned{background:var(--blue-light);color:var(--blue)}
+.status-pending_review{background:var(--purple-light);color:var(--purple)}
+.status-answered{background:var(--green-light);color:var(--green-dark)}
+.cat-badge{background:var(--off);border:1px solid var(--border);padding:.2rem .6rem;border-radius:100px;font-size:.72rem;color:var(--soil-mid)}
+.q-actions{display:flex;gap:.5rem;flex-wrap:wrap;margin-top:.7rem}
+
+/* BUTTONS */
+.btn-sm{padding:.4rem .9rem;border-radius:8px;font-size:.8rem;font-family:'DM Sans',sans-serif;cursor:pointer;border:1px solid var(--border);background:#fff;color:var(--soil-mid);transition:all .2s}
+.btn-sm:hover{background:var(--green);color:#fff;border-color:var(--green)}
+.btn-green{background:var(--green);color:#fff;border:none;padding:.5rem 1.1rem;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:.85rem;font-weight:500;cursor:pointer;transition:background .2s}
+.btn-green:hover{background:var(--green-dark)}
+.btn-danger{background:var(--danger);color:#fff;border:none;padding:.5rem 1rem;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:.85rem;cursor:pointer}
+
+/* ANNOUNCEMENTS */
+.announcement-card{background:var(--white);border:1px solid var(--border);border-radius:14px;padding:1.4rem;margin-bottom:1rem;border-top:4px solid var(--green)}
+.ann-title{font-family:'Syne',sans-serif;font-size:1.1rem;font-weight:700;color:var(--soil);margin-bottom:.4rem}
+.ann-body{font-size:.92rem;color:var(--text);line-height:1.6;margin-bottom:1rem}
+.ann-meta{font-size:.78rem;color:var(--muted);margin-bottom:.8rem;display:flex;gap:.8rem;flex-wrap:wrap}
+.react-row{display:flex;align-items:center;gap:.8rem;flex-wrap:wrap}
+.react-btn{display:flex;align-items:center;gap:.4rem;padding:.4rem .9rem;border-radius:100px;border:1.5px solid var(--border);background:#fff;font-family:'DM Sans',sans-serif;font-size:.85rem;cursor:pointer;transition:all .2s;font-weight:500}
+.react-btn.liked{background:var(--green-light);border-color:var(--green);color:var(--green-dark)}
+.react-btn.disliked{background:var(--danger-light);border-color:var(--danger);color:var(--danger)}
+.react-btn:hover{border-color:var(--green);background:var(--green-light)}
+
+/* PUBLIC Q&A */
+.qa-card{background:var(--white);border:1px solid var(--border);border-radius:14px;padding:1.4rem;margin-bottom:1rem}
+.qa-question{font-size:1rem;font-weight:600;color:var(--soil);margin-bottom:.8rem;line-height:1.4}
+.qa-answer{background:var(--green-light);border-radius:10px;padding:1rem;margin-top:.5rem}
+.qa-answer-by{font-size:.75rem;font-weight:600;color:var(--green-dark);margin-bottom:.3rem}
+.qa-answer-text{font-size:.9rem;color:var(--green-dark);line-height:1.6}
+.rate-row{display:flex;align-items:center;gap:.5rem;margin-top:.8rem;flex-wrap:wrap}
+.star-btn{background:none;border:none;font-size:1.3rem;cursor:pointer;transition:transform .1s;padding:0 2px;line-height:1}
+.star-btn:hover{transform:scale(1.2)}
+
+/* EXPERT RANKINGS */
+.rank-card{background:var(--white);border:1px solid var(--border);border-radius:14px;padding:1.2rem 1.4rem;margin-bottom:.8rem;display:flex;align-items:center;gap:1.2rem}
+.rank-num{font-family:'Syne',sans-serif;font-size:1.8rem;font-weight:800;color:var(--border);width:40px;text-align:center;flex-shrink:0}
+.rank-num.top1{color:var(--gold)}
+.rank-num.top2{color:#94A3B8}
+.rank-num.top3{color:#CD7F32}
+.rank-info{flex:1}
+.rank-name{font-size:1rem;font-weight:600;color:var(--soil)}
+.rank-stats{font-size:.82rem;color:var(--muted);margin-top:.2rem;display:flex;gap:.8rem;flex-wrap:wrap}
+.stars-display{color:var(--gold);font-size:.9rem;letter-spacing:1px}
+
+/* MODAL */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:200;align-items:center;justify-content:center;padding:1rem}
+.modal-overlay.open{display:flex}
+.modal{background:var(--white);border-radius:16px;padding:2rem;width:100%;max-width:500px;box-shadow:0 20px 60px rgba(0,0,0,.2);max-height:90vh;overflow-y:auto}
+.modal-title{font-family:'Syne',sans-serif;font-size:1.2rem;font-weight:700;color:var(--soil);margin-bottom:1.2rem;display:flex;justify-content:space-between;align-items:center}
+.modal-close{cursor:pointer;color:var(--muted);font-size:1.2rem;background:none;border:none;font-family:'DM Sans',sans-serif;padding:0}
+
+.tip-box{background:var(--green-light);border-radius:12px;padding:1.2rem;margin-bottom:.8rem}
+.tip-tag{font-size:.72rem;font-weight:600;color:var(--green-dark);text-transform:uppercase;letter-spacing:.5px}
+.tip-text{font-size:.88rem;color:var(--green-dark);margin-top:.3rem;line-height:1.5}
+.empty-state{text-align:center;padding:3rem 2rem;color:var(--muted)}
+.empty-state .es-icon{font-size:2.5rem;margin-bottom:.8rem}
+.empty-state .es-text{font-size:.9rem}
+
+@media(max-width:700px){.grid2{grid-template-columns:1fr}.sidebar{display:none}}
+</style>
+</head>
+<body>
+
+<!-- LANDING -->
+<div class="screen active" id="landing">
+  <div class="land-bg"></div><div class="land-pattern"></div>
+  <div class="land-content">
+    <div style="font-size:3rem;margin-bottom:1rem">🌿</div>
+    <div class="land-title">AGRO<span>SPHERE</span></div>
+    <div style="font-family:'Syne',sans-serif;color:rgba(255,255,255,.4);font-size:.85rem;letter-spacing:3px;margin-top:.3rem">INTEGRATED FARMS LTD</div>
+    <p class="land-sub">Connecting farmers with agricultural experts across Uganda — one harvest at a time.</p>
+    <div class="land-btns">
+      <button class="btn-primary" onclick="showAuth('register')">Create Account</button>
+      <button class="btn-outline" onclick="showAuth('login')">Sign In</button>
+    </div>
+    <div class="land-roles">
+      <span class="role-pill">🌾 Farmers</span>
+      <span class="role-pill">🔬 Experts</span>
+      <span class="role-pill">⚙️ Admins</span>
+    </div>
+  </div>
+</div>
+
+<!-- AUTH -->
+<div class="screen" id="auth-screen">
+  <div class="auth-box">
+    <div class="auth-logo"><div class="auth-logo-icon">🌿</div><div class="auth-logo-text">AGROSPHERE</div></div>
+    <div id="auth-msg" class="msg"></div>
+    <div id="login-form">
+      <div class="auth-title">Welcome back</div>
+      <div class="auth-sub">Sign in to your account</div>
+      <div class="tab-row"><button class="tab-btn active">Sign In</button><button class="tab-btn" onclick="showAuth('register')">Register</button></div>
+      <div class="form-group"><label>Email</label><input type="email" id="login-email" placeholder="you@example.com"></div>
+      <div class="form-group"><label>Password</label><input type="password" id="login-pw" placeholder="••••••••"></div>
+      <button class="form-submit" id="login-btn" onclick="doLogin()">Sign In</button>
+      <button class="auth-back" onclick="showScreen('landing')">← Back to home</button>
+    </div>
+    <div id="register-form" style="display:none">
+      <div class="auth-title">Join AGROSPHERE</div>
+      <div class="auth-sub">Create your account below</div>
+      <div class="tab-row"><button class="tab-btn" onclick="showAuth('login')">Sign In</button><button class="tab-btn active">Register</button></div>
+      <div class="form-group"><label>Full Name</label><input type="text" id="reg-name" placeholder="Your full name"></div>
+      <div class="form-group"><label>Email</label><input type="email" id="reg-email" placeholder="you@example.com"></div>
+      <div class="form-group"><label>Phone</label><input type="tel" id="reg-phone" placeholder="+256 700 000000"></div>
+      <div class="form-group"><label>Password</label><input type="password" id="reg-pw" placeholder="Min. 6 characters"></div>
+      <div class="form-group"><label>Role</label>
+        <select id="reg-role"><option value="">Select your role...</option><option value="farmer">🌾 Farmer</option><option value="expert">🔬 Expert</option><option value="admin">⚙️ Admin</option></select>
+      </div>
+      <button class="form-submit" id="reg-btn" onclick="doRegister()">Create Account</button>
+      <button class="auth-back" onclick="showScreen('landing')">← Back to home</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODALS -->
+<div class="modal-overlay" id="modal-post-q">
+  <div class="modal">
+    <div class="modal-title">📝 Post Question for Farmer <button class="modal-close" onclick="closeModal('modal-post-q')">✕</button></div>
+    <div class="form-group"><label>Select Farmer</label><select id="mq-farmer"><option>Loading...</option></select></div>
+    <div class="form-group"><label>Category</label><select id="mq-cat"><option>Crop Disease</option><option>Soil & Fertilizer</option><option>Pest Control</option><option>Animal Health</option><option>Irrigation</option><option>Other</option></select></div>
+    <div class="form-group"><label>Question</label><textarea id="mq-text" placeholder="Type the farmer's question..."></textarea></div>
+    <button class="form-submit" onclick="submitAdminQuestion()">Post Question</button>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-assign">
+  <div class="modal">
+    <div class="modal-title">🔬 Assign to Expert <button class="modal-close" onclick="closeModal('modal-assign')">✕</button></div>
+    <div id="assign-preview" style="background:var(--off);border-radius:10px;padding:.8rem;margin-bottom:1rem;font-size:.88rem;color:var(--soil);font-style:italic"></div>
+    <div class="form-group"><label>Select Expert</label><select id="assign-expert"><option>Loading...</option></select></div>
+    <button class="form-submit" onclick="doAssign()">Assign to Expert</button>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-reject">
+  <div class="modal">
+    <div class="modal-title">❌ Reject Answer <button class="modal-close" onclick="closeModal('modal-reject')">✕</button></div>
+    <p style="font-size:.88rem;color:var(--muted);margin-bottom:1rem">Answer will be sent back to the expert with your note.</p>
+    <div class="form-group"><label>Rejection Note</label><textarea id="reject-note" placeholder="Explain why this answer needs revision..."></textarea></div>
+    <button class="form-submit" style="background:var(--danger)" onclick="doReject()">Reject & Send Back</button>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-announce">
+  <div class="modal">
+    <div class="modal-title">📢 Post Announcement <button class="modal-close" onclick="closeModal('modal-announce')">✕</button></div>
+    <div class="form-group"><label>Title</label><input type="text" id="ann-title" placeholder="Announcement title..."></div>
+    <div class="form-group"><label>Category</label><select id="ann-cat"><option>General</option><option>Weather Alert</option><option>Market Prices</option><option>Disease Alert</option><option>Training</option><option>Policy Update</option></select></div>
+    <div class="form-group"><label>Message</label><textarea id="ann-body" style="min-height:120px" placeholder="Write your announcement here..."></textarea></div>
+    <button class="form-submit" onclick="submitAnnouncement()">Post Announcement</button>
+  </div>
+</div>
+
+<!-- DASHBOARD -->
+<div class="screen" id="dashboard">
+  <div style="display:flex;flex-direction:column;width:100%">
+    <div class="topbar">
+      <div class="topbar-brand"><div class="topbar-dot"></div>AGROSPHERE</div>
+      <div class="topbar-right">
+        <span id="dash-name" style="font-size:.9rem;color:var(--muted)"></span>
+        <span id="role-badge" class="role-badge"></span>
+        <button class="btn-logout" onclick="doLogout()">Sign Out</button>
+      </div>
+    </div>
+    <div class="dash-body">
+      <div class="sidebar" id="sidebar"></div>
+      <div class="main-content" id="main-content"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+let currentUser = null;
+let assigningQId = null;
+let rejectingQId = null;
+
+function showScreen(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');}
+function showAuth(tab){showScreen('auth-screen');document.getElementById('login-form').style.display=tab==='login'?'block':'none';document.getElementById('register-form').style.display=tab==='register'?'block':'none';clearMsg();}
+function clearMsg(){const m=document.getElementById('auth-msg');m.className='msg';m.textContent='';}
+function showMsg(t,type){const m=document.getElementById('auth-msg');m.className='msg '+type;m.textContent=t;}
+function openModal(id){document.getElementById(id).classList.add('open');}
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+function emptyState(icon,text){return `<div class="empty-state"><div class="es-icon">${icon}</div><div class="es-text">${text}</div></div>`;}
+function starsHTML(avg,count){const full=Math.round(avg);return '★'.repeat(full)+'☆'.repeat(5-full)+` <span style="font-size:.8rem;color:var(--muted)">${avg>0?avg+'/5':''} (${count} rating${count!==1?'s':''})</span>`;}
+
+// ── AUTH ──
+async function doLogin(){
+  const email=document.getElementById('login-email').value.trim();
+  const pw=document.getElementById('login-pw').value;
+  if(!email||!pw){showMsg('Please fill in all fields.','error');return;}
+  const btn=document.getElementById('login-btn');btn.disabled=true;btn.textContent='Signing in...';
+  try{
+    const res=await fetch('/auth/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,password:pw})});
+    const data=await res.json();
+    if(res.ok){currentUser=data.user;openDashboard();}
+    else showMsg(data.error||'Login failed.','error');
+  }catch(e){showMsg('Cannot reach server.','error');}
+  btn.disabled=false;btn.textContent='Sign In';
+}
+
+async function doRegister(){
+  const fullname=document.getElementById('reg-name').value.trim();
+  const email=document.getElementById('reg-email').value.trim();
+  const phone=document.getElementById('reg-phone').value.trim();
+  const password=document.getElementById('reg-pw').value;
+  const role=document.getElementById('reg-role').value;
+  if(!fullname||!email||!password||!role){showMsg('Please fill in all required fields.','error');return;}
+  if(password.length<6){showMsg('Password must be at least 6 characters.','error');return;}
+  const btn=document.getElementById('reg-btn');btn.disabled=true;btn.textContent='Creating account...';
+  try{
+    const res=await fetch('/auth/register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({fullname,email,phone,password,role})});
+    const data=await res.json();
+    if(res.ok){showMsg('Account created! Please sign in.','success');setTimeout(()=>showAuth('login'),1200);}
+    else showMsg(data.error||'Registration failed.','error');
+  }catch(e){showMsg('Cannot reach server.','error');}
+  btn.disabled=false;btn.textContent='Create Account';
+}
+
+function doLogout(){currentUser=null;showScreen('landing');}
+
+// ── DASHBOARD ──
+function openDashboard(){
+  showScreen('dashboard');
+  document.getElementById('dash-name').textContent=currentUser.fullname;
+  const b=document.getElementById('role-badge');
+  b.textContent=currentUser.role.charAt(0).toUpperCase()+currentUser.role.slice(1);
+  b.className='role-badge role-'+currentUser.role;
+  buildSidebar();loadPage('home');
+}
+
+function buildSidebar(){
+  const navs={
+    admin:[
+      {id:'home',icon:'🏠',label:'Overview'},
+      {id:'users',icon:'👥',label:'All Users'},
+      {id:'questions',icon:'❓',label:'All Questions'},
+      {id:'review',icon:'🔍',label:'Pending Review'},
+      {id:'announcements',icon:'📢',label:'Announcements'},
+      {id:'rankings',icon:'🏆',label:'Expert Rankings'},
+      {id:'public',icon:'🌐',label:'Public Q&A'},
+      {id:'reports',icon:'📊',label:'Reports'},
+    ],
+    farmer:[
+      {id:'home',icon:'🏠',label:'My Dashboard'},
+      {id:'ask',icon:'❓',label:'Ask an Expert'},
+      {id:'myquestions',icon:'📋',label:'My Questions'},
+      {id:'announcements',icon:'📢',label:'Announcements'},
+      {id:'rankings',icon:'🏆',label:'Expert Rankings'},
+      {id:'public',icon:'🌐',label:'Public Q&A'},
+      {id:'tips',icon:'💡',label:'Farm Tips'},
+      {id:'profile',icon:'👤',label:'My Profile'},
+    ],
+    expert:[
+      {id:'home',icon:'🏠',label:'My Dashboard'},
+      {id:'assigned',icon:'📋',label:'My Questions'},
+      {id:'announcements',icon:'📢',label:'Announcements'},
+      {id:'rankings',icon:'🏆',label:'Expert Rankings'},
+      {id:'public',icon:'🌐',label:'Public Q&A'},
+      {id:'profile',icon:'👤',label:'My Profile'},
+    ],
+  };
+  const items=navs[currentUser.role]||navs.farmer;
+  document.getElementById('sidebar').innerHTML=`<div class="nav-label">Menu</div>${items.map(n=>`<div class="nav-item" id="nav-${n.id}" onclick="loadPage('${n.id}')">${n.icon}&nbsp;&nbsp;${n.label}</div>`).join('')}`;
+}
+
+function setNav(id){document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));const el=document.getElementById('nav-'+id);if(el)el.classList.add('active');}
+
+function loadPage(id){
+  setNav(id);
+  const pages={
+    admin:{home:adminHome,users:adminUsers,questions:adminQuestions,review:adminReview,announcements:announcementsPage,rankings:rankingsPage,public:publicQA,reports:adminReports},
+    farmer:{home:farmerHome,ask:farmerAsk,myquestions:farmerMyQuestions,announcements:announcementsPage,rankings:rankingsPage,public:publicQA,tips:farmerTips,profile:profilePage},
+    expert:{home:expertHome,assigned:expertAssigned,announcements:announcementsPage,rankings:rankingsPage,public:publicQA,profile:profilePage},
+  };
+  const fn=(pages[currentUser.role]||{})[id];if(fn)fn();
+}
+
+// ── ADMIN ──
+function adminHome(){
+  document.getElementById('main-content').innerHTML=`
+    <div class="page-title">Admin Overview</div>
+    <div class="page-sub">Welcome, ${currentUser.fullname.split(' ')[0]}. Full platform access.</div>
+    <div class="stats-grid">
+      <div class="stat-card"><div class="stat-label">Users</div><div class="stat-value" id="s-u">…</div></div>
+      <div class="stat-card"><div class="stat-label">Farmers</div><div class="stat-value" id="s-f">…</div></div>
+      <div class="stat-card"><div class="stat-label">Experts</div><div class="stat-value" id="s-e">…</div></div>
+      <div class="stat-card"><div class="stat-label">Questions</div><div class="stat-value" id="s-q">…</div></div>
+      <div class="stat-card"><div class="stat-label">Pending Review</div><div class="stat-value" id="s-pr">…</div><div class="stat-tag" style="color:var(--purple)">Needs approval</div></div>
+      <div class="stat-card"><div class="stat-label">Published</div><div class="stat-value" id="s-pub">…</div><div class="stat-tag">Live Q&A</div></div>
+    </div>
+    <div class="grid2">
+      <div class="card"><div class="card-title">Quick Actions</div>
+        <button class="btn-sm" style="display:block;width:100%;text-align:left;padding:.7rem 1rem;margin-bottom:.5rem" onclick="openPostQuestionModal()">📝 Post question for farmer</button>
+        <button class="btn-sm" style="display:block;width:100%;text-align:left;padding:.7rem 1rem;margin-bottom:.5rem" onclick="loadPage('review')">🔍 Review pending answers</button>
+        <button class="btn-sm" style="display:block;width:100%;text-align:left;padding:.7rem 1rem;margin-bottom:.5rem" onclick="openModal('modal-announce')">📢 Post announcement</button>
+        <button class="btn-sm" style="display:block;width:100%;text-align:left;padding:.7rem 1rem" onclick="loadPage('rankings')">🏆 View expert rankings</button>
+      </div>
+      <div class="card"><div class="card-title">Your Account</div>
+        <div style="font-size:.88rem;color:var(--soil-mid);line-height:2.2">
+          <div>👤 <b>${currentUser.fullname}</b></div>
+          <div>📧 ${currentUser.email}</div>
+          <div>🔑 Administrator &nbsp; #${currentUser.id}</div>
+        </div>
+      </div>
+    </div>`;
+  fetch('/admin/user').then(r=>r.json()).then(u=>{document.getElementById('s-u').textContent=u.length;document.getElementById('s-f').textContent=u.filter(x=>x.role==='farmer').length;document.getElementById('s-e').textContent=u.filter(x=>x.role==='expert').length;});
+  fetch('/admin/questions').then(r=>r.json()).then(qs=>{document.getElementById('s-q').textContent=qs.length;document.getElementById('s-pr').textContent=qs.filter(q=>q.status==='pending_review').length;document.getElementById('s-pub').textContent=qs.filter(q=>q.answer_verified).length;});
+}
+
+function adminUsers(){
+  document.getElementById('main-content').innerHTML=`<div class="page-title">All Users</div><div class="page-sub" id="usub">Loading...</div><div class="card" id="ucard">Fetching...</div>`;
+  fetch('/admin/user').then(r=>r.json()).then(users=>{
+    document.getElementById('usub').textContent=users.length+' registered users';
+    document.getElementById('ucard').innerHTML=users.length===0?emptyState('👥','No users yet.')
+      :users.map(u=>`<div class="user-row"><div class="user-info"><div class="avatar ${u.role==='farmer'?'av-g':u.role==='expert'?'av-a':'av-p'}">${u.fullname.charAt(0)}</div><div><div class="user-name">${u.fullname}</div><div class="user-email">${u.email}</div></div></div><span class="role-badge role-${u.role}">${u.role}</span></div>`).join('');
+  });
+}
+
+function adminQuestions(){
+  document.getElementById('main-content').innerHTML=`
+    <div class="page-title">All Questions</div>
+    <div class="page-sub">Manage and assign farmer questions to experts.</div>
+    <div style="margin-bottom:1.2rem"><button class="btn-green" onclick="openPostQuestionModal()">📝 Post Question for Farmer</button></div>
+    <div id="ql">Loading...</div>`;
+  loadAdminQs('ql',null);
+}
+
+function adminReview(){
+  document.getElementById('main-content').innerHTML=`
+    <div class="page-title">Pending Review</div>
+    <div class="page-sub">Expert answers awaiting your approval before going public.</div>
+    <div id="rl">Loading...</div>`;
+  loadAdminQs('rl','pending_review');
+}
+
+function loadAdminQs(cid,filter){
+  fetch('/admin/questions').then(r=>r.json()).then(qs=>{
+    const el=document.getElementById(cid);if(!el)return;
+    const list=filter?qs.filter(q=>q.status===filter):qs;
+    if(list.length===0){el.innerHTML='<div class="card">'+emptyState('❓',filter==='pending_review'?'No answers pending review.':'No questions yet.')+'</div>';return;}
+    el.innerHTML=list.map(q=>adminQCard(q)).join('');
+  });
+}
+
+function adminQCard(q){
+  const labels={'pending':'Pending','assigned':'Assigned','pending_review':'Pending Review','answered':'Published'};
+  return `<div class="q-card ${q.status}">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:1rem;flex-wrap:wrap">
+      <div style="flex:1">
+        <div class="q-meta">🌾 <b>${q.farmer_name}</b> <span class="cat-badge">${q.category}</span> <span>🕐 ${q.created_at}</span>${q.assigned_expert?` <span>🔬 ${q.assigned_expert}</span>`:''}</div>
+        <div class="q-text">${q.question}</div>
+        ${q.answer?`<div class="q-answer-box"><div class="q-answer-label">Expert Answer ${q.answered_at?'· '+q.answered_at:''}</div><div class="q-answer-text">${q.answer}</div></div>`:''}
+        ${q.admin_note?`<div class="q-reject-box"><div class="q-reject-label">Rejection Note</div><div class="q-reject-text">${q.admin_note}</div></div>`:''}
+      </div>
+      <span class="status-badge status-${q.status}">${labels[q.status]||q.status}</span>
+    </div>
+    <div class="q-actions">
+      ${q.status!=='answered'?`<button class="btn-sm" onclick="openAssignModal(${q.id},'${q.question.replace(/'/g,"\\'").replace(/"/g,"&quot;")}')">Assign Expert</button>`:''}
+      ${q.status==='pending_review'?`<button class="btn-green" onclick="doApprove(${q.id})">✓ Approve & Publish</button><button class="btn-danger" style="margin-left:.3rem" onclick="openRejectModal(${q.id})">✕ Reject</button>`:''}
+    </div>
+  </div>`;
+}
+
+function adminReports(){
+  document.getElementById('main-content').innerHTML=`
+    <div class="page-title">Reports</div><div class="page-sub">Live platform statistics.</div>
+    <div class="stats-grid">
+      <div class="stat-card"><div class="stat-label">Total Users</div><div class="stat-value" id="r-u">…</div></div>
+      <div class="stat-card"><div class="stat-label">Farmers</div><div class="stat-value" id="r-f">…</div></div>
+      <div class="stat-card"><div class="stat-label">Experts</div><div class="stat-value" id="r-e">…</div></div>
+      <div class="stat-card"><div class="stat-label">Admins</div><div class="stat-value" id="r-a">…</div></div>
+    </div>
+    <div class="stats-grid">
+      <div class="stat-card"><div class="stat-label">All Questions</div><div class="stat-value" id="r-q">…</div></div>
+      <div class="stat-card"><div class="stat-label">Pending</div><div class="stat-value" id="r-p">…</div></div>
+      <div class="stat-card"><div class="stat-label">In Review</div><div class="stat-value" id="r-pr">…</div></div>
+      <div class="stat-card"><div class="stat-label">Published</div><div class="stat-value" id="r-pub">…</div></div>
+    </div>`;
+  fetch('/admin/user').then(r=>r.json()).then(u=>{document.getElementById('r-u').textContent=u.length;document.getElementById('r-f').textContent=u.filter(x=>x.role==='farmer').length;document.getElementById('r-e').textContent=u.filter(x=>x.role==='expert').length;document.getElementById('r-a').textContent=u.filter(x=>x.role==='admin').length;});
+  fetch('/admin/questions').then(r=>r.json()).then(qs=>{document.getElementById('r-q').textContent=qs.length;document.getElementById('r-p').textContent=qs.filter(q=>q.status==='pending').length;document.getElementById('r-pr').textContent=qs.filter(q=>q.status==='pending_review').length;document.getElementById('r-pub').textContent=qs.filter(q=>q.answer_verified).length;});
+}
+
+// ── ADMIN MODALS ──
+async function openPostQuestionModal(){
+  openModal('modal-post-q');
+  const farmers=await fetch('/admin/farmers').then(r=>r.json());
+  document.getElementById('mq-farmer').innerHTML=farmers.length===0?'<option>No farmers yet</option>':farmers.map(f=>`<option value="${f.id}">${f.fullname} (${f.email})</option>`).join('');
+}
+
+async function submitAdminQuestion(){
+  const farmer_id=document.getElementById('mq-farmer').value;
+  const question=document.getElementById('mq-text').value.trim();
+  const category=document.getElementById('mq-cat').value;
+  if(!farmer_id||!question){alert('Please select a farmer and enter a question.');return;}
+  const res=await fetch('/admin/questions',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({farmer_id:parseInt(farmer_id),question,category})});
+  const data=await res.json();
+  if(res.ok){closeModal('modal-post-q');document.getElementById('mq-text').value='';alert('Question posted!');if(document.getElementById('ql'))loadAdminQs('ql',null);}
+  else alert(data.error||'Failed.');
+}
+
+async function openAssignModal(qid,qtext){
+  assigningQId=qid;
+  document.getElementById('assign-preview').textContent='"'+qtext+'"';
+  openModal('modal-assign');
+  const experts=await fetch('/admin/experts').then(r=>r.json());
+  document.getElementById('assign-expert').innerHTML=experts.length===0?'<option>No experts yet</option>':experts.map(e=>`<option value="${e.id}">${e.fullname} (${e.email})</option>`).join('');
+}
+
+async function doAssign(){
+  const expert_id=document.getElementById('assign-expert').value;
+  if(!expert_id||!assigningQId)return;
+  const res=await fetch(`/admin/questions/${assigningQId}/assign`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({expert_id:parseInt(expert_id)})});
+  const data=await res.json();
+  if(res.ok){closeModal('modal-assign');alert(data.message);if(document.getElementById('ql'))loadAdminQs('ql',null);if(document.getElementById('rl'))loadAdminQs('rl','pending_review');}
+  else alert(data.error||'Failed.');
+}
+
+async function doApprove(qid){
+  if(!confirm('Approve and publish this answer publicly?'))return;
+  const res=await fetch(`/admin/questions/${qid}/approve`,{method:'POST'});
+  const data=await res.json();
+  if(res.ok){alert(data.message);loadAdminQs('rl','pending_review');}
+  else alert(data.error);
+}
+
+function openRejectModal(qid){rejectingQId=qid;document.getElementById('reject-note').value='';openModal('modal-reject');}
+
+async function doReject(){
+  const note=document.getElementById('reject-note').value.trim();
+  if(!note){alert('Please provide a rejection note.');return;}
+  const res=await fetch(`/admin/questions/${rejectingQId}/reject`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({note})});
+  const data=await res.json();
+  if(res.ok){closeModal('modal-reject');alert(data.message);loadAdminQs('rl','pending_review');}
+  else alert(data.error);
+}
+
+async function submitAnnouncement(){
+  const title=document.getElementById('ann-title').value.trim();
+  const body=document.getElementById('ann-body').value.trim();
+  const category=document.getElementById('ann-cat').value;
+  if(!title||!body){alert('Please fill in title and message.');return;}
+  const res=await fetch('/admin/announcements',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({admin_id:currentUser.id,title,body,category})});
+  const data=await res.json();
+  if(res.ok){closeModal('modal-announce');document.getElementById('ann-title').value='';document.getElementById('ann-body').value='';alert('Announcement posted!');if(document.getElementById('ann-list'))loadAnnouncements();}
+  else alert(data.error||'Failed.');
+}
+
+// ── ANNOUNCEMENTS (all roles) ──
+function announcementsPage(){
+  const isAdmin=currentUser.role==='admin';
+  document.getElementById('main-content').innerHTML=`
+    <div class="page-title">Announcements</div>
+    <div class="page-sub">Updates and alerts from Integrated Farms Ltd.</div>
+    ${isAdmin?`<div style="margin-bottom:1.2rem"><button class="btn-green" onclick="openModal('modal-announce')">📢 Post Announcement</button></div>`:''}
+    <div id="ann-list">Loading...</div>`;
+  loadAnnouncements();
+}
+
+function loadAnnouncements(){
+  fetch(`/admin/announcements?user_id=${currentUser.id}`).then(r=>r.json()).then(anns=>{
+    const el=document.getElementById('ann-list');if(!el)return;
+    if(anns.length===0){el.innerHTML=emptyState('📢','No announcements yet.');return;}
+    el.innerHTML=anns.map(a=>annCard(a)).join('');
+  });
+}
+
+function annCard(a){
+  const isAdmin=currentUser.role==='admin';
+  return `<div class="announcement-card" id="ann-${a.id}">
+    <div class="ann-meta">
+      <span class="cat-badge">${a.category}</span>
+      <span>👤 ${a.posted_by}</span>
+      <span>🕐 ${a.created_at}</span>
+    </div>
+    <div class="ann-title">${a.title}</div>
+    <div class="ann-body">${a.body}</div>
+    <div class="react-row">
+      <button class="react-btn ${a.user_reaction==='like'?'liked':''}" id="like-btn-${a.id}" onclick="reactAnn(${a.id},'like')">
+        👍 <span id="likes-${a.id}">${a.likes}</span>
+      </button>
+      <button class="react-btn ${a.user_reaction==='dislike'?'disliked':''}" id="dislike-btn-${a.id}" onclick="reactAnn(${a.id},'dislike')">
+        👎 <span id="dislikes-${a.id}">${a.dislikes}</span>
+      </button>
+      ${isAdmin?`<button class="btn-sm" style="margin-left:auto;color:var(--danger);border-color:var(--danger)" onclick="deleteAnn(${a.id})">Delete</button>`:''}
+    </div>
+  </div>`;
+}
+
+async function reactAnn(aid,reaction){
+  const res=await fetch(`/admin/announcements/${aid}/react`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({user_id:currentUser.id,reaction})});
+  const data=await res.json();
+  if(res.ok){
+    document.getElementById('likes-'+aid).textContent=data.likes;
+    document.getElementById('dislikes-'+aid).textContent=data.dislikes;
+    const lb=document.getElementById('like-btn-'+aid);
+    const db2=document.getElementById('dislike-btn-'+aid);
+    lb.className='react-btn'+(data.user_reaction==='like'?' liked':'');
+    db2.className='react-btn'+(data.user_reaction==='dislike'?' disliked':'');
+  }
+}
+
+async function deleteAnn(aid){
+  if(!confirm('Delete this announcement?'))return;
+  const res=await fetch(`/admin/announcements/${aid}`,{method:'DELETE'});
+  if(res.ok)loadAnnouncements();
+}
+
+// ── EXPERT RANKINGS (all roles) ──
+function rankingsPage(){
+  document.getElementById('main-content').innerHTML=`
+    <div class="page-title">Expert Rankings</div>
+    <div class="page-sub">Ranked by answers given and ratings from farmers and experts.</div>
+    <div id="rank-list">Loading...</div>`;
+  fetch('/admin/expert-rankings').then(r=>r.json()).then(experts=>{
+    const el=document.getElementById('rank-list');if(!el)return;
+    if(experts.length===0){el.innerHTML=emptyState('🏆','No experts registered yet.');return;}
+    el.innerHTML=experts.map(e=>{
+      const rankClass=e.rank===1?'top1':e.rank===2?'top2':e.rank===3?'top3':'';
+      const medal=e.rank===1?'🥇':e.rank===2?'🥈':e.rank===3?'🥉':'';
+      return `<div class="rank-card">
+        <div class="rank-num ${rankClass}">${medal||'#'+e.rank}</div>
+        <div class="rank-info">
+          <div class="rank-name">${e.fullname}</div>
+          <div class="rank-stats">
+            <span>✅ ${e.answered} answers published</span>
+            <span class="stars-display">${'★'.repeat(Math.round(e.avg_rating))}${'☆'.repeat(5-Math.round(e.avg_rating))}</span>
+            <span>${e.avg_rating>0?e.avg_rating+'/5':''} (${e.rating_count} rating${e.rating_count!==1?'s':''})</span>
+          </div>
+        </div>
+        <div style="text-align:right;flex-shrink:0">
+          <div style="font-family:'Syne',sans-serif;font-size:1.4rem;font-weight:700;color:var(--green)">${e.score}</div>
+          <div style="font-size:.72rem;color:var(--muted)">Score</div>
+        </div>
+      </div>`;
+    }).join('');
+  });
+}
+
+// ── FARMER ──
+function farmerHome(){
+  document.getElementById('main-content').innerHTML=`
+    <div class="page-title">Farmer Dashboard</div>
+    <div class="page-sub">Hello ${currentUser.fullname.split(' ')[0]}, welcome to your farming hub.</div>
+    <div class="grid2">
+      <div class="card"><div class="card-title">Get Started</div>
+        <button class="btn-sm" style="display:block;width:100%;text-align:left;padding:.7rem 1rem;margin-bottom:.5rem" onclick="loadPage('ask')">❓ Ask an expert</button>
+        <button class="btn-sm" style="display:block;width:100%;text-align:left;padding:.7rem 1rem;margin-bottom:.5rem" onclick="loadPage('myquestions')">📋 My questions</button>
+        <button class="btn-sm" style="display:block;width:100%;text-align:left;padding:.7rem 1rem;margin-bottom:.5rem" onclick="loadPage('announcements')">📢 Announcements</button>
+        <button class="btn-sm" style="display:block;width:100%;text-align:left;padding:.7rem 1rem" onclick="loadPage('public')">🌐 Browse Q&A</button>
+      </div>
+      <div class="card"><div class="card-title">Your Info</div>
+        <div style="font-size:.88rem;color:var(--soil-mid);line-height:2.2">
+          <div>👤 <b>${currentUser.fullname}</b></div><div>📧 ${currentUser.email}</div><div>#️⃣ #${currentUser.id}</div>
+        </div>
+      </div>
+    </div>`;
+}
+
+function farmerAsk(){
+  document.getElementById('main-content').innerHTML=`
+    <div class="page-title">Ask an Expert</div>
+    <div class="page-sub">Submit your farm question — admin will assign it to the right expert.</div>
+    <div class="card" style="max-width:520px">
+      <div class="form-group"><label>Category</label><select id="q-cat"><option>Crop Disease</option><option>Soil & Fertilizer</option><option>Pest Control</option><option>Animal Health</option><option>Irrigation</option><option>Other</option></select></div>
+      <div class="form-group"><label>Your Question</label><textarea id="q-text" placeholder="Describe your farm problem in detail..."></textarea></div>
+      <button class="form-submit" onclick="submitFarmerQ()">Submit Question</button>
+    </div>`;
+}
+
+async function submitFarmerQ(){
+  const question=document.getElementById('q-text').value.trim();
+  const category=document.getElementById('q-cat').value;
+  if(!question){alert('Please write your question.');return;}
+  const res=await fetch('/admin/questions',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({farmer_id:currentUser.id,question,category})});
+  const data=await res.json();
+  if(res.ok){alert('Question submitted! Admin will assign it to an expert.');document.getElementById('q-text').value='';}
+  else alert(data.error||'Failed.');
+}
+
+function farmerMyQuestions(){
+  document.getElementById('main-content').innerHTML=`
+    <div class="page-title">My Questions</div>
+    <div class="page-sub">Track your submitted questions and rate experts.</div>
+    <div id="fql">Loading...</div>`;
+  fetch('/admin/questions').then(r=>r.json()).then(qs=>{
+    const mine=qs.filter(q=>q.farmer_id===currentUser.id);
+    const el=document.getElementById('fql');if(!el)return;
+    if(mine.length===0){el.innerHTML='<div class="card">'+emptyState('❓','No questions yet. Ask one!')+'</div>';return;}
+    const labels={'pending':'Pending Assignment','assigned':'With Expert','pending_review':'Under Review','answered':'Answered'};
+    el.innerHTML=mine.map(q=>`
+      <div class="q-card ${q.status}">
+        <div class="q-meta"><span class="cat-badge">${q.category}</span><span>🕐 ${q.created_at}</span>${q.assigned_expert?`<span>🔬 ${q.assigned_expert}</span>`:''}</div>
+        <div class="q-text">${q.question}</div>
+        <span class="status-badge status-${q.status}">${labels[q.status]||q.status}</span>
+        ${q.answer&&q.answer_verified?`
+          <div class="q-answer-box">
+            <div class="q-answer-label">✅ Expert Answer</div>
+            <div class="q-answer-text">${q.answer}</div>
+          </div>
+          ${q.assigned_expert_id?`<div class="rate-row" style="margin-top:.8rem">
+            <span style="font-size:.82rem;color:var(--muted)">Rate this answer:</span>
+            ${[1,2,3,4,5].map(s=>`<button class="star-btn" onclick="rateExpert(${q.assigned_expert_id},${s},${q.id})" title="${s} star${s>1?'s':''}">☆</button>`).join('')}
+          </div>`:''}
+        `:''}
+        ${q.status==='pending_review'?`<div style="margin-top:.5rem;font-size:.82rem;color:var(--purple)">⏳ Answer submitted — waiting for admin approval</div>`:''}
+      </div>`).join('');
+  });
+}
+
+async function rateExpert(expertId,stars,qid){
+  const res=await fetch('/admin/rate-expert',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({expert_id:expertId,rater_id:currentUser.id,stars,question_id:qid})});
+  const data=await res.json();
+  if(res.ok){alert(`You rated this answer ${stars} star${stars>1?'s':''}!`);}
+  else alert(data.error||'Failed.');
+}
+
+function farmerTips(){
+  document.getElementById('main-content').innerHTML=`
+    <div class="page-title">Farm Tips</div>
+    <div class="page-sub">Practical advice from our agricultural experts.</div>
+    ${[['🌱 Soil Health','Test your soil pH every season. Most crops thrive at pH 6.0–7.0. Add lime to raise pH.','Soil'],['🪲 Pest Control','Inspect crops weekly. Intercropping maize with beans naturally repels some pests.','Pests'],['💧 Water','Mulch around plants to retain moisture. Saves up to 30% of irrigation water.','Irrigation'],['🐄 Animals','Deworm livestock every 3 months. Vaccinate against FMD and anthrax before rains.','Animals']].map(([t,d,tag])=>`<div class="tip-box"><div class="tip-tag">${t} <span style="float:right;background:rgba(15,110,86,.15);padding:.1rem .5rem;border-radius:100px;font-size:.7rem">${tag}</span></div><div class="tip-text">${d}</div></div>`).join('')}`;
+}
+
+// ── EXPERT ──
+function expertHome(){
+  document.getElementById('main-content').innerHTML=`
+    <div class="page-title">Expert Dashboard</div>
+    <div class="page-sub">Hello ${currentUser.fullname.split(' ')[0]}, answer assigned farmer questions.</div>
+    <div class="grid2">
+      <div class="card"><div class="card-title">Quick Actions</div>
+        <button class="btn-sm" style="display:block;width:100%;text-align:left;padding:.7rem 1rem;margin-bottom:.5rem" onclick="loadPage('assigned')">📋 View assigned questions</button>
+        <button class="btn-sm" style="display:block;width:100%;text-align:left;padding:.7rem 1rem;margin-bottom:.5rem" onclick="loadPage('announcements')">📢 Announcements</button>
+        <button class="btn-sm" style="display:block;width:100%;text-align:left;padding:.7rem 1rem" onclick="loadPage('rankings')">🏆 Expert rankings</button>
+      </div>
+      <div class="card"><div class="card-title">Your Info</div>
+        <div style="font-size:.88rem;color:var(--soil-mid);line-height:2.2">
+          <div>👤 <b>${currentUser.fullname}</b></div><div>📧 ${currentUser.email}</div><div>#️⃣ #${currentUser.id}</div>
+        </div>
+      </div>
+    </div>`;
+}
+
+function expertAssigned(){
+  document.getElementById('main-content').innerHTML=`
+    <div class="page-title">My Assigned Questions</div>
+    <div class="page-sub">Answer farmer questions. Submitted answers go to admin for review before publishing.</div>
+    <div id="eql">Loading...</div>`;
+  fetch(`/expert/my-questions/${currentUser.id}`).then(r=>r.json()).then(qs=>{
+    const el=document.getElementById('eql');if(!el)return;
+    if(qs.length===0){el.innerHTML='<div class="card">'+emptyState('📋','No questions assigned yet. Admin will assign farmer questions here.')+'</div>';return;}
+    el.innerHTML=qs.map(q=>`
+      <div class="q-card ${q.status}">
+        <div class="q-meta">🌾 <b>${q.farmer_name}</b> <span class="cat-badge">${q.category}</span> <span>🕐 ${q.created_at}</span></div>
+        <div class="q-text">${q.question}</div>
+        ${q.admin_note?`<div class="q-reject-box"><div class="q-reject-label">⚠️ Admin Rejection Note — Please Revise</div><div class="q-reject-text">${q.admin_note}</div></div>`:''}
+        ${q.status==='pending_review'?`<div class="q-answer-box"><div class="q-answer-label">⏳ Submitted — Waiting for Admin Approval</div><div class="q-answer-text">${q.answer}</div></div>`:''}
+        ${q.status==='answered'?`<div class="q-answer-box"><div class="q-answer-label">✅ Published</div><div class="q-answer-text">${q.answer}</div></div>`:''}
+        ${(q.status==='assigned')?`
+          <div style="margin-top:.8rem">
+            <textarea id="ans-${q.id}" style="width:100%;padding:.7rem;border:1.5px solid var(--border);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:.88rem;background:var(--off);outline:none;resize:vertical;min-height:80px" placeholder="Write your expert answer here..."></textarea>
+            <button class="btn-green" style="margin-top:.5rem" onclick="submitAnswer(${q.id})">📤 Submit Answer for Review</button>
+          </div>`:''}
+      </div>`).join('');
+  });
+}
+
+async function submitAnswer(qid){
+  const ans=document.getElementById('ans-'+qid)?.value.trim();
+  if(!ans){alert('Please write an answer first.');return;}
+  const res=await fetch(`/expert/answer/${qid}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({answer:ans,expert_id:currentUser.id})});
+  const data=await res.json();
+  if(res.ok){alert('✅ '+data.message);expertAssigned();}
+  else alert(data.error||'Failed to submit answer.');
+}
+
+// ── PUBLIC Q&A ──
+function publicQA(){
+  document.getElementById('main-content').innerHTML=`
+    <div class="page-title">Public Q&A</div>
+    <div class="page-sub">Verified expert answers — available to everyone on the platform.</div>
+    <div id="pql">Loading...</div>`;
+  fetch('/admin/public-qa').then(r=>r.json()).then(qs=>{
+    const el=document.getElementById('pql');if(!el)return;
+    if(qs.length===0){el.innerHTML='<div class="card">'+emptyState('🌐','No published answers yet. Admin-approved answers will appear here.')+'</div>';return;}
+    el.innerHTML=qs.map(q=>`
+      <div class="qa-card">
+        <div style="display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:.6rem">
+          <span class="cat-badge">${q.category}</span>
+          <span style="font-size:.78rem;color:var(--muted)">🌾 ${q.farmer_name} · 🕐 ${q.created_at}</span>
+        </div>
+        <div class="qa-question">❓ ${q.question}</div>
+        <div class="qa-answer">
+          <div class="qa-answer-by">🔬 ${q.assigned_expert?'Expert: '+q.assigned_expert:''} ${q.answered_at?'· '+q.answered_at:''}</div>
+          <div class="qa-answer-text">${q.answer}</div>
+        </div>
+        ${q.assigned_expert_id&&currentUser.role!=='expert'?`
+          <div class="rate-row">
+            <span style="font-size:.82rem;color:var(--muted)">Rate this answer:</span>
+            ${[1,2,3,4,5].map(s=>`<button class="star-btn" onclick="rateExpert(${q.assigned_expert_id},${s},${q.id})" title="${s} star${s>1?'s':''}">${s<=0?'☆':'☆'}</button>`).join('')}
+          </div>`:''}
+      </div>`).join('');
+  });
+}
+
+// ── PROFILE ──
+function profilePage(){
+  document.getElementById('main-content').innerHTML=`
+    <div class="page-title">My Profile</div>
+    <div class="page-sub">Your account details.</div>
+    <div class="card" style="max-width:460px">
+      <div style="display:flex;align-items:center;gap:1rem;margin-bottom:1.5rem;padding-bottom:1.5rem;border-bottom:1px solid var(--border)">
+        <div class="avatar av-g" style="width:52px;height:52px;font-size:1.3rem">${currentUser.fullname.charAt(0)}</div>
+        <div><div style="font-size:1.1rem;font-weight:600;color:var(--soil)">${currentUser.fullname}</div><div style="font-size:.85rem;color:var(--muted)">${currentUser.email}</div></div>
+      </div>
+      <div class="form-group"><label>Full Name</label><input type="text" value="${currentUser.fullname}"></div>
+      <div class="form-group"><label>Email</label><input type="email" value="${currentUser.email}"></div>
+      <div class="form-group"><label>Role</label><input type="text" value="${currentUser.role}" disabled style="opacity:.6"></div>
+      <div class="form-group"><label>Account ID</label><input type="text" value="#${currentUser.id}" disabled style="opacity:.6"></div>
+    </div>`;
+}
+</script>
+</body>
+</html>

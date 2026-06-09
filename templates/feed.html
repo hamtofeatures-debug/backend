@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agrosphere Knowledge Feed & Leaderboard</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <style>
+        body { margin: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f6f7; color: #333; }
+        .navbar { background: #2e7d32; color: white; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .navbar .brand { font-size: 24px; font-weight: bold; cursor: pointer; }
+        .navbar .nav-links a { color: white; text-decoration: none; margin-left: 20px; font-weight: 500; }
+        
+        .container { display: flex; max-width: 1200px; margin: 30px auto; padding: 0 20px; gap: 30px; }
+        .feed-section { flex: 2; }
+        .sidebar-section { flex: 1; }
+
+        h2 { color: #2c3e50; margin-top: 0; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; }
+
+        /* Feed Cards */
+        .feed-card { background: white; border-radius: 12px; padding: 24px; margin-bottom: 20px; border: 1px solid #e1e8ed; box-shadow: 0 4px 6px rgba(0,0,0,0.02); }
+        .feed-card .category-badge { background: #e8f5e9; color: #2e7d32; padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: bold; text-transform: uppercase; }
+        .feed-card .question-text { font-size: 18px; font-weight: 600; margin: 12px 0; color: #1a202c; }
+        .feed-card .meta-text { font-size: 13px; color: #718096; margin-bottom: 15px; }
+        .feed-card .answer-box { background: #f8fafc; border-left: 4px solid #2e7d32; padding: 15px; border-radius: 0 8px 8px 0; font-style: normal; color: #2d3748; line-height: 1.6; }
+        .feed-card .expert-tag { display: block; margin-top: 10px; font-size: 13px; font-weight: bold; color: #2e7d32; }
+
+        /* Interactions Row */
+        .interactions { display: flex; justify-content: space-between; align-items: center; margin-top: 20px; padding-top: 15px; border-top: 1px solid #edf2f7; }
+        .reaction-btns { display: flex; gap: 15px; }
+        .btn-react { background: #f1f5f9; border: none; padding: 8px 14px; border-radius: 20px; cursor: pointer; font-weight: 600; display: flex; align-items: center; gap: 6px; transition: background 0.2s; }
+        .btn-react:hover { background: #cbd5e1; }
+        .btn-like:hover { color: #2e7d32; }
+        .btn-dislike:hover { color: #e53e3e; }
+
+        /* Star Rating Styles */
+        .rating-container { display: flex; align-items: center; gap: 5px; }
+        .stars { display: flex; gap: 2px; cursor: pointer; }
+        .star { font-size: 22px; color: #cbd5e1; transition: color 0.1s; }
+        .star.active { color: #f59e0b; }
+        .avg-rating-display { font-size: 14px; font-weight: bold; color: #4a5568; margin-left: 5px; }
+
+        /* Leaderboard Cards */
+        .leaderboard-card { background: white; border-radius: 12px; padding: 20px; border: 1px solid #e1e8ed; box-shadow: 0 4px 6px rgba(0,0,0,0.02); position: sticky; top: 30px; }
+        .leaderboard-list { list-style: none; padding: 0; margin: 0; }
+        .leaderboard-item { display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #edf2f7; }
+        .leaderboard-item:last-child { border-bottom: none; }
+        .expert-rank-info { display: flex; align-items: center; gap: 10px; }
+        .rank-number { font-weight: bold; background: #edf2f7; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; border-radius: 50%; font-size: 13px; }
+        .leaderboard-item:nth-child(1) .rank-number { background: #fef3c7; color: #d97706; } /* Gold */
+        .leaderboard-item:nth-child(2) .rank-number { background: #f1f5f9; color: #64748b; } /* Silver */
+        .expert-name-text { font-weight: 600; font-size: 14px; color: #2d3748; }
+        .expert-metrics { text-align: right; font-size: 12px; color: #718096; }
+        .expert-metrics b { color: #2e7d32; font-size: 14px; }
+    </style>
+</head>
+<body>
+
+    <div class="navbar">
+        <div class="brand" onclick="window.location.href='/'">🌱 Agrosphere</div>
+        <div class="nav-links">
+            <a href="/public-feed">Knowledge Feed</a>
+            <a href="#" onclick="handleLogout()">Logout</a>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="feed-section">
+            <h2>Farmers Universal Knowledge Feed</h2>
+            <div id="feedContainer">
+                <p style="text-align: center; color: #666;">Loading public insights feed...</p>
+            </div>
+        </div>
+
+        <div class="sidebar-section">
+            <div class="leaderboard-card">
+                <h3 style="margin-top: 0; border-bottom: 2px solid #edf2f7; padding-bottom: 10px; color: #2c3e50;">🏆 Top Experts Ranked</h3>
+                <ul id="leaderboardContainer" class="leaderboard-list">
+                    <p style="font-size: 14px; color: #718096;">Evaluating performance...</p>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Simulate reading active logged-in account ID from local storage securely
+        const currentUserId = localStorage.getItem('user_id') || 2; 
+
+        // 1. Fetch and build dynamic verified QA cards
+        async function loadPublicFeed() {
+            try {
+                const response = await fetch('/api/public-feed');
+                const feedItems = await response.json();
+                const container = document.getElementById('feedContainer');
+                container.innerHTML = '';
+
+                if (!feedItems || feedItems.length === 0) {
+                    container.innerHTML = `<div class="feed-card" style="text-align: center; color: #718096;">No verified solutions published to the feed yet. Keep monitoring!</div>`;
+                    return;
+                }
+
+                feedItems.forEach(item => {
+                    // Create star icons dynamically based on current post average score
+                    let starHTML = '';
+                    const floorScore = Math.round(item.rating_avg || 0);
+                    for (let i = 1; i <= 5; i++) {
+                        starHTML += `<span class="star ${i <= floorScore ? 'active' : ''}" onclick="submitStarRating(${item.id}, ${i})">&#9733;</span>`;
+                    }
+
+                    const card = `
+                        <div class="feed-card">
+                            <span class="category-badge">${item.category}</span>
+                            <div class="question-text">Q: ${item.question}</div>
+                            <div class="meta-text">Asked by <b>${item.farmer_name}</b> • Verified ${item.answered_at}</div>
+                            
+                            <div class="answer-box">
+                                ${item.answer}
+                                <span class="expert-tag">💡 Verified Answer by ${item.expert_name}</span>
+                            </div>
+
+                            <div class="interactions">
+                                <div class="reaction-btns">
+                                    <button class="btn-react btn-like" onclick="submitReaction(${item.id}, 'like')">
+                                        👍 <span id="likes-count-${item.id}">${item.likes || 0}</span>
+                                    </button>
+                                    <button class="btn-react btn-dislike" onclick="submitReaction(${item.id}, 'dislike')">
+                                        👎 <span id="dislikes-count-${item.id}">${item.dislikes || 0}</span>
+                                    </button>
+                                </div>
+
+                                <div class="rating-container">
+                                    <div class="stars">${starHTML}</div>
+                                    <span class="avg-rating-display">(${item.rating_avg}/5.0)</span>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    container.innerHTML += card;
+                });
+            } catch (err) {
+                console.error("Feed error:", err);
+                document.getElementById('feedContainer').innerHTML = `<p style="color:red; text-align:center;">Failed to synchronize with public knowledge base.</p>`;
+            }
+        }
+
+        // 2. Fire Likes / Dislikes Upvote counters directly to endpoint
+        async function submitReaction(questionId, reactionType) {
+            try {
+                const response = await fetch(`/api/react/${questionId}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ type: reactionType })
+                });
+                const data = await response.json();
+                if (response.ok) {
+                    // Instantly patch the specific card counter without reloading full page
+                    document.getElementById(`likes-count-${questionId}`).innerText = data.likes;
+                    document.getElementById(`dislikes-count-${questionId}`).innerText = data.dislikes;
+                }
+            } catch (err) {
+                console.error("Reaction failure:", err);
+            }
+        }
+
+        // 3. Submit 1-5 Star Ratings
+        async function submitStarRating(questionId, starValue) {
+            try {
+                const response = await fetch(`/api/rate/${questionId}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        user_id: parseInt(currentUserId), 
+                        stars: starValue 
+                    })
+                });
+                if (response.ok) {
+                    alert("Thank you! Rating submitted successfully.");
+                    loadPublicFeed(); // Refresh views to update computed average scores
+                    loadLeaderboard(); // Recalculate rank standings
+                }
+            } catch (err) {
+                console.error("Rating post breakdown:", err);
+            }
+        }
+
+        // 4. Fetch Leaderboard metrics
+        async function loadLeaderboard() {
+            try {
+                const response = await fetch('/api/expert-leaderboard');
+                const boardItems = await response.json();
+                const container = document.getElementById('leaderboardContainer');
+                container.innerHTML = '';
+
+                if (!boardItems || boardItems.length === 0) {
+                    container.innerHTML = `<p style="font-size:13px; color:#718096; padding:10px;">No expert answers calculated yet.</p>`;
+                    return;
+                }
+
+                boardItems.forEach((expert, index) => {
+                    const listItem = `
+                        <li class="leaderboard-item">
+                            <div class="expert-rank-info">
+                                <span class="rank-number">${index + 1}</span>
+                                <span class="expert-name-text">${expert.fullname}</span>
+                            </div>
+                            <div class="expert-metrics">
+                                <b>${expert.rating_score} ★</b><br>
+                                ${expert.total_answers} answered
+                            </div>
+                        </li>
+                    `;
+                    container.innerHTML += listItem;
+                });
+            } catch (err) {
+                console.error("Leaderboard component fail:", err);
+            }
+        }
+
+        function handleLogout() {
+            localStorage.clear();
+            window.location.href = '/';
+        }
+
+        // Fire rendering engines on execution window loading entry point
+        window.onload = function() {
+            loadPublicFeed();
+            loadLeaderboard();
+        };
+    </script>
+</body>
+</html>

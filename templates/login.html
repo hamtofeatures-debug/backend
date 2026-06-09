@@ -1,0 +1,9 @@
+const response = await fetch('/auth/login', { /* ... post configuration ... */ });
+const result = await response.json();
+
+if (response.ok) {
+    // Dynamically sends the user straight to their secure panel target!
+    window.location.href = result.redirect_to; 
+} else {
+    alert(result.error);
+}
