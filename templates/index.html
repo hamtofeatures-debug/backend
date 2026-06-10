@@ -852,6 +852,18 @@ function profilePage(){
       <div class="form-group"><label>Account ID</label><input type="text" value="#${currentUser.id}" disabled style="opacity:.6"></div>
     </div>`;
 }
+function showAuth(mode) {
+    const loginBox = document.getElementById("login-box");
+    const registerBox = document.getElementById("register-box");
+
+    if (mode === "login") {
+        loginBox.style.display = "block";
+        registerBox.style.display = "none";
+    } else if (mode === "register") {
+        loginBox.style.display = "none";
+        registerBox.style.display = "block";
+    }
+}
 </script>
 </body>
 </html>
