@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Business Registration</title>
+</head>
+<body>
+
+    <h1>Register Your Business</h1>
+
+    <form id="businessForm">
+
+        <label>Business Name</label><br>
+        <input type="text" id="business_name" required><br><br>
+
+        <label>Services Provided</label><br>
+        <textarea id="services" required></textarea><br><br>
+
+        <label>Phone Number</label><br>
+        <input type="text" id="phone"><br><br>
+
+        <label>Location</label><br>
+        <input type="text" id="location"><br><br>
+
+        <label>Description</label><br>
+        <textarea id="description"></textarea><br><br>
+
+        <button type="submit">Register Business</button>
+
+    </form>
+
+    <p id="message"></p>
+
+    <script>
+        document.getElementById("businessForm").addEventListener("submit", async function(e) {
+
+            e.preventDefault();
+
+            const response = await fetch("/auth/register-business", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    business_name: document.getElementById("business_name").value,
+                    services: document.getElementById("services").value,
+                    phone: document.getElementById("phone").value,
+                    location: document.getElementById("location").value,
+                    description: document.getElementById("description").value
+                })
+            });
+
+            const data = await response.json();
+
+            document.getElementById("message").innerText =
+                data.message || data.error;
+        });
+    </script>
+
+</body>
+</html>

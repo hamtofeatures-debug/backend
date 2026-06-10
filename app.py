@@ -93,6 +93,9 @@ def react_to_answer(qid):
     db.session.commit()
     return jsonify({"likes": q.likes, "dislikes": q.dislikes}), 200
 
+@app.route('/register')
+def register_page():
+    return render_template('register.html')
 
 @app.route('/api/rate/<int:qid>', methods=['POST'])
 def rate_answer(qid):

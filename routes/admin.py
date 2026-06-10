@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify
 from extensions import db
-from models import User, Question, Announcement, AnnouncementReaction, ExpertRating, Articles
+from models import User, Question, Announcement, AnnouncementReaction, ExpertRating, Articles, Business
 
 admin_bp = Blueprint('admin', __name__)
 
@@ -260,3 +260,115 @@ def approve_article(id):
     question.is_approved = True
     db.session.commit()
     return jsonify({'message': 'Article approved and now visible to farmers!'}), 200
+
+# ==================================================
+# BUSINESS MANAGEMENT
+# ==================================================
+
+@admin_bp.route('/businesses', methods=['GET'])
+def get_businesses():
+
+    businesses = Business.query.order_by(
+        Business.id.desc()
+    ).all()
+
+    return jsonify([
+        {
+            "id": b.id,
+            "business_name": b.business_name,
+            "services": b.services,
+            "phone": b.phone,
+            "location": b.location,
+            "status": b.status,
+            "verification_status": b.verification_status,
+            "blue_tick": b.blue_tick,
+            "payment_status": b.payment_status
+        }
+        for b in businesses
+    ])
+
+
+@admin_bp.route('/businesses/pending', methods=['GET'])
+def pending_businesses():
+
+    businesses = Business.query.filter_by(
+        status='pending'
+    ).all()
+
+    return jsonify([
+        {
+            "id": b.id,
+            "business_name": b.business_name,
+            "services": b.services,
+            "phone": b.phone,
+            "location": b.location
+        }
+        for b in businesses
+    ])
+
+
+@admin_bp.route('/business/<int:business_id>/approve', methods=['POST'])
+def approve_business(business_id):
+
+    business = Business.query.get_or_404(business_id)
+
+    business.status = "approved"
+
+    db.session.commit()
+
+    return jsonify({
+        "message": "Business approved successfully"
+    })
+
+
+@admin_bp.route('/business/<int:business_id>/reject', methods=['POST'])
+def reject_business(business_id):
+
+    business = Business.query.get_or_404(business_id)
+
+    business.status = "rejected"
+
+    db.session.commit()
+
+    return jsonify({
+        "message": "Business rejected"
+    })
+
+
+@admin_bp.route('/business/<int:business_id>/confirm-payment', methods=['POST'])
+def confirm_payment(business_id):
+
+    business = Business.query.get_or_404(business_id)
+
+    business.payment_status = "paid"
+
+    db.session.commit()
+
+    return jsonify({
+        "message": "Payment confirmed"
+    })
+
+
+@admin_bp.route('/business/<int:business_id>/verify', methods=['POST'])
+def verify_business(business_id):
+
+    business = Business.query.get_or_404(business_id)
+
+    if business.status != "approved":
+        return jsonify({
+            "error": "Business must be approved first"
+        }), 400
+
+    if business.payment_status != "paid":
+        return jsonify({
+            "error": "Payment required before verification"
+        }), 400
+
+    business.verification_status = "verified"
+    business.blue_tick = True
+
+    db.session.commit()
+
+    return jsonify({
+        "message": "Blue tick granted"
+    })
