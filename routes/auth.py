@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify, url_for
 from extensions import db
-from models import User, Farmer, Expert
+from models import User, Farmer, Expert, Business
 from werkzeug.security import generate_password_hash, check_password_hash
 
 # Define the blueprint
@@ -106,3 +106,55 @@ def login():
         }), 200
     else:
         return jsonify({"error": "Invalid email or password"}), 401
+    
+    # ==========================================
+# BUSINESS REGISTRATION
+# ==========================================
+
+@auth_bp.route('/register-business', methods=['POST'])
+def register_business():
+
+    data = request.get_json()
+
+    if not data:
+        return jsonify({"error": "Missing JSON request body"}), 400
+
+    business_name = data.get('business_name')
+    services = data.get('services')
+    phone = data.get('phone')
+    location = data.get('location')
+    description = data.get('description')
+
+    if not business_name or not services:
+        return jsonify({
+            "error": "Business name and services are required"
+        }), 400
+
+    existing = Business.query.filter_by(
+        business_name=business_name
+    ).first()
+
+    if existing:
+        return jsonify({
+            "error": "Business already registered"
+        }), 400
+
+    business = Business(
+        business_name=business_name,
+        services=services,
+        phone=phone,
+        location=location,
+        description=description,
+        status="pending",
+        verification_status="none",
+        blue_tick=False,
+        payment_status="unpaid"
+    )
+
+    db.session.add(business)
+    db.session.commit()
+
+    return jsonify({
+        "message": "Business submitted successfully",
+        "status": "pending_admin_approval"
+    }), 201
