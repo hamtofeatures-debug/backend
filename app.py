@@ -118,6 +118,14 @@ def rate_answer(qid):
     db.session.commit()
     return jsonify({"message": "Rating recorded successfully!"}), 200
 
+@app.route('/admin/questions')
+def admin_questions():
+    # Fetching questions from your models.py database layer
+    all_questions = Question.query.all() 
+    
+    # Returning a list so javascript can read .length
+    return jsonify([q.to_dict() for q in all_questions])
+
 
 @app.route('/api/expert-leaderboard', methods=['GET'])
 def get_expert_leaderboard():
@@ -170,7 +178,7 @@ def register_business():
         return redirect('/')
 
     return render_template('register.html')
-    
+
 
 if __name__ == '__main__':
     with app.app_context():

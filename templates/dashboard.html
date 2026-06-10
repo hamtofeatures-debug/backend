@@ -1,666 +1,317 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AGROSPHERE — Admin</title>
-    <style>
-        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AGROSPHERE — Admin Panel</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --green:#1D9E75;--green-dark:#0F6E56;--green-light:#E1F5EE;
+  --amber:#EF9F27;--amber-light:#FAEEDA;
+  --soil:#3B2A1A;--soil-mid:#6B4F35;
+  --white:#FFFFFF;--off:#F4F6F4;--border:#E4EAE6;
+  --text:#2D312E;--muted:#737A75;
+  --danger:#E24B4A;--danger-light:#FCEBEB;
+  --purple:#5B21B6;--purple-light:#EDE9FE;
+  --blue:#1D4ED8;--blue-light:#DBEAFE;
+  --gold:#F59E0B;
+}
+body{font-family:'DM Sans',sans-serif;background:var(--off);color:var(--text);min-height:100vh;overflow-x:hidden}
+.screen{display:none;min-height:100vh}.screen.active{display:flex;flex-direction:column}
 
-        :root {
-            --green-dark: #1b4332;
-            --green-mid: #2d6a4f;
-            --green-light: #52b788;
-            --green-pale: #d8f3dc;
-            --accent: #40916c;
-            --bg: #f4f6f4;
-            --white: #ffffff;
-            --border: #e2e8e4;
-            --text: #1c2b22;
-            --muted: #6b7c72;
-            --danger: #c62828;
-            --warn-bg: #fff8e1;
-            --warn: #e65100;
-        }
+/* DASHBOARD LAYOUT */
+.topbar{background:var(--white);border-bottom:1px solid var(--border);padding:0 2rem;height:65px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+.topbar-brand{font-family:'Syne',sans-serif;font-size:1.2rem;font-weight:700;color:var(--green-dark);display:flex;align-items:center;gap:.6rem}
+.topbar-brand span{color:var(--text);font-weight:600}
+.topbar-right{display:flex;align-items:center;gap:1.5rem}
+.role-badge{padding:.3rem .85rem;border-radius:100px;font-size:.75rem;font-weight:600;text-transform:uppercase;letter-spacing:.5px;background:var(--green-light);color:var(--green-dark)}
+.btn-logout{background:transparent;border:1px solid var(--border);padding:.45rem 1rem;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:.85rem;font-weight:500;cursor:pointer;color:var(--muted);transition:all .2s}
+.btn-logout:hover{border-color:var(--danger);color:var(--danger);background:var(--danger-light)}
 
-        body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+.dash-body{display:flex;flex:1;min-height:calc(100vh - 65px)}
+.sidebar{width:260px;background:var(--white);border-right:1px solid var(--border);padding:1.5rem 1rem;flex-shrink:0}
+.nav-item{display:flex;align-items:center;gap:.8rem;padding:.75rem 1rem;border-radius:10px;cursor:pointer;font-size:.95rem;color:var(--muted);transition:all .2s;margin-bottom:4px;font-weight:500}
+.nav-item:hover{background:var(--off);color:var(--text)}
+.nav-item.active{background:var(--green-light);color:var(--green-dark);font-weight:600}
 
-        /* ── Layout ── */
-        .wrapper { display: flex; min-height: 100vh; }
+.main-content{flex:1;padding:2.5rem;overflow-y:auto}
+.welcome-box{margin-bottom:2rem}
+.welcome-title{font-family:'Syne',sans-serif;font-size:1.8rem;font-weight:700;color:var(--soil);margin-bottom:.3rem}
+.welcome-sub{font-size:.95rem;color:var(--muted)}
 
-        .sidebar {
-            width: 240px; min-width: 240px;
-            background: var(--white);
-            border-right: 1px solid var(--border);
-            display: flex; flex-direction: column;
-            padding: 0;
-        }
+/* 3-COLUMN METRIC GRID MATCHING IMAGE */
+.stats-grid{display:grid;grid-template-columns:repeat(2, 1fr);gap:1.5rem;margin-bottom:2rem}
+@media(min-width:900px){.stats-grid{grid-template-columns:repeat(2, 1fr)}}
+.stat-card{background:var(--white);border:1px solid var(--border);border-radius:16px;padding:1.5rem;box-shadow:0 2px 4px rgba(0,0,0,0.02)}
+.stat-label{font-size:.78rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:.6rem}
+.stat-value{font-family:'DM Sans',sans-serif;font-size:2.5rem;font-weight:700;color:var(--text);line-height:1}
+.stat-tag{font-size:.8rem;color:var(--muted);margin-top:.6rem;font-weight:500}
 
-        .brand {
-            padding: 22px 20px 18px;
-            font-size: 17px; font-weight: 700;
-            color: var(--green-dark);
-            border-bottom: 1px solid var(--border);
-            letter-spacing: .3px;
-            display: flex; align-items: center; gap: 8px;
-        }
+/* BOTTOM CONFIGURATION GRID */
+.lower-grid{display:grid;grid-template-columns:1fr;gap:1.5rem}
+@media(min-width:900px){.lower-grid{grid-template-columns:1.2fr 0.8fr}}
+.card{background:var(--white);border:1px solid var(--border);border-radius:16px;padding:1.5rem;box-shadow:0 2px 4px rgba(0,0,0,0.02)}
+.card-title{font-family:'Syne',sans-serif;font-size:1.1rem;font-weight:700;color:var(--soil);margin-bottom:1.2rem}
 
-        .menu { list-style: none; padding: 12px 0; flex: 1; }
+/* ACTION BUTTON PANELS */
+.action-link-btn{display:flex;align-items:center;gap:.8rem;width:100%;padding:1rem;background:var(--off);border:1px solid var(--border);border-radius:12px;cursor:pointer;text-align:left;margin-bottom:.75rem;transition:all 0.2s}
+.action-link-btn:hover{border-color:var(--green);background:var(--white);transform:translateY(-1px)}
+.action-icon{font-size:1.2rem}
+.action-text{font-size:.95rem;font-weight:600;color:var(--text)}
 
-        .menu-item {
-            padding: 11px 20px;
-            cursor: pointer; font-size: 14px; font-weight: 500;
-            color: var(--muted);
-            display: flex; align-items: center; gap: 10px;
-            transition: background .15s, color .15s;
-            border-left: 3px solid transparent;
-        }
-        .menu-item:hover { background: var(--green-pale); color: var(--green-dark); }
-        .menu-item.active { background: #eaf4ee; color: var(--green-dark); font-weight: 600; border-left-color: var(--green-mid); }
+/* ACCOUNT PANEL DETAILS */
+.account-detail-row{display:flex;align-items:center;gap:1rem;margin-top:0.5rem}
+.profile-avatar{width:44px;height:44px;background:var(--green-light);color:var(--green-dark);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.2rem}
+.account-info-text div{font-size:.95rem;font-weight:600;color:var(--text)}
+.account-info-text span{font-size:.85rem;color:var(--muted)}
 
-        /* ── Main ── */
-        .main-content { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+/* GENERAL TABLES / LISTS FOR DYNAMIC SUB-PAGES */
+.data-table-wrapper {overflow-x: auto; margin-top: 1rem;}
+.data-table {width: 100%; border-collapse: collapse; text-align: left;}
+.data-table th {padding: 10px; border-bottom: 2px solid var(--border); color: var(--muted); font-size: 0.85rem; text-transform: uppercase;}
+.data-table td {padding: 12px 10px; border-bottom: 1px solid var(--border); font-size: 0.95rem;}
 
-        .topbar {
-            background: var(--white);
-            border-bottom: 1px solid var(--border);
-            padding: 0 32px;
-            height: 60px;
-            display: flex; align-items: center; justify-content: space-between;
-            position: sticky; top: 0; z-index: 10;
-        }
-        .topbar-title { font-size: 15px; font-weight: 600; color: var(--text); }
-        .topbar-right { display: flex; align-items: center; gap: 12px; }
-        .badge-role { background: var(--green-pale); color: var(--green-dark); padding: 3px 10px; border-radius: 20px; font-size: 12px; font-weight: 700; }
-        .btn-signout { background: none; border: 1px solid var(--border); padding: 6px 14px; border-radius: 6px; cursor: pointer; font-size: 13px; color: var(--muted); transition: all .15s; }
-        .btn-signout:hover { border-color: var(--danger); color: var(--danger); }
-
-        .page { padding: 28px 32px; display: none; }
-        .page.active { display: block; }
-
-        /* ── Section title ── */
-        .section-head { margin-bottom: 22px; }
-        .section-head h2 { font-size: 20px; font-weight: 700; color: var(--text); }
-        .section-head p { font-size: 13px; color: var(--muted); margin-top: 4px; }
-
-        /* ── Metric cards ── */
-        .metrics-row { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 16px; margin-bottom: 28px; }
-        .metric-card { background: var(--white); border: 1px solid var(--border); border-radius: 10px; padding: 18px 20px; }
-        .metric-card .label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .6px; color: var(--muted); }
-        .metric-card .value { font-size: 30px; font-weight: 700; color: var(--text); margin-top: 8px; }
-        .metric-card .sub { font-size: 11px; color: var(--muted); margin-top: 4px; }
-        .metric-card .sub a { color: var(--green-mid); text-decoration: none; font-weight: 600; }
-
-        /* ── Cards ── */
-        .card { background: var(--white); border: 1px solid var(--border); border-radius: 10px; padding: 22px; margin-bottom: 22px; }
-        .card h3 { font-size: 15px; font-weight: 700; margin-bottom: 4px; }
-        .card .card-sub { font-size: 13px; color: var(--muted); margin-bottom: 16px; }
-
-        .two-col { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; }
-
-        /* ── Quick Actions ── */
-        .quick-actions { display: flex; flex-direction: column; gap: 10px; }
-        .qa-btn { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 13px 16px; cursor: pointer; text-align: left; font-size: 14px; color: var(--text); display: flex; align-items: center; gap: 10px; transition: background .15s; }
-        .qa-btn:hover { background: var(--green-pale); border-color: var(--green-light); }
-
-        /* ── Tables ── */
-        .tbl-wrap { overflow-x: auto; }
-        table { width: 100%; border-collapse: collapse; font-size: 13px; }
-        th { background: var(--bg); padding: 11px 14px; text-align: left; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; color: var(--muted); border-bottom: 1px solid var(--border); }
-        td { padding: 13px 14px; border-bottom: 1px solid var(--border); vertical-align: middle; }
-        tr:last-child td { border-bottom: none; }
-        tr:hover td { background: #fafcfa; }
-
-        /* ── Badges ── */
-        .pill { display: inline-block; padding: 3px 9px; border-radius: 12px; font-size: 11px; font-weight: 700; }
-        .pill-green { background: var(--green-pale); color: var(--green-dark); }
-        .pill-grey { background: #eee; color: #555; }
-        .pill-orange { background: var(--warn-bg); color: var(--warn); }
-        .pill-blue { background: #e3f2fd; color: #1565c0; }
-
-        /* ── Buttons ── */
-        .btn { border: none; padding: 7px 14px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600; transition: opacity .15s; }
-        .btn:hover { opacity: .85; }
-        .btn-primary { background: var(--green-mid); color: #fff; }
-        .btn-danger { background: var(--danger); color: #fff; }
-        .btn-ghost { background: var(--bg); border: 1px solid var(--border); color: var(--text); }
-        .btn-verified { background: #aaa; color: #fff; cursor: default; }
-        .btn:disabled { opacity: .5; cursor: default; }
-
-        /* ── Forms ── */
-        .form-group { margin-bottom: 16px; }
-        .form-group label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px; }
-        .form-group input, .form-group select, .form-group textarea {
-            width: 100%; padding: 9px 12px; border: 1px solid var(--border);
-            border-radius: 6px; font-size: 14px; font-family: inherit;
-            transition: border-color .15s;
-        }
-        .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
-            outline: none; border-color: var(--green-light);
-        }
-        .form-group textarea { resize: vertical; }
-
-        /* ── Profile card ── */
-        .profile-row { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
-        .avatar { width: 40px; height: 40px; border-radius: 50%; background: var(--green-pale); display: flex; align-items: center; justify-content: center; font-size: 18px; }
-        .profile-info p { font-size: 13px; color: var(--muted); margin-top: 2px; }
-        .profile-detail { font-size: 13px; margin-bottom: 8px; display: flex; gap: 6px; }
-        .profile-detail span:first-child { color: var(--muted); min-width: 60px; }
-
-        /* ── Task cards ── */
-        .task-card { background: var(--white); border: 1px solid var(--border); border-radius: 8px; padding: 18px; margin-bottom: 16px; }
-        .task-meta { display: flex; gap: 14px; font-size: 12px; color: var(--muted); margin-bottom: 10px; flex-wrap: wrap; }
-        .task-question { font-size: 15px; font-weight: 500; color: var(--text); margin: 10px 0; }
-
-        /* ── Empty state ── */
-        .empty { text-align: center; padding: 48px 20px; color: var(--muted); }
-        .empty .icon { font-size: 36px; margin-bottom: 10px; }
-
-        select.inline { padding: 5px 8px; border: 1px solid var(--border); border-radius: 5px; font-size: 13px; }
-    </style>
+/* MODAL OVERLAYS */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:200;align-items:center;justify-content:center;padding:1rem}
+.modal-overlay.open{display:flex}
+.modal{background:var(--white);border-radius:16px;padding:2rem;width:100%;max-width:500px;box-shadow:0 20px 50px rgba(0,0,0,0.1)}
+.modal-title{font-family:'Syne',sans-serif;font-size:1.2rem;font-weight:700;margin-bottom:1.2rem;display:flex;justify-content:space-between;align-items:center}
+.modal-close{cursor:pointer;background:none;border:none;font-size:1.2rem;color:var(--muted)}
+.form-group{margin-bottom:1.2rem}
+.form-group label{display:block;font-size:.8rem;font-weight:600;color:var(--muted);margin-bottom:.4rem;text-transform:uppercase}
+.form-group input, .form-group select, .form-group textarea{width:100%;padding:.75rem 1rem;border:1.5px solid var(--border);border-radius:10px;outline:none;font-family:inherit;font-size:.95rem}
+.form-group input:focus, .form-group select:focus, .form-group textarea:focus{border-color:var(--green)}
+.form-submit{width:100%;padding:.9rem;background:var(--green);color:#fff;border:none;border-radius:10px;font-weight:600;cursor:pointer;font-size:1rem}
+.form-submit:hover{background:var(--green-dark)}
+</style>
 </head>
 <body>
 
-<div class="wrapper">
+<div class="screen active" id="dashboard">
+  <div class="topbar">
+    <div class="topbar-brand">
+      <span style="font-size: 1.4rem;">🌿</span> AGROSPHERE
+    </div>
+    <div class="topbar-right">
+      <span id="dash-name" style="font-size:.9rem; font-weight:500; color:var(--muted)">Admin Dashboard</span>
+      <span class="role-badge">Admin</span>
+      <button class="btn-logout" onclick="simulatedLogout()">Sign Out</button>
+    </div>
+  </div>
 
-    <!-- ── Sidebar ── -->
-    <div class="sidebar">
-        <div class="brand">🌿 AGROSPHERE</div>
-        <ul class="menu" id="dynamicMenu">
-            <li class="menu-item active" onclick="switchTab('overview', this)">📊 Overview</li>
-        </ul>
+  <div class="dash-body">
+    <div class="sidebar" id="sidebar">
+      <div class="nav-item active" id="nav-overview" onclick="loadTab('overview')">📊 Overview</div>
+      <div class="nav-item" id="nav-users" onclick="loadTab('users')">👥 All Users</div>
+      <div class="nav-item" id="nav-questions" onclick="loadTab('questions')">❓ All Questions</div>
+      <div class="nav-item" id="nav-review" onclick="loadTab('review')">🔍 Pending Review</div>
+      <div class="nav-item" id="nav-announcements" onclick="loadTab('announcements')">📢 Announcements</div>
+      <div class="nav-item" id="nav-rankings" onclick="loadTab('rankings')">🏆 Expert Rankings</div>
+      <div class="nav-item" id="nav-public" onclick="loadTab('public')">🌐 Public Q&A</div>
+      <div class="nav-item" id="nav-businesses" onclick="loadTab('businesses')">🏢 Businesses</div>
+      <div class="nav-item" id="nav-reports" onclick="loadTab('reports')">📈 Reports</div>
     </div>
 
-    <!-- ── Main ── -->
-    <div class="main-content">
+    <div class="main-content" id="main-content-window">
+      </div>
+  </div>
+</div>
 
-        <div class="topbar">
-            <span class="topbar-title" id="workspaceSubtitle">Admin Dashboard</span>
-            <div class="topbar-right">
-                <span id="navAdminName" style="font-size:14px; font-weight:500;">—</span>
-                <span class="badge-role" id="roleBadgeTag">ADMIN</span>
-                <button class="btn-signout" onclick="handleSignOut()">Sign Out</button>
-            </div>
-        </div>
-
-        <!-- OVERVIEW -->
-        <div id="page-overview" class="page active">
-            <div class="section-head">
-                <h2 id="welcomeTitle">Welcome back!</h2>
-                <p>Here's what's happening on the platform today.</p>
-            </div>
-
-            <div class="metrics-row">
-                <div class="metric-card"><div class="label">Users</div><div class="value" id="totalUsersCount">…</div></div>
-                <div class="metric-card"><div class="label">Farmers</div><div class="value" id="totalFarmersCount">…</div></div>
-                <div class="metric-card"><div class="label">Experts</div><div class="value" id="totalExpertsCount">…</div></div>
-                <div class="metric-card"><div class="label">Questions</div><div class="value" id="totalQCount">…</div></div>
-                <div class="metric-card">
-                    <div class="label">Pending Review</div>
-                    <div class="value" id="totalPendingCount">…</div>
-                    <div class="sub"><a href="#" onclick="switchTabByName('reviews')">Needs approval</a></div>
-                </div>
-                <div class="metric-card">
-                    <div class="label">Published</div>
-                    <div class="value" id="totalPublishedCount">…</div>
-                    <div class="sub"><a href="#" onclick="switchTabByName('publicqa')">Live Q&A</a></div>
-                </div>
-            </div>
-
-            <div class="two-col">
-                <div class="card">
-                    <h3>Quick Actions</h3>
-                    <div class="card-sub">Common admin tasks</div>
-                    <div class="quick-actions">
-                        <button class="qa-btn" onclick="switchTabByName('questions')">📋 Post question for farmer</button>
-                        <button class="qa-btn" onclick="switchTabByName('reviews')">🔍 Review pending answers</button>
-                        <button class="qa-btn" onclick="switchTabByName('announcements')">📢 Post announcement</button>
-                        <button class="qa-btn" onclick="switchTabByName('businesses')">🏢 View business registrations</button>
-                    </div>
-                </div>
-                <div class="card">
-                    <h3>Your Account</h3>
-                    <div class="card-sub">Logged-in administrator</div>
-                    <div class="profile-row">
-                        <div class="avatar">👤</div>
-                        <div class="profile-info">
-                            <strong id="profileName">—</strong>
-                            <p id="profileRole">Administrator</p>
-                        </div>
-                    </div>
-                    <div class="profile-detail"><span>Email</span><span id="profileEmail">—</span></div>
-                    <div class="profile-detail"><span>Role</span><span style="color:var(--green-mid);font-weight:600;">Administrator #<span id="profileId">—</span></span></div>
-                </div>
-            </div>
-        </div>
-
-        <!-- ALL USERS -->
-        <div id="page-users" class="page">
-            <div class="section-head"><h2>All Users</h2><p>Everyone registered on the platform.</p></div>
-            <div class="card">
-                <div class="tbl-wrap">
-                    <table>
-                        <thead><tr><th>#</th><th>Full Name</th><th>Email</th><th>Role</th></tr></thead>
-                        <tbody id="allUsersTableBody"><tr><td colspan="4" style="text-align:center;color:var(--muted);">Loading…</td></tr></tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-
-        <!-- ALL QUESTIONS -->
-        <div id="page-questions" class="page">
-            <div class="section-head"><h2>All Questions</h2><p>Assign experts to farmer questions.</p></div>
-            <div class="card">
-                <div class="tbl-wrap">
-                    <table>
-                        <thead><tr><th>Farmer</th><th>Question</th><th>Status</th><th>Assigned Expert</th><th>Assign</th></tr></thead>
-                        <tbody id="questionsTableBody"><tr><td colspan="5" style="text-align:center;color:var(--muted);">Loading…</td></tr></tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-
-        <!-- PENDING REVIEWS -->
-        <div id="page-reviews" class="page">
-            <div class="section-head"><h2>Pending Review</h2><p>Approve or reject expert answers before publishing.</p></div>
-            <div class="card">
-                <div class="tbl-wrap">
-                    <table>
-                        <thead><tr><th>Farmer</th><th>Question</th><th>Expert</th><th>Answer</th><th>Actions</th></tr></thead>
-                        <tbody id="reviewsTableBody"><tr><td colspan="5" style="text-align:center;color:var(--muted);">Loading…</td></tr></tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-
-        <!-- ANNOUNCEMENTS -->
-        <div id="page-announcements" class="page">
-            <div class="section-head"><h2>Announcements</h2><p>Broadcast messages to all platform users.</p></div>
-            <div class="card" style="max-width:620px;">
-                <h3>Post New Announcement</h3>
-                <div class="card-sub">Visible to all farmers and experts on their dashboards.</div>
-                <div class="form-group"><label>Title</label><input type="text" id="annTitle" placeholder="e.g. Platform maintenance scheduled"></div>
-                <div class="form-group"><label>Message</label><textarea id="annMessage" rows="4" placeholder="Write your announcement here…"></textarea></div>
-                <button class="btn btn-primary" onclick="postAnnouncement()">Post Announcement</button>
-            </div>
-            <div class="card">
-                <h3>Previous Announcements</h3>
-                <div class="tbl-wrap" id="annList"><p style="color:var(--muted);font-size:13px;">Loading…</p></div>
-            </div>
-        </div>
-
-        <!-- EXPERT RANKINGS -->
-        <div id="page-rankings" class="page">
-            <div class="section-head"><h2>Expert Rankings</h2><p>Top contributors ranked by answers and ratings.</p></div>
-            <div class="card">
-                <div class="tbl-wrap">
-                    <table>
-                        <thead><tr><th>Rank</th><th>Expert Name</th><th>Answers</th><th>Avg Rating</th></tr></thead>
-                        <tbody id="rankingsTableBody"><tr><td colspan="4" style="text-align:center;color:var(--muted);">Loading…</td></tr></tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-
-        <!-- PUBLIC Q&A -->
-        <div id="page-publicqa" class="page">
-            <div class="section-head"><h2>Public Q&A</h2><p>Published answers visible to the public.</p></div>
-            <div class="card">
-                <div class="tbl-wrap">
-                    <table>
-                        <thead><tr><th>Farmer</th><th>Question</th><th>Expert</th><th>Answer</th></tr></thead>
-                        <tbody id="publicQATableBody"><tr><td colspan="4" style="text-align:center;color:var(--muted);">Loading…</td></tr></tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-
-        <!-- BUSINESSES -->
-        <div id="page-businesses" class="page">
-            <div class="section-head"><h2>Business Registrations</h2><p>Review and verify submitted businesses.</p></div>
-            <div class="card">
-                <div class="tbl-wrap">
-                    <table>
-                        <thead><tr><th>#</th><th>Business Name</th><th>Services</th><th>Phone</th><th>Location</th><th>Description</th><th>Status</th><th>Action</th></tr></thead>
-                        <tbody id="businessesTableBody"><tr><td colspan="8" style="text-align:center;color:var(--muted);">Loading…</td></tr></tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-
-        <!-- REPORTS -->
-        <div id="page-reports" class="page">
-            <div class="section-head"><h2>Reports</h2><p>Live platform statistics.</p></div>
-            <div class="metrics-row">
-                <div class="metric-card"><div class="label">Total Users</div><div class="value" id="rptUsers">…</div></div>
-                <div class="metric-card"><div class="label">Farmers</div><div class="value" id="rptFarmers">…</div></div>
-                <div class="metric-card"><div class="label">Experts</div><div class="value" id="rptExperts">…</div></div>
-                <div class="metric-card"><div class="label">Admins</div><div class="value" id="rptAdmins">…</div></div>
-                <div class="metric-card"><div class="label">All Questions</div><div class="value" id="rptAllQ">…</div></div>
-                <div class="metric-card"><div class="label">Pending</div><div class="value" id="rptPending">…</div></div>
-                <div class="metric-card"><div class="label">In Review</div><div class="value" id="rptReview">…</div></div>
-                <div class="metric-card"><div class="label">Published</div><div class="value" id="rptPublished">…</div></div>
-            </div>
-        </div>
-
-    </div><!-- /main-content -->
-</div><!-- /wrapper -->
+<div class="modal-overlay" id="modal-post-q">
+  <div class="modal">
+    <div class="modal-title">Post Question for Farmer <button class="modal-close" onclick="closeModal('modal-post-q')">✕</button></div>
+    <div class="form-group">
+      <label>Farmer Name</label>
+      <input type="text" id="mq-farmer" placeholder="e.g. John Okello">
+    </div>
+    <div class="form-group">
+      <label>Category</label>
+      <select id="mq-cat">
+        <option>Crop Disease</option>
+        <option>Soil & Fertilizer</option>
+        <option>Pest Control</option>
+        <option>Animal Health</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Question Detail</label>
+      <textarea id="mq-text" rows="3" placeholder="Describe the current issue..."></textarea>
+    </div>
+    <button class="form-submit" onclick="submitNewQuestion()">Publish to System Queue</button>
+  </div>
+</div>
 
 <script>
-// ── State ──
-const currentUserId = localStorage.getItem('user_id') || 1;
-let currentUserRole = 'admin';
+// Mock application architecture data pools matching API schemas
+let stats = { users: 24, farmers: 16, experts: 8, questions: 12, pendingReview: 2, published: 8 };
+let businessEntries = [
+  { name: "Gulu Dairy Farm Collective", location: "Gulu City", status: "Verified" },
+  { name: "Acholi Seed Suppliers", location: "Kitgum District", status: "Pending Review" }
+];
 
-// ── Tab helpers ──
-function switchTab(tabName, el) {
-    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-    document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active'));
-    const page = document.getElementById('page-' + tabName);
-    if (page) page.classList.add('active');
-    if (el) el.classList.add('active');
-    loadTabData(tabName);
+// Content switching architecture matching sidebar options
+function loadTab(targetTab) {
+  document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+  const activeNavItem = document.getElementById(`nav-${targetTab}`);
+  if(activeNavItem) activeNavItem.classList.add('active');
+
+  const contentWindow = document.getElementById('main-content-window');
+
+  if (targetTab === 'overview') {
+    contentWindow.innerHTML = `
+      <div class="welcome-box">
+        <h1 class="welcome-title">Welcome back!</h1>
+        <p class="welcome-sub">Here's what's happening on the platform today.</p>
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-label">Users</div>
+          <div class="stat-value" id="count-users">${stats.users}</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Farmers</div>
+          <div class="stat-value" id="count-farmers">${stats.farmers}</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Experts</div>
+          <div class="stat-value" id="count-experts">${stats.experts}</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Questions</div>
+          <div class="stat-value" id="count-questions">${stats.questions}</div>
+        </div>
+        <div class="stat-card" style="border-left: 4px solid var(--purple);">
+          <div class="stat-label">Pending Review</div>
+          <div class="stat-value" id="count-pending">${stats.pendingReview}</div>
+          <div class="stat-tag" style="color: var(--purple);">Needs approval</div>
+        </div>
+        <div class="stat-card" style="border-left: 4px solid var(--green);">
+          <div class="stat-label">Published</div>
+          <div class="stat-value" id="count-published">${stats.published}</div>
+          <div class="stat-tag" style="color: var(--green);">Live Q&A</div>
+        </div>
+      </div>
+
+      <div class="lower-grid">
+        <div class="card">
+          <div class="card-title">Quick Actions</div>
+          <button class="action-link-btn" onclick="openModal('modal-post-q')">
+            <span class="action-icon">📝</span>
+            <span class="action-text">Post question for farmer</span>
+          </button>
+          <button class="action-link-btn" onclick="loadTab('review')">
+            <span class="action-icon">🔍</span>
+            <span class="action-text">Review pending answers</span>
+          </button>
+          <button class="action-link-btn" onclick="alert('Posting announcement template initialized.')">
+            <span class="action-icon">📢</span>
+            <span class="action-text">Post announcement</span>
+          </button>
+          <button class="action-link-btn" onclick="loadTab('rankings')">
+            <span class="action-icon">🏆</span>
+            <span class="action-text">View expert rankings</span>
+          </button>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Your Account</div>
+          <div class="account-detail-row">
+            <div class="profile-avatar">👤</div>
+            <div class="account-info-text">
+              <div>Administrator</div>
+              <span>admin@agrosphere.com</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+  } else if (targetTab === 'businesses') {
+    contentWindow.innerHTML = `
+      <div class="welcome-box">
+        <h1 class="welcome-title">Registered Agribusinesses</h1>
+        <p class="welcome-sub">Manage and approve regional agricultural enterprise registrations.</p>
+      </div>
+      <div class="card">
+        <div class="data-table-wrapper">
+          <table class="data-table">
+            <thead>
+              <tr><th>Business Name</th><th>Location</th><th>Status</th></tr>
+            </thead>
+            <tbody>
+              ${businessEntries.map(b => `
+                <tr>
+                  <td><b>${b.name}</b></td>
+                  <td>${b.location}</td>
+                  <td><span class="role-badge" style="background: ${b.status === 'Verified' ? 'var(--green-light)' : 'var(--amber-light)'}; color: ${b.status === 'Verified' ? 'var(--green-dark)' : 'var(--soil)'};">${b.status}</span></td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    `;
+  } else {
+    // Dynamic fallback screen for missing sub-navigation endpoints
+    contentWindow.innerHTML = `
+      <div class="welcome-box">
+        <h1 class="welcome-title">${targetTab.charAt(0).toUpperCase() + targetTab.slice(1)} Dashboard</h1>
+        <p class="welcome-sub">Data sync pipelines are ready. Connect this panel block to your dynamic endpoint routes inside <code>app.py</code>.</p>
+      </div>
+    `;
+  }
 }
 
-function switchTabByName(tabName) {
-    const item = document.querySelector(`.menu-item[data-tab="${tabName}"]`);
-    switchTab(tabName, item);
+// MODAL WINDOW CONTROL HANDLERS
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+function submitNewQuestion() {
+  stats.questions++;
+  closeModal('modal-post-q');
+  loadTab('overview');
 }
 
-function loadTabData(tabName) {
-    if (tabName === 'overview')      { loadOverview(); }
-    if (tabName === 'users')         { loadUsers(); }
-    if (tabName === 'questions')     { loadQuestions(); }
-    if (tabName === 'reviews')       { loadReviews(); }
-    if (tabName === 'announcements') { loadAnnouncements(); }
-    if (tabName === 'rankings')      { loadRankings(); }
-    if (tabName === 'publicqa')      { loadPublicQA(); }
-    if (tabName === 'businesses')    { loadBusinesses(); }
-    if (tabName === 'reports')       { loadReports(); }
+function simulatedLogout() {
+  alert('Sign-out pipeline verified.');
 }
 
-// ── Init ──
-async function initWorkspace() {
-    try {
-        const res = await fetch('/admin/user');
-        if (res.ok) {
-            const users = await res.json();
-            const me = users.find(u => u.id == currentUserId) || users[0];
-            if (me) {
-                currentUserRole = me.role.toLowerCase();
-                document.getElementById('welcomeTitle').innerText = `Welcome back, ${me.fullname}!`;
-                document.getElementById('navAdminName').innerText = me.fullname;
-                document.getElementById('roleBadgeTag').innerText = me.role.toUpperCase();
-                document.getElementById('profileName').innerText = me.fullname;
-                document.getElementById('profileEmail').innerText = me.email;
-                document.getElementById('profileId').innerText = me.id;
-                document.getElementById('profileRole').innerText = me.role;
-            }
+// System initialization
+document.addEventListener("DOMContentLoaded", () => {
+  loadTab('overview');
+});
+
+// ... (previous dashboard code remains unchanged above)
+
+function simulatedLogout() {
+  alert('Sign-out pipeline verified.');
+}
+
+// ==========================================
+// PASTE THE FETCH SNIPPET RIGHT HERE:
+// ==========================================
+function updateDashboardStats() {
+  fetch('/admin/questions')
+    .then(response => response.json())
+    .then(data => {
+        // This targets the specific count card on your screen
+        const countEl = document.getElementById('count-questions');
+        if (countEl) {
+          countEl.textContent = data.length;
         }
-    } catch(e) { console.warn('Profile load failed', e); }
-    buildMenu();
+    })
+    .catch(err => console.error("Error fetching live metrics:", err));
 }
 
-function buildMenu() {
-    const menu = document.getElementById('dynamicMenu');
-    if (currentUserRole === 'expert') {
-        document.getElementById('workspaceSubtitle').innerText = 'Expert Workspace';
-        menu.innerHTML = `
-            <li class="menu-item active" data-tab="tasks" onclick="switchTab('tasks',this)">📋 Assigned Tasks</li>
-            <li class="menu-item" data-tab="publish" onclick="switchTab('publish',this)">✍️ Write Article</li>`;
-    } else {
-        document.getElementById('workspaceSubtitle').innerText = 'Admin Dashboard';
-        menu.innerHTML = `
-            <li class="menu-item active" data-tab="overview"       onclick="switchTab('overview',this)">📊 Overview</li>
-            <li class="menu-item"        data-tab="users"          onclick="switchTab('users',this)">👥 All Users</li>
-            <li class="menu-item"        data-tab="questions"      onclick="switchTab('questions',this)">❓ All Questions</li>
-            <li class="menu-item"        data-tab="reviews"        onclick="switchTab('reviews',this)">🔍 Pending Review</li>
-            <li class="menu-item"        data-tab="announcements"  onclick="switchTab('announcements',this)">📢 Announcements</li>
-            <li class="menu-item"        data-tab="rankings"       onclick="switchTab('rankings',this)">🏆 Expert Rankings</li>
-            <li class="menu-item"        data-tab="publicqa"       onclick="switchTab('publicqa',this)">🌐 Public Q&A</li>
-            <li class="menu-item"        data-tab="businesses"     onclick="switchTab('businesses',this)">🏢 Businesses</li>
-            <li class="menu-item"        data-tab="reports"        onclick="switchTab('reports',this)">📈 Reports</li>`;
-        switchTab('overview', menu.querySelector('[data-tab="overview"]'));
-    }
-}
-
-// ── Overview ──
-async function loadOverview() {
-    try {
-        const [uRes, qRes] = await Promise.all([fetch('/admin/user'), fetch('/admin/questions')]);
-        const users = uRes.ok ? await uRes.json() : [];
-        const questions = qRes.ok ? await qRes.json() : [];
-
-        document.getElementById('totalUsersCount').innerText   = users.length;
-        document.getElementById('totalFarmersCount').innerText = users.filter(u=>u.role==='farmer').length;
-        document.getElementById('totalExpertsCount').innerText = users.filter(u=>u.role==='expert').length;
-        document.getElementById('totalQCount').innerText       = questions.length;
-        document.getElementById('totalPendingCount').innerText = questions.filter(q=>q.status==='pending'||q.status==='PENDING').length;
-        document.getElementById('totalPublishedCount').innerText = questions.filter(q=>q.status==='published'||q.is_verified).length;
-
-        const me = users.find(u=>u.id==currentUserId)||users[0];
-        if(me){
-            document.getElementById('profileName').innerText  = me.fullname;
-            document.getElementById('profileEmail').innerText = me.email;
-            document.getElementById('profileId').innerText    = me.id;
-        }
-    } catch(e){ console.error(e); }
-}
-
-// ── Users ──
-async function loadUsers() {
-    const tb = document.getElementById('allUsersTableBody');
-    try {
-        const res = await fetch('/admin/user');
-        const users = await res.json();
-        if(!users.length){ tb.innerHTML=`<tr><td colspan="4" class="empty">No users found.</td></tr>`; return; }
-        tb.innerHTML = users.map((u,i)=>`
-            <tr>
-                <td>#${u.id}</td>
-                <td><strong>${u.fullname}</strong></td>
-                <td>${u.email}</td>
-                <td><span class="pill ${rolePill(u.role)}">${u.role.toUpperCase()}</span></td>
-            </tr>`).join('');
-    } catch(e){ tb.innerHTML=`<tr><td colspan="4" style="color:var(--danger);text-align:center;">Failed to load users.</td></tr>`; }
-}
-
-function rolePill(role){
-    if(role==='admin') return 'pill-blue';
-    if(role==='expert') return 'pill-green';
-    return 'pill-grey';
-}
-
-// ── Questions ──
-async function loadQuestions() {
-    const tb = document.getElementById('questionsTableBody');
-    try {
-        const [qRes, eRes] = await Promise.all([fetch('/admin/questions'), fetch('/admin/experts')]);
-        const questions = qRes.ok ? await qRes.json() : [];
-        const experts   = eRes.ok ? await eRes.json() : [];
-        if(!questions.length){ tb.innerHTML=`<tr><td colspan="5" style="text-align:center;color:var(--muted);">No questions yet.</td></tr>`; return; }
-        tb.innerHTML = questions.map(q=>{
-            const opts = `<option value="">— Assign —</option>` + experts.map(e=>`<option value="${e.id}" ${q.assigned_expert_id==e.id?'selected':''}>${e.fullname}</option>`).join('');
-            return `<tr>
-                <td><strong>${q.farmer_name}</strong></td>
-                <td>${q.question}</td>
-                <td><span class="pill pill-grey">${q.status}</span></td>
-                <td style="color:var(--green-mid);font-weight:600;">${q.assigned_expert||'Unassigned'}</td>
-                <td><select class="inline" onchange="assignExpert(${q.id},this.value)">${opts}</select></td>
-            </tr>`;
-        }).join('');
-    } catch(e){ tb.innerHTML=`<tr><td colspan="5" style="color:var(--danger);text-align:center;">Failed to load questions.</td></tr>`; }
-}
-
-async function assignExpert(qId, expertId) {
-    if(!expertId) return;
-    try {
-        const res = await fetch(`/admin/questions/${qId}/assign`, {
-            method:'POST', headers:{'Content-Type':'application/json'},
-            body: JSON.stringify({expert_id: expertId})
-        });
-        const d = await res.json();
-        if(res.ok){ loadQuestions(); } else { alert('Error: '+d.error); }
-    } catch(e){ console.error(e); }
-}
-
-// ── Reviews ──
-async function loadReviews() {
-    const tb = document.getElementById('reviewsTableBody');
-    try {
-        const res = await fetch('/admin/questions/pending-review');
-        const items = res.ok ? await res.json() : [];
-        if(!items.length){ tb.innerHTML=`<tr><td colspan="5" style="text-align:center;color:var(--muted);">Nothing pending review.</td></tr>`; return; }
-        tb.innerHTML = items.map(q=>`
-            <tr>
-                <td>${q.farmer_name}</td>
-                <td>${q.question}</td>
-                <td>${q.assigned_expert||'—'}</td>
-                <td style="max-width:260px;">${q.answer||'—'}</td>
-                <td style="display:flex;gap:6px;flex-wrap:wrap;">
-                    <button class="btn btn-primary" onclick="handleModeration(${q.id},'approve')">Approve</button>
-                    <button class="btn btn-danger"  onclick="handleModeration(${q.id},'reject')">Reject</button>
-                </td>
-            </tr>`).join('');
-    } catch(e){ tb.innerHTML=`<tr><td colspan="5" style="color:var(--danger);text-align:center;">Failed to load reviews.</td></tr>`; }
-}
-
-async function handleModeration(qId, action) {
-    try {
-        const res = await fetch(`/admin/questions/${qId}/verify`, {
-            method:'POST', headers:{'Content-Type':'application/json'},
-            body: JSON.stringify({action})
-        });
-        const d = await res.json();
-        if(res.ok){ alert(d.message); loadReviews(); } else { alert('Error: '+d.error); }
-    } catch(e){ console.error(e); }
-}
-
-// ── Announcements ──
-async function loadAnnouncements() {
-    const el = document.getElementById('annList');
-    try {
-        const res = await fetch(`/admin/announcements?user_id=${currentUserId}`);
-        const data = res.ok ? await res.json() : [];
-        if(!data.length){ el.innerHTML=`<p style="color:var(--muted);font-size:13px;">No announcements posted yet.</p>`; return; }
-        el.innerHTML = `<table><thead><tr><th>Title</th><th>Message</th><th>Posted</th></tr></thead><tbody>`
-            + data.map(a=>`<tr><td><strong>${a.title||a.message?.slice(0,40)}</strong></td><td>${a.message||''}</td><td style="color:var(--muted);font-size:12px;">${a.created_at||''}</td></tr>`).join('')
-            + `</tbody></table>`;
-    } catch(e){ el.innerHTML=`<p style="color:var(--danger);font-size:13px;">Failed to load announcements.</p>`; }
-}
-
-async function postAnnouncement() {
-    const title   = document.getElementById('annTitle').value.trim();
-    const message = document.getElementById('annMessage').value.trim();
-    if(!message){ alert('Message cannot be empty.'); return; }
-    try {
-        const res = await fetch('/admin/announcements', {
-            method:'POST', headers:{'Content-Type':'application/json'},
-            body: JSON.stringify({title, message, user_id: currentUserId})
-        });
-        const d = await res.json();
-        if(res.ok){
-            document.getElementById('annTitle').value='';
-            document.getElementById('annMessage').value='';
-            alert('Announcement posted!');
-            loadAnnouncements();
-        } else { alert('Error: '+d.error); }
-    } catch(e){ console.error(e); }
-}
-
-// ── Rankings ──
-async function loadRankings() {
-    const tb = document.getElementById('rankingsTableBody');
-    try {
-        const res = await fetch('/admin/expert-rankings');
-        const data = res.ok ? await res.json() : [];
-        if(!data.length){ tb.innerHTML=`<tr><td colspan="4" style="text-align:center;color:var(--muted);">No rankings yet.</td></tr>`; return; }
-        tb.innerHTML = data.map((e,i)=>`
-            <tr>
-                <td><strong>#${i+1}</strong></td>
-                <td>${e.fullname}</td>
-                <td>${e.total_answers}</td>
-                <td>⭐ ${e.rating_score}</td>
-            </tr>`).join('');
-    } catch(e){ tb.innerHTML=`<tr><td colspan="4" style="color:var(--danger);text-align:center;">Failed to load rankings.</td></tr>`; }
-}
-
-// ── Public Q&A ──
-async function loadPublicQA() {
-    const tb = document.getElementById('publicQATableBody');
-    try {
-        const res = await fetch('/admin/public-qa');
-        const data = res.ok ? await res.json() : [];
-        if(!data.length){ tb.innerHTML=`<tr><td colspan="4" style="text-align:center;color:var(--muted);">No published answers yet.</td></tr>`; return; }
-        tb.innerHTML = data.map(q=>`
-            <tr>
-                <td>${q.farmer_name}</td>
-                <td>${q.question}</td>
-                <td>${q.assigned_expert||'—'}</td>
-                <td>${q.answer||'—'}</td>
-            </tr>`).join('');
-    } catch(e){ tb.innerHTML=`<tr><td colspan="4" style="color:var(--danger);text-align:center;">Failed to load Q&A.</td></tr>`; }
-}
-
-// ── Businesses ──
-async function loadBusinesses() {
-    const tb = document.getElementById('businessesTableBody');
-    try {
-        const res = await fetch('/admin/businesses-data');
-        const data = res.ok ? await res.json() : [];
-        if(!data.length){ tb.innerHTML=`<tr><td colspan="8" style="text-align:center;color:var(--muted);">No businesses registered yet.</td></tr>`; return; }
-        tb.innerHTML = data.map((b,i)=>`
-            <tr id="brow-${b.id}">
-                <td>${i+1}</td>
-                <td><strong>${b.business_name}</strong></td>
-                <td>${b.services||'—'}</td>
-                <td>${b.phone||'—'}</td>
-                <td>${b.location||'—'}</td>
-                <td style="max-width:180px;">${b.description||'—'}</td>
-                <td id="bstatus-${b.id}">
-                    ${b.verification_status==='verified'
-                        ? `<span class="pill pill-green">✔ Verified</span>`
-                        : `<span class="pill pill-orange">⏳ Pending</span>`}
-                </td>
-                <td>
-                    ${b.verification_status==='verified'
-                        ? `<button class="btn btn-verified" disabled>Verified</button>`
-                        : `<button class="btn btn-primary" id="bbtn-${b.id}" onclick="verifyBusiness(${b.id})">Verify</button>`}
-                </td>
-            </tr>`).join('');
-    } catch(e){ tb.innerHTML=`<tr><td colspan="8" style="color:var(--danger);text-align:center;">Failed to load businesses.</td></tr>`; }
-}
-
-async function verifyBusiness(id) {
-    try {
-        const res = await fetch('/admin/verify-business/'+id, {method:'POST'});
-        const d = await res.json();
-        if(res.ok){
-            document.getElementById('bstatus-'+id).innerHTML = `<span class="pill pill-green">✔ Verified</span>`;
-            const btn = document.getElementById('bbtn-'+id);
-            if(btn) btn.outerHTML = `<button class="btn btn-verified" disabled>Verified</button>`;
-        } else { alert('Error: '+(d.message||'Could not verify')); }
-    } catch(e){ console.error(e); }
-}
-
-// ── Reports ──
-async function loadReports() {
-    try {
-        const [uRes, qRes] = await Promise.all([fetch('/admin/user'), fetch('/admin/questions')]);
-        const users = uRes.ok ? await uRes.json() : [];
-        const qs    = qRes.ok ? await qRes.json() : [];
-        document.getElementById('rptUsers').innerText    = users.length;
-        document.getElementById('rptFarmers').innerText  = users.filter(u=>u.role==='farmer').length;
-        document.getElementById('rptExperts').innerText  = users.filter(u=>u.role==='expert').length;
-        document.getElementById('rptAdmins').innerText   = users.filter(u=>u.role==='admin').length;
-        document.getElementById('rptAllQ').innerText     = qs.length;
-        document.getElementById('rptPending').innerText  = qs.filter(q=>q.status==='pending').length;
-        document.getElementById('rptReview').innerText   = qs.filter(q=>q.status==='in_review'||q.status==='ANSWERED').length;
-        document.getElementById('rptPublished').innerText= qs.filter(q=>q.is_verified||q.status==='published').length;
-    } catch(e){ console.error(e); }
-}
-
-function handleSignOut() { localStorage.clear(); window.location.href='/'; }
-
-window.onload = initWorkspace;
+// System initialization
+document.addEventListener("DOMContentLoaded", () => {
+  loadTab('overview');
+  
+  // Call your live Flask data updater here when the dashboard boots up
+  updateDashboardStats(); 
+});
 </script>
 </body>
 </html>

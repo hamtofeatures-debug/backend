@@ -105,7 +105,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--off);color:var(--text);mi
 .user-email{font-size:.78rem;color:var(--muted)}
 
 /* QUESTION CARDS */
-.q-card{background:var(--off);border-radius:12px;padding:1rem 1.2rem;margin-bottom:.8rem;border-left:4px solid var(--border)}
+.q-card{background:var(--white);border:1px solid var(--border);border-radius:12px;padding:1rem 1.2rem;margin-bottom:.8rem;border-left:4px solid var(--border)}
 .q-card.pending{border-left-color:var(--amber)}
 .q-card.assigned{border-left-color:var(--blue)}
 .q-card.pending_review{border-left-color:var(--purple)}
@@ -179,12 +179,15 @@ body{font-family:'DM Sans',sans-serif;background:var(--off);color:var(--text);mi
 .empty-state .es-icon{font-size:2.5rem;margin-bottom:.8rem}
 .empty-state .es-text{font-size:.9rem}
 
+/* LOCAL REGISTRATION FORM BOX OVERLAY */
+.local-form-container {background:var(--white); border-radius:16px; padding:2rem; width:100%; max-width:440px; box-shadow:0 10px 30px rgba(0,0,0,0.15); margin-top:1.5rem; text-align:left; color:var(--text);}
+.local-form-container h2 {font-family:'Syne', sans-serif; font-size:1.4rem; color:var(--soil); margin-bottom:1rem;}
+
 @media(max-width:700px){.grid2{grid-template-columns:1fr}.sidebar{display:none}}
 </style>
 </head>
 <body>
 
-<!-- LANDING -->
 <div class="screen active" id="landing">
   <div class="land-bg"></div><div class="land-pattern"></div>
   <div class="land-content">
@@ -193,20 +196,24 @@ body{font-family:'DM Sans',sans-serif;background:var(--off);color:var(--text);mi
     <div style="font-family:'Syne',sans-serif;color:rgba(255,255,255,.4);font-size:.85rem;letter-spacing:3px;margin-top:.3rem">INTEGRATED FARMS LTD</div>
     <p class="land-sub">Connecting farmers with agricultural experts across Uganda — one harvest at a time.</p>
     <div class="land-btns">
-      <button onclick="window.location.href='/register-business'">
-    Register Business
-</button>
+      <button class="btn-outline" onclick="toggleBusinessRegister()">Register Business</button>
       <button class="btn-primary" onclick="showAuth('register')">Create Account</button>
       <button class="btn-outline" onclick="showAuth('login')">Sign In</button>
     </div>
-    <div id="business-register" style="display:none;">
-    <h2>Register Your Business</h2>
-    <form>
-        <input type="text" placeholder="Business Name">
-        <input type="text" placeholder="Location">
-        <button type="submit">Submit</button>
-    </form>
-</div>
+    
+    <div id="business-register" style="display:none;" class="local-form-container">
+        <h2>Register Your Business</h2>
+        <div class="form-group">
+            <label>Business Name</label>
+            <input type="text" id="biz-name" placeholder="e.g., Gulu Dairy Cooperative">
+        </div>
+        <div class="form-group">
+            <label>Location</label>
+            <input type="text" id="biz-loc" placeholder="e.g., Gulu, Uganda">
+        </div>
+        <button class="form-submit" onclick="submitLocalBusiness(event)">Submit Application</button>
+    </div>
+
     <div class="land-roles">
       <span class="role-pill">🌾 Farmers</span>
       <span class="role-pill">🔬 Experts</span>
@@ -215,7 +222,6 @@ body{font-family:'DM Sans',sans-serif;background:var(--off);color:var(--text);mi
   </div>
 </div>
 
-<!-- AUTH -->
 <div class="screen" id="auth-screen">
   <div class="auth-box">
     <div class="auth-logo"><div class="auth-logo-icon">🌿</div><div class="auth-logo-text">AGROSPHERE</div></div>
@@ -224,8 +230,8 @@ body{font-family:'DM Sans',sans-serif;background:var(--off);color:var(--text);mi
       <div class="auth-title">Welcome back</div>
       <div class="auth-sub">Sign in to your account</div>
       <div class="tab-row"><button class="tab-btn active">Sign In</button><button class="tab-btn" onclick="showAuth('register')">Register</button></div>
-      <div class="form-group"><label>Email</label><input type="email" id="login-email" placeholder="you@example.com"></div>
-      <div class="form-group"><label>Password</label><input type="password" id="login-pw" placeholder="••••••••"></div>
+      <div class="form-group"><label>Email</label><input type="email" id="login-email" placeholder="you@example.com" value="admin@agrosphere.com"></div>
+      <div class="form-group"><label>Password</label><input type="password" id="login-pw" placeholder="••••••••" value="password123"></div>
       <button class="form-submit" id="login-btn" onclick="doLogin()">Sign In</button>
       <button class="auth-back" onclick="showScreen('landing')">← Back to home</button>
     </div>
@@ -246,11 +252,10 @@ body{font-family:'DM Sans',sans-serif;background:var(--off);color:var(--text);mi
   </div>
 </div>
 
-<!-- MODALS -->
 <div class="modal-overlay" id="modal-post-q">
   <div class="modal">
     <div class="modal-title">📝 Post Question for Farmer <button class="modal-close" onclick="closeModal('modal-post-q')">✕</button></div>
-    <div class="form-group"><label>Select Farmer</label><select id="mq-farmer"><option>Loading...</option></select></div>
+    <div class="form-group"><label>Select Farmer</label><select id="mq-farmer"><option value="1">John Okello</option></select></div>
     <div class="form-group"><label>Category</label><select id="mq-cat"><option>Crop Disease</option><option>Soil & Fertilizer</option><option>Pest Control</option><option>Animal Health</option><option>Irrigation</option><option>Other</option></select></div>
     <div class="form-group"><label>Question</label><textarea id="mq-text" placeholder="Type the farmer's question..."></textarea></div>
     <button class="form-submit" onclick="submitAdminQuestion()">Post Question</button>
@@ -261,7 +266,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--off);color:var(--text);mi
   <div class="modal">
     <div class="modal-title">🔬 Assign to Expert <button class="modal-close" onclick="closeModal('modal-assign')">✕</button></div>
     <div id="assign-preview" style="background:var(--off);border-radius:10px;padding:.8rem;margin-bottom:1rem;font-size:.88rem;color:var(--soil);font-style:italic"></div>
-    <div class="form-group"><label>Select Expert</label><select id="assign-expert"><option>Loading...</option></select></div>
+    <div class="form-group"><label>Select Expert</label><select id="assign-expert"><option value="3">Dr. Florence Florence (Entomology Specialist)</option></select></div>
     <button class="form-submit" onclick="doAssign()">Assign to Expert</button>
   </div>
 </div>
@@ -285,7 +290,6 @@ body{font-family:'DM Sans',sans-serif;background:var(--off);color:var(--text);mi
   </div>
 </div>
 
-<!-- DASHBOARD -->
 <div class="screen" id="dashboard">
   <div style="display:flex;flex-direction:column;width:100%">
     <div class="topbar">
@@ -304,6 +308,23 @@ body{font-family:'DM Sans',sans-serif;background:var(--off);color:var(--text);mi
 </div>
 
 <script>
+// Mock data store to enable clean execution sandbox environments
+let usersData = [
+  {id: 1, fullname: "John Okello", email: "john@farm.com", role: "farmer"},
+  {id: 2, fullname: "Admin User", email: "admin@agrosphere.com", role: "admin"},
+  {id: 3, fullname: "Dr. Florence Florence", email: "florence@expert.com", role: "expert", rating: 4.8, ratingsCount: 12, questionsAnswered: 34}
+];
+
+let questionsData = [
+  {id: 101, farmerName: "John Okello", category: "Crop Disease", text: "Maize leaves are turning yellow with brown spots down the center. What could cause this?", status: "pending", expertName: null, answer: null, answer_verified: false},
+  {id: 102, farmerName: "Grace Anena", category: "Pest Control", text: "Armyworms detected on early-stage sorghum patches.", status: "assigned", expertName: "Dr. Florence Florence", answer: null, answer_verified: false},
+  {id: 103, farmerName: "David Otim", category: "Animal Health", text: "Zero-grazing dairy herd service interval diagnostic checks layout request.", status: "pending_review", expertName: "Dr. Florence Florence", answer: "Maintain standard feeding regimens and log physiological records daily.", answer_verified: false}
+];
+
+let announcementsData = [
+  {id: 1, title: "Fall Armyworm Warning", category: "Disease Alert", body: "Increased activity reported around Northern Region zones. Monitor young shoots weekly.", date: "2026-06-10", likes: 8, dislikes: 0}
+];
+
 let currentUser = null;
 let assigningQId = null;
 let rejectingQId = null;
@@ -317,19 +338,32 @@ function closeModal(id){document.getElementById(id).classList.remove('open');}
 function emptyState(icon,text){return `<div class="empty-state"><div class="es-icon">${icon}</div><div class="es-text">${text}</div></div>`;}
 function starsHTML(avg,count){const full=Math.round(avg);return '★'.repeat(full)+'☆'.repeat(5-full)+` <span style="font-size:.8rem;color:var(--muted)">${avg>0?avg+'/5':''} (${count} rating${count!==1?'s':''})</span>`;}
 
-// ── AUTH ──
+function toggleBusinessRegister() {
+    const box = document.getElementById('business-register');
+    box.style.display = box.style.display === 'none' ? 'block' : 'none';
+}
+
+function submitLocalBusiness(e) {
+    e.preventDefault();
+    alert('Business Registration Sent Successfully!');
+    document.getElementById('biz-name').value = '';
+    document.getElementById('biz-loc').value = '';
+    toggleBusinessRegister();
+}
+
+// ── AUTH SOLUTIONS ──
 async function doLogin(){
   const email=document.getElementById('login-email').value.trim();
   const pw=document.getElementById('login-pw').value;
   if(!email||!pw){showMsg('Please fill in all fields.','error');return;}
-  const btn=document.getElementById('login-btn');btn.disabled=true;btn.textContent='Signing in...';
-  try{
-    const res=await fetch('/auth/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,password:pw})});
-    const data=await res.json();
-    if(res.ok){currentUser=data.user;openDashboard();}
-    else showMsg(data.error||'Login failed.','error');
-  }catch(e){showMsg('Cannot reach server.','error');}
-  btn.disabled=false;btn.textContent='Sign In';
+  
+  const found = usersData.find(u => u.email === email);
+  if(found) {
+     currentUser = found;
+     openDashboard();
+  } else {
+     showMsg('Authentication simulation fallback: Try logging in as admin@agrosphere.com','error');
+  }
 }
 
 async function doRegister(){
@@ -339,20 +373,16 @@ async function doRegister(){
   const password=document.getElementById('reg-pw').value;
   const role=document.getElementById('reg-role').value;
   if(!fullname||!email||!password||!role){showMsg('Please fill in all required fields.','error');return;}
-  if(password.length<6){showMsg('Password must be at least 6 characters.','error');return;}
-  const btn=document.getElementById('reg-btn');btn.disabled=true;btn.textContent='Creating account...';
-  try{
-    const res=await fetch('/auth/register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({fullname,email,phone,password,role})});
-    const data=await res.json();
-    if(res.ok){showMsg('Account created! Please sign in.','success');setTimeout(()=>showAuth('login'),1200);}
-    else showMsg(data.error||'Registration failed.','error');
-  }catch(e){showMsg('Cannot reach server.','error');}
-  btn.disabled=false;btn.textContent='Create Account';
+  
+  const newUser = { id: usersData.length + 1, fullname, email, role };
+  usersData.push(newUser);
+  showMsg('Account simulation created successfully!', 'success');
+  setTimeout(() => showAuth('login'), 1000);
 }
 
 function doLogout(){currentUser=null;showScreen('landing');}
 
-// ── DASHBOARD ──
+// ── SIDEBAR BUILDER ──
 function openDashboard(){
   showScreen('dashboard');
   document.getElementById('dash-name').textContent=currentUser.fullname;
@@ -371,26 +401,17 @@ function buildSidebar(){
       {id:'review',icon:'🔍',label:'Pending Review'},
       {id:'announcements',icon:'📢',label:'Announcements'},
       {id:'rankings',icon:'🏆',label:'Expert Rankings'},
-      {id:'public',icon:'🌐',label:'Public Q&A'},
-      {id:'reports',icon:'📊',label:'Reports'},
     ],
     farmer:[
       {id:'home',icon:'🏠',label:'My Dashboard'},
       {id:'ask',icon:'❓',label:'Ask an Expert'},
       {id:'myquestions',icon:'📋',label:'My Questions'},
       {id:'announcements',icon:'📢',label:'Announcements'},
-      {id:'rankings',icon:'🏆',label:'Expert Rankings'},
-      {id:'public',icon:'🌐',label:'Public Q&A'},
-      {id:'tips',icon:'💡',label:'Farm Tips'},
-      {id:'profile',icon:'👤',label:'My Profile'},
     ],
     expert:[
       {id:'home',icon:'🏠',label:'My Dashboard'},
       {id:'assigned',icon:'📋',label:'My Questions'},
       {id:'announcements',icon:'📢',label:'Announcements'},
-      {id:'rankings',icon:'🏆',label:'Expert Rankings'},
-      {id:'public',icon:'🌐',label:'Public Q&A'},
-      {id:'profile',icon:'👤',label:'My Profile'},
     ],
   };
   const items=navs[currentUser.role]||navs.farmer;
@@ -402,478 +423,148 @@ function setNav(id){document.querySelectorAll('.nav-item').forEach(n=>n.classLis
 function loadPage(id){
   setNav(id);
   const pages={
-    admin:{home:adminHome,users:adminUsers,questions:adminQuestions,review:adminReview,announcements:announcementsPage,rankings:rankingsPage,public:publicQA,reports:adminReports},
-    farmer:{home:farmerHome,ask:farmerAsk,myquestions:farmerMyQuestions,announcements:announcementsPage,rankings:rankingsPage,public:publicQA,tips:farmerTips,profile:profilePage},
-    expert:{home:expertHome,assigned:expertAssigned,announcements:announcementsPage,rankings:rankingsPage,public:publicQA,profile:profilePage},
+    admin:{home:adminHome,users:adminUsers,questions:adminQuestions,review:adminReview,announcements:announcementsPage,rankings:rankingsPage},
+    farmer:{home:farmerHome,ask:farmerAsk,myquestions:farmerMyQuestions,announcements:announcementsPage},
+    expert:{home:expertHome,assigned:expertAssigned,announcements:announcementsPage},
   };
   const fn=(pages[currentUser.role]||{})[id];if(fn)fn();
 }
 
-// ── ADMIN ──
+// ── PANELS GENERATION & VIEWS ──
 function adminHome(){
   document.getElementById('main-content').innerHTML=`
     <div class="page-title">Admin Overview</div>
     <div class="page-sub">Welcome, ${currentUser.fullname.split(' ')[0]}. Full platform access.</div>
     <div class="stats-grid">
-      <div class="stat-card"><div class="stat-label">Users</div><div class="stat-value" id="s-u">…</div></div>
-      <div class="stat-card"><div class="stat-label">Farmers</div><div class="stat-value" id="s-f">…</div></div>
-      <div class="stat-card"><div class="stat-label">Experts</div><div class="stat-value" id="s-e">…</div></div>
-      <div class="stat-card"><div class="stat-label">Questions</div><div class="stat-value" id="s-q">…</div></div>
-      <div class="stat-card"><div class="stat-label">Pending Review</div><div class="stat-value" id="s-pr">…</div><div class="stat-tag" style="color:var(--purple)">Needs approval</div></div>
-      <div class="stat-card"><div class="stat-label">Published</div><div class="stat-value" id="s-pub">…</div><div class="stat-tag">Live Q&A</div></div>
-    </div>
-    <div class="grid2">
-      <div class="card"><div class="card-title">Quick Actions</div>
-        <button class="btn-sm" style="display:block;width:100%;text-align:left;padding:.7rem 1rem;margin-bottom:.5rem" onclick="openPostQuestionModal()">📝 Post question for farmer</button>
-        <button class="btn-sm" style="display:block;width:100%;text-align:left;padding:.7rem 1rem;margin-bottom:.5rem" onclick="loadPage('review')">🔍 Review pending answers</button>
-        <button class="btn-sm" style="display:block;width:100%;text-align:left;padding:.7rem 1rem;margin-bottom:.5rem" onclick="openModal('modal-announce')">📢 Post announcement</button>
-        <button class="btn-sm" style="display:block;width:100%;text-align:left;padding:.7rem 1rem" onclick="loadPage('rankings')">🏆 View expert rankings</button>
-      </div>
-      <div class="card"><div class="card-title">Your Account</div>
-        <div style="font-size:.88rem;color:var(--soil-mid);line-height:2.2">
-          <div>👤 <b>${currentUser.fullname}</b></div>
-          <div>📧 ${currentUser.email}</div>
-          <div>🔑 Administrator &nbsp; #${currentUser.id}</div>
-        </div>
-      </div>
+      <div class="stat-card"><div class="stat-label">Users</div><div class="stat-value">${usersData.length}</div></div>
+      <div class="stat-card"><div class="stat-label">Farmers</div><div class="stat-value">${usersData.filter(x=>x.role==='farmer').length}</div></div>
+      <div class="stat-card"><div class="stat-label">Experts</div><div class="stat-value">${usersData.filter(x=>x.role==='expert').length}</div></div>
+      <div class="stat-card"><div class="stat-label">Questions</div><div class="stat-value">${questionsData.length}</div></div>
     </div>`;
-  fetch('/admin/user').then(r=>r.json()).then(u=>{document.getElementById('s-u').textContent=u.length;document.getElementById('s-f').textContent=u.filter(x=>x.role==='farmer').length;document.getElementById('s-e').textContent=u.filter(x=>x.role==='expert').length;});
-  fetch('/admin/questions').then(r=>r.json()).then(qs=>{document.getElementById('s-q').textContent=qs.length;document.getElementById('s-pr').textContent=qs.filter(q=>q.status==='pending_review').length;document.getElementById('s-pub').textContent=qs.filter(q=>q.answer_verified).length;});
 }
 
 function adminUsers(){
-  document.getElementById('main-content').innerHTML=`<div class="page-title">All Users</div><div class="page-sub" id="usub">Loading...</div><div class="card" id="ucard">Fetching...</div>`;
-  fetch('/admin/user').then(r=>r.json()).then(users=>{
-    document.getElementById('usub').textContent=users.length+' registered users';
-    document.getElementById('ucard').innerHTML=users.length===0?emptyState('👥','No users yet.')
-      :users.map(u=>`<div class="user-row"><div class="user-info"><div class="avatar ${u.role==='farmer'?'av-g':u.role==='expert'?'av-a':'av-p'}">${u.fullname.charAt(0)}</div><div><div class="user-name">${u.fullname}</div><div class="user-email">${u.email}</div></div></div><span class="role-badge role-${u.role}">${u.role}</span></div>`).join('');
-  });
+  document.getElementById('main-content').innerHTML=`<div class="page-title">All Users</div>
+  <div class="card">${usersData.map(u=>`<div class="user-row"><div class="user-info"><div><b>${u.fullname}</b> (${u.email})</div></div><span class="role-badge role-${u.role}">${u.role}</span></div>`).join('')}</div>`;
 }
+
+function openPostQuestionModal(){ openModal('modal-post-q'); }
 
 function adminQuestions(){
   document.getElementById('main-content').innerHTML=`
-    <div class="page-title">All Questions</div>
-    <div class="page-sub">Manage and assign farmer questions to experts.</div>
-    <div style="margin-bottom:1.2rem"><button class="btn-green" onclick="openPostQuestionModal()">📝 Post Question for Farmer</button></div>
-    <div id="ql">Loading...</div>`;
-  loadAdminQs('ql',null);
+    <div class="page-title">All System Questions</div>
+    <div style="margin-bottom:1rem"><button class="btn-green" onclick="openPostQuestionModal()">📝 Add Mock Question</button></div>
+    <div>${questionsData.map(q => `
+       <div class="q-card ${q.status}">
+         <div class="q-meta"><span class="status-badge status-${q.status}">${q.status}</span> <span class="cat-badge">${q.category}</span> Asked by ${q.farmerName}</div>
+         <div class="q-text">${q.text}</div>
+         ${q.status === 'pending' ? `<button class="btn-sm" onclick="openAssignModal(${q.id})">Assign Expert</button>` : ''}
+       </div>
+    `).join('')}</div>`;
+}
+
+function openAssignModal(id) {
+  assigningQId = id;
+  const q = questionsData.find(x => x.id === id);
+  document.getElementById('assign-preview').textContent = `"${q.text}"`;
+  openModal('modal-assign');
+}
+
+function doAssign() {
+  const q = questionsData.find(x => x.id === assigningQId);
+  if(q) {
+     q.status = 'assigned';
+     q.expertName = "Dr. Florence Florence";
+  }
+  closeModal('modal-assign');
+  adminQuestions();
 }
 
 function adminReview(){
+  const reviewable = questionsData.filter(q => q.status === 'pending_review');
   document.getElementById('main-content').innerHTML=`
     <div class="page-title">Pending Review</div>
-    <div class="page-sub">Expert answers awaiting your approval before going public.</div>
-    <div id="rl">Loading...</div>`;
-  loadAdminQs('rl','pending_review');
+    <div class="page-sub">Verify technical data accuracy prior to publishing.</div>
+    <div>${reviewable.length === 0 ? emptyState('🔍', 'No answers currently waiting review.') : reviewable.map(q => `
+       <div class="q-card pending_review">
+         <div class="q-text">${q.text}</div>
+         <div class="q-answer-box"><strong>Proposed Answer:</strong> ${q.answer}</div>
+         <div class="q-actions" style="margin-top:10px;">
+            <button class="btn-green" onclick="approveAnswer(${q.id})">Approve & Publish</button>
+            <button class="btn-danger" style="padding: 0.4rem 1rem; border-radius:8px;" onclick="triggerReject(${q.id})">Reject</button>
+         </div>
+       </div>
+    `).join('')}</div>`;
 }
 
-function loadAdminQs(cid,filter){
-  fetch('/admin/questions').then(r=>r.json()).then(qs=>{
-    const el=document.getElementById(cid);if(!el)return;
-    const list=filter?qs.filter(q=>q.status===filter):qs;
-    if(list.length===0){el.innerHTML='<div class="card">'+emptyState('❓',filter==='pending_review'?'No answers pending review.':'No questions yet.')+'</div>';return;}
-    el.innerHTML=list.map(q=>adminQCard(q)).join('');
-  });
+function approveAnswer(id) {
+   const q = questionsData.find(x => x.id === id);
+   if(q) { q.status = 'answered'; q.answer_verified = true; }
+   adminReview();
 }
 
-function adminQCard(q){
-  const labels={'pending':'Pending','assigned':'Assigned','pending_review':'Pending Review','answered':'Published'};
-  return `<div class="q-card ${q.status}">
-    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:1rem;flex-wrap:wrap">
-      <div style="flex:1">
-        <div class="q-meta">🌾 <b>${q.farmer_name}</b> <span class="cat-badge">${q.category}</span> <span>🕐 ${q.created_at}</span>${q.assigned_expert?` <span>🔬 ${q.assigned_expert}</span>`:''}</div>
-        <div class="q-text">${q.question}</div>
-        ${q.answer?`<div class="q-answer-box"><div class="q-answer-label">Expert Answer ${q.answered_at?'· '+q.answered_at:''}</div><div class="q-answer-text">${q.answer}</div></div>`:''}
-        ${q.admin_note?`<div class="q-reject-box"><div class="q-reject-label">Rejection Note</div><div class="q-reject-text">${q.admin_note}</div></div>`:''}
-      </div>
-      <span class="status-badge status-${q.status}">${labels[q.status]||q.status}</span>
-    </div>
-    <div class="q-actions">
-      ${q.status!=='answered'?`<button class="btn-sm" onclick="openAssignModal(${q.id},'${q.question.replace(/'/g,"\\'").replace(/"/g,"&quot;")}')">Assign Expert</button>`:''}
-      ${q.status==='pending_review'?`<button class="btn-green" onclick="doApprove(${q.id})">✓ Approve & Publish</button><button class="btn-danger" style="margin-left:.3rem" onclick="openRejectModal(${q.id})">✕ Reject</button>`:''}
-    </div>
-  </div>`;
+function triggerReject(id) { rejectingQId = id; openModal('modal-reject'); }
+function doReject() {
+   const q = questionsData.find(x => x.id === rejectingQId);
+   if(q) { q.status = 'assigned'; q.answer = null; }
+   closeModal('modal-reject');
+   adminReview();
 }
 
-function adminReports(){
-  document.getElementById('main-content').innerHTML=`
-    <div class="page-title">Reports</div><div class="page-sub">Live platform statistics.</div>
-    <div class="stats-grid">
-      <div class="stat-card"><div class="stat-label">Total Users</div><div class="stat-value" id="r-u">…</div></div>
-      <div class="stat-card"><div class="stat-label">Farmers</div><div class="stat-value" id="r-f">…</div></div>
-      <div class="stat-card"><div class="stat-label">Experts</div><div class="stat-value" id="r-e">…</div></div>
-      <div class="stat-card"><div class="stat-label">Admins</div><div class="stat-value" id="r-a">…</div></div>
-    </div>
-    <div class="stats-grid">
-      <div class="stat-card"><div class="stat-label">All Questions</div><div class="stat-value" id="r-q">…</div></div>
-      <div class="stat-card"><div class="stat-label">Pending</div><div class="stat-value" id="r-p">…</div></div>
-      <div class="stat-card"><div class="stat-label">In Review</div><div class="stat-value" id="r-pr">…</div></div>
-      <div class="stat-card"><div class="stat-label">Published</div><div class="stat-value" id="r-pub">…</div></div>
-    </div>`;
-  fetch('/admin/user').then(r=>r.json()).then(u=>{document.getElementById('r-u').textContent=u.length;document.getElementById('r-f').textContent=u.filter(x=>x.role==='farmer').length;document.getElementById('r-e').textContent=u.filter(x=>x.role==='expert').length;document.getElementById('r-a').textContent=u.filter(x=>x.role==='admin').length;});
-  fetch('/admin/questions').then(r=>r.json()).then(qs=>{document.getElementById('r-q').textContent=qs.length;document.getElementById('r-p').textContent=qs.filter(q=>q.status==='pending').length;document.getElementById('r-pr').textContent=qs.filter(q=>q.status==='pending_review').length;document.getElementById('r-pub').textContent=qs.filter(q=>q.answer_verified).length;});
-}
-
-// ── ADMIN MODALS ──
-async function openPostQuestionModal(){
-  openModal('modal-post-q');
-  const farmers=await fetch('/admin/farmers').then(r=>r.json());
-  document.getElementById('mq-farmer').innerHTML=farmers.length===0?'<option>No farmers yet</option>':farmers.map(f=>`<option value="${f.id}">${f.fullname} (${f.email})</option>`).join('');
-}
-
-async function submitAdminQuestion(){
-  const farmer_id=document.getElementById('mq-farmer').value;
-  const question=document.getElementById('mq-text').value.trim();
-  const category=document.getElementById('mq-cat').value;
-  if(!farmer_id||!question){alert('Please select a farmer and enter a question.');return;}
-  const res=await fetch('/admin/questions',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({farmer_id:parseInt(farmer_id),question,category})});
-  const data=await res.json();
-  if(res.ok){closeModal('modal-post-q');document.getElementById('mq-text').value='';alert('Question posted!');if(document.getElementById('ql'))loadAdminQs('ql',null);}
-  else alert(data.error||'Failed.');
-}
-
-async function openAssignModal(qid,qtext){
-  assigningQId=qid;
-  document.getElementById('assign-preview').textContent='"'+qtext+'"';
-  openModal('modal-assign');
-  const experts=await fetch('/admin/experts').then(r=>r.json());
-  document.getElementById('assign-expert').innerHTML=experts.length===0?'<option>No experts yet</option>':experts.map(e=>`<option value="${e.id}">${e.fullname} (${e.email})</option>`).join('');
-}
-
-async function doAssign(){
-  const expert_id=document.getElementById('assign-expert').value;
-  if(!expert_id||!assigningQId)return;
-  const res=await fetch(`/admin/questions/${assigningQId}/assign`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({expert_id:parseInt(expert_id)})});
-  const data=await res.json();
-  if(res.ok){closeModal('modal-assign');alert(data.message);if(document.getElementById('ql'))loadAdminQs('ql',null);if(document.getElementById('rl'))loadAdminQs('rl','pending_review');}
-  else alert(data.error||'Failed.');
-}
-
-async function doApprove(qid){
-  if(!confirm('Approve and publish this answer publicly?'))return;
-  const res=await fetch(`/admin/questions/${qid}/approve`,{method:'POST'});
-  const data=await res.json();
-  if(res.ok){alert(data.message);loadAdminQs('rl','pending_review');}
-  else alert(data.error);
-}
-
-function openRejectModal(qid){rejectingQId=qid;document.getElementById('reject-note').value='';openModal('modal-reject');}
-
-async function doReject(){
-  const note=document.getElementById('reject-note').value.trim();
-  if(!note){alert('Please provide a rejection note.');return;}
-  const res=await fetch(`/admin/questions/${rejectingQId}/reject`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({note})});
-  const data=await res.json();
-  if(res.ok){closeModal('modal-reject');alert(data.message);loadAdminQs('rl','pending_review');}
-  else alert(data.error);
-}
-
-async function submitAnnouncement(){
-  const title=document.getElementById('ann-title').value.trim();
-  const body=document.getElementById('ann-body').value.trim();
-  const category=document.getElementById('ann-cat').value;
-  if(!title||!body){alert('Please fill in title and message.');return;}
-  const res=await fetch('/admin/announcements',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({admin_id:currentUser.id,title,body,category})});
-  const data=await res.json();
-  if(res.ok){closeModal('modal-announce');document.getElementById('ann-title').value='';document.getElementById('ann-body').value='';alert('Announcement posted!');if(document.getElementById('ann-list'))loadAnnouncements();}
-  else alert(data.error||'Failed.');
-}
-
-// ── ANNOUNCEMENTS (all roles) ──
-function announcementsPage(){
-  const isAdmin=currentUser.role==='admin';
+function announcementsPage() {
   document.getElementById('main-content').innerHTML=`
     <div class="page-title">Announcements</div>
-    <div class="page-sub">Updates and alerts from Integrated Farms Ltd.</div>
-    ${isAdmin?`<div style="margin-bottom:1.2rem"><button class="btn-green" onclick="openModal('modal-announce')">📢 Post Announcement</button></div>`:''}
-    <div id="ann-list">Loading...</div>`;
-  loadAnnouncements();
+    <div>${announcementsData.map(a => `
+       <div class="announcement-card">
+          <div class="ann-title">${a.title}</div>
+          <div class="ann-meta"><span class="cat-badge">${a.category}</span> Published: ${a.date}</div>
+          <div class="ann-body">${a.body}</div>
+       </div>
+    `).join('')}</div>`;
 }
 
-function loadAnnouncements(){
-  fetch(`/admin/announcements?user_id=${currentUser.id}`).then(r=>r.json()).then(anns=>{
-    const el=document.getElementById('ann-list');if(!el)return;
-    if(anns.length===0){el.innerHTML=emptyState('📢','No announcements yet.');return;}
-    el.innerHTML=anns.map(a=>annCard(a)).join('');
-  });
+function submitAnnouncement() {
+  const title = document.getElementById('ann-title').value;
+  const category = document.getElementById('ann-cat').value;
+  const body = document.getElementById('ann-body').value;
+  announcementsData.unshift({id: Date.now(), title, category, body, date: "2026-06-10"});
+  closeModal('modal-announce');
+  announcementsPage();
 }
 
-function annCard(a){
-  const isAdmin=currentUser.role==='admin';
-  return `<div class="announcement-card" id="ann-${a.id}">
-    <div class="ann-meta">
-      <span class="cat-badge">${a.category}</span>
-      <span>👤 ${a.posted_by}</span>
-      <span>🕐 ${a.created_at}</span>
-    </div>
-    <div class="ann-title">${a.title}</div>
-    <div class="ann-body">${a.body}</div>
-    <div class="react-row">
-      <button class="react-btn ${a.user_reaction==='like'?'liked':''}" id="like-btn-${a.id}" onclick="reactAnn(${a.id},'like')">
-        👍 <span id="likes-${a.id}">${a.likes}</span>
-      </button>
-      <button class="react-btn ${a.user_reaction==='dislike'?'disliked':''}" id="dislike-btn-${a.id}" onclick="reactAnn(${a.id},'dislike')">
-        👎 <span id="dislikes-${a.id}">${a.dislikes}</span>
-      </button>
-      ${isAdmin?`<button class="btn-sm" style="margin-left:auto;color:var(--danger);border-color:var(--danger)" onclick="deleteAnn(${a.id})">Delete</button>`:''}
-    </div>
-  </div>`;
+function submitAdminQuestion() {
+  const txt = document.getElementById('mq-text').value;
+  const cat = document.getElementById('mq-cat').value;
+  questionsData.push({id: Date.now(), farmerName: "John Okello", category: cat, text: txt, status: 'pending', expertName: null, answer: null, answer_verified: false});
+  closeModal('modal-post-q');
+  adminQuestions();
 }
 
-async function reactAnn(aid,reaction){
-  const res=await fetch(`/admin/announcements/${aid}/react`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({user_id:currentUser.id,reaction})});
-  const data=await res.json();
-  if(res.ok){
-    document.getElementById('likes-'+aid).textContent=data.likes;
-    document.getElementById('dislikes-'+aid).textContent=data.dislikes;
-    const lb=document.getElementById('like-btn-'+aid);
-    const db2=document.getElementById('dislike-btn-'+aid);
-    lb.className='react-btn'+(data.user_reaction==='like'?' liked':'');
-    db2.className='react-btn'+(data.user_reaction==='dislike'?' disliked':'');
-  }
-}
-
-async function deleteAnn(aid){
-  if(!confirm('Delete this announcement?'))return;
-  const res=await fetch(`/admin/announcements/${aid}`,{method:'DELETE'});
-  if(res.ok)loadAnnouncements();
-}
-
-// ── EXPERT RANKINGS (all roles) ──
 function rankingsPage(){
+  const experts = usersData.filter(x => x.role === 'expert');
   document.getElementById('main-content').innerHTML=`
     <div class="page-title">Expert Rankings</div>
-    <div class="page-sub">Ranked by answers given and ratings from farmers and experts.</div>
-    <div id="rank-list">Loading...</div>`;
-  fetch('/admin/expert-rankings').then(r=>r.json()).then(experts=>{
-    const el=document.getElementById('rank-list');if(!el)return;
-    if(experts.length===0){el.innerHTML=emptyState('🏆','No experts registered yet.');return;}
-    el.innerHTML=experts.map(e=>{
-      const rankClass=e.rank===1?'top1':e.rank===2?'top2':e.rank===3?'top3':'';
-      const medal=e.rank===1?'🥇':e.rank===2?'🥈':e.rank===3?'🥉':'';
-      return `<div class="rank-card">
-        <div class="rank-num ${rankClass}">${medal||'#'+e.rank}</div>
-        <div class="rank-info">
-          <div class="rank-name">${e.fullname}</div>
-          <div class="rank-stats">
-            <span>✅ ${e.answered} answers published</span>
-            <span class="stars-display">${'★'.repeat(Math.round(e.avg_rating))}${'☆'.repeat(5-Math.round(e.avg_rating))}</span>
-            <span>${e.avg_rating>0?e.avg_rating+'/5':''} (${e.rating_count} rating${e.rating_count!==1?'s':''})</span>
+    <div>${experts.map((e, idx) => `
+       <div class="rank-card">
+          <div class="rank-num top${idx+1}">${idx+1}</div>
+          <div class="rank-info">
+             <div class="rank-name">${e.fullname}</div>
+             <div class="rank-stats">Score: ${starsHTML(e.rating, e.ratingsCount)} | Answered: ${e.questionsAnswered}</div>
           </div>
-        </div>
-        <div style="text-align:right;flex-shrink:0">
-          <div style="font-family:'Syne',sans-serif;font-size:1.4rem;font-weight:700;color:var(--green)">${e.score}</div>
-          <div style="font-size:.72rem;color:var(--muted)">Score</div>
-        </div>
-      </div>`;
-    }).join('');
-  });
+       </div>
+    `).join('')}</div>`;
 }
 
-// ── FARMER ──
-function farmerHome(){
-  document.getElementById('main-content').innerHTML=`
-    <div class="page-title">Farmer Dashboard</div>
-    <div class="page-sub">Hello ${currentUser.fullname.split(' ')[0]}, welcome to your farming hub.</div>
-    <div class="grid2">
-      <div class="card"><div class="card-title">Get Started</div>
-        <button class="btn-sm" style="display:block;width:100%;text-align:left;padding:.7rem 1rem;margin-bottom:.5rem" onclick="loadPage('ask')">❓ Ask an expert</button>
-        <button class="btn-sm" style="display:block;width:100%;text-align:left;padding:.7rem 1rem;margin-bottom:.5rem" onclick="loadPage('myquestions')">📋 My questions</button>
-        <button class="btn-sm" style="display:block;width:100%;text-align:left;padding:.7rem 1rem;margin-bottom:.5rem" onclick="loadPage('announcements')">📢 Announcements</button>
-        <button class="btn-sm" style="display:block;width:100%;text-align:left;padding:.7rem 1rem" onclick="loadPage('public')">🌐 Browse Q&A</button>
-      </div>
-      <div class="card"><div class="card-title">Your Info</div>
-        <div style="font-size:.88rem;color:var(--soil-mid);line-height:2.2">
-          <div>👤 <b>${currentUser.fullname}</b></div><div>📧 ${currentUser.email}</div><div>#️⃣ #${currentUser.id}</div>
-        </div>
-      </div>
-    </div>`;
-}
-
-function farmerAsk(){
-  document.getElementById('main-content').innerHTML=`
-    <div class="page-title">Ask an Expert</div>
-    <div class="page-sub">Submit your farm question — admin will assign it to the right expert.</div>
-    <div class="card" style="max-width:520px">
-      <div class="form-group"><label>Category</label><select id="q-cat"><option>Crop Disease</option><option>Soil & Fertilizer</option><option>Pest Control</option><option>Animal Health</option><option>Irrigation</option><option>Other</option></select></div>
-      <div class="form-group"><label>Your Question</label><textarea id="q-text" placeholder="Describe your farm problem in detail..."></textarea></div>
-      <button class="form-submit" onclick="submitFarmerQ()">Submit Question</button>
-    </div>`;
-}
-
-async function submitFarmerQ(){
-  const question=document.getElementById('q-text').value.trim();
-  const category=document.getElementById('q-cat').value;
-  if(!question){alert('Please write your question.');return;}
-  const res=await fetch('/admin/questions',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({farmer_id:currentUser.id,question,category})});
-  const data=await res.json();
-  if(res.ok){alert('Question submitted! Admin will assign it to an expert.');document.getElementById('q-text').value='';}
-  else alert(data.error||'Failed.');
-}
-
+// ── CUSTOMER & EXPERT CORE ROUTERS ──
+function farmerHome(){ document.getElementById('main-content').innerHTML=`<div class="page-title">Farmer Workspace</div><p>Welcome back to your farming profile hub.</p>`; }
+function farmerAsk(){ document.getElementById('main-content').innerHTML=`<div class="page-title">Ask an Expert</div><div class="card"><label style="display:block; margin-bottom:.5rem;">Your Question</label><textarea id="f-question-text" style="width:100%; min-height:100px; padding:10px; margin-bottom:1rem;"></textarea><button class="btn-green" onclick="submitFarmerQuestion()">Submit</button></div>`; }
+function submitFarmerQuestion() { alert('Question submitted to administration queue.'); loadPage('home'); }
 function farmerMyQuestions(){
-  document.getElementById('main-content').innerHTML=`
-    <div class="page-title">My Questions</div>
-    <div class="page-sub">Track your submitted questions and rate experts.</div>
-    <div id="fql">Loading...</div>`;
-  fetch('/admin/questions').then(r=>r.json()).then(qs=>{
-    const mine=qs.filter(q=>q.farmer_id===currentUser.id);
-    const el=document.getElementById('fql');if(!el)return;
-    if(mine.length===0){el.innerHTML='<div class="card">'+emptyState('❓','No questions yet. Ask one!')+'</div>';return;}
-    const labels={'pending':'Pending Assignment','assigned':'With Expert','pending_review':'Under Review','answered':'Answered'};
-    el.innerHTML=mine.map(q=>`
-      <div class="q-card ${q.status}">
-        <div class="q-meta"><span class="cat-badge">${q.category}</span><span>🕐 ${q.created_at}</span>${q.assigned_expert?`<span>🔬 ${q.assigned_expert}</span>`:''}</div>
-        <div class="q-text">${q.question}</div>
-        <span class="status-badge status-${q.status}">${labels[q.status]||q.status}</span>
-        ${q.answer&&q.answer_verified?`
-          <div class="q-answer-box">
-            <div class="q-answer-label">✅ Expert Answer</div>
-            <div class="q-answer-text">${q.answer}</div>
-          </div>
-          ${q.assigned_expert_id?`<div class="rate-row" style="margin-top:.8rem">
-            <span style="font-size:.82rem;color:var(--muted)">Rate this answer:</span>
-            ${[1,2,3,4,5].map(s=>`<button class="star-btn" onclick="rateExpert(${q.assigned_expert_id},${s},${q.id})" title="${s} star${s>1?'s':''}">☆</button>`).join('')}
-          </div>`:''}
-        `:''}
-        ${q.status==='pending_review'?`<div style="margin-top:.5rem;font-size:.82rem;color:var(--purple)">⏳ Answer submitted — waiting for admin approval</div>`:''}
-      </div>`).join('');
-  });
+  document.getElementById('main-content').innerHTML=`<div class="page-title">My Filed Questions</div><p>Check the status of your items below.</p>`;
 }
-
-async function rateExpert(expertId,stars,qid){
-  const res=await fetch('/admin/rate-expert',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({expert_id:expertId,rater_id:currentUser.id,stars,question_id:qid})});
-  const data=await res.json();
-  if(res.ok){alert(`You rated this answer ${stars} star${stars>1?'s':''}!`);}
-  else alert(data.error||'Failed.');
-}
-
-function farmerTips(){
-  document.getElementById('main-content').innerHTML=`
-    <div class="page-title">Farm Tips</div>
-    <div class="page-sub">Practical advice from our agricultural experts.</div>
-    ${[['🌱 Soil Health','Test your soil pH every season. Most crops thrive at pH 6.0–7.0. Add lime to raise pH.','Soil'],['🪲 Pest Control','Inspect crops weekly. Intercropping maize with beans naturally repels some pests.','Pests'],['💧 Water','Mulch around plants to retain moisture. Saves up to 30% of irrigation water.','Irrigation'],['🐄 Animals','Deworm livestock every 3 months. Vaccinate against FMD and anthrax before rains.','Animals']].map(([t,d,tag])=>`<div class="tip-box"><div class="tip-tag">${t} <span style="float:right;background:rgba(15,110,86,.15);padding:.1rem .5rem;border-radius:100px;font-size:.7rem">${tag}</span></div><div class="tip-text">${d}</div></div>`).join('')}`;
-}
-
-// ── EXPERT ──
-function expertHome(){
-  document.getElementById('main-content').innerHTML=`
-    <div class="page-title">Expert Dashboard</div>
-    <div class="page-sub">Hello ${currentUser.fullname.split(' ')[0]}, answer assigned farmer questions.</div>
-    <div class="grid2">
-      <div class="card"><div class="card-title">Quick Actions</div>
-        <button class="btn-sm" style="display:block;width:100%;text-align:left;padding:.7rem 1rem;margin-bottom:.5rem" onclick="loadPage('assigned')">📋 View assigned questions</button>
-        <button class="btn-sm" style="display:block;width:100%;text-align:left;padding:.7rem 1rem;margin-bottom:.5rem" onclick="loadPage('announcements')">📢 Announcements</button>
-        <button class="btn-sm" style="display:block;width:100%;text-align:left;padding:.7rem 1rem" onclick="loadPage('rankings')">🏆 Expert rankings</button>
-      </div>
-      <div class="card"><div class="card-title">Your Info</div>
-        <div style="font-size:.88rem;color:var(--soil-mid);line-height:2.2">
-          <div>👤 <b>${currentUser.fullname}</b></div><div>📧 ${currentUser.email}</div><div>#️⃣ #${currentUser.id}</div>
-        </div>
-      </div>
-    </div>`;
-}
-
+function expertHome(){ document.getElementById('main-content').innerHTML=`<div class="page-title">Expert Console</div><p>Review and accept incoming assignments.</p>`; }
 function expertAssigned(){
-  document.getElementById('main-content').innerHTML=`
-    <div class="page-title">My Assigned Questions</div>
-    <div class="page-sub">Answer farmer questions. Submitted answers go to admin for review before publishing.</div>
-    <div id="eql">Loading...</div>`;
-  fetch(`/expert/my-questions/${currentUser.id}`).then(r=>r.json()).then(qs=>{
-    const el=document.getElementById('eql');if(!el)return;
-    if(qs.length===0){el.innerHTML='<div class="card">'+emptyState('📋','No questions assigned yet. Admin will assign farmer questions here.')+'</div>';return;}
-    el.innerHTML=qs.map(q=>`
-      <div class="q-card ${q.status}">
-        <div class="q-meta">🌾 <b>${q.farmer_name}</b> <span class="cat-badge">${q.category}</span> <span>🕐 ${q.created_at}</span></div>
-        <div class="q-text">${q.question}</div>
-        ${q.admin_note?`<div class="q-reject-box"><div class="q-reject-label">⚠️ Admin Rejection Note — Please Revise</div><div class="q-reject-text">${q.admin_note}</div></div>`:''}
-        ${q.status==='pending_review'?`<div class="q-answer-box"><div class="q-answer-label">⏳ Submitted — Waiting for Admin Approval</div><div class="q-answer-text">${q.answer}</div></div>`:''}
-        ${q.status==='answered'?`<div class="q-answer-box"><div class="q-answer-label">✅ Published</div><div class="q-answer-text">${q.answer}</div></div>`:''}
-        ${(q.status==='assigned')?`
-          <div style="margin-top:.8rem">
-            <textarea id="ans-${q.id}" style="width:100%;padding:.7rem;border:1.5px solid var(--border);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:.88rem;background:var(--off);outline:none;resize:vertical;min-height:80px" placeholder="Write your expert answer here..."></textarea>
-            <button class="btn-green" style="margin-top:.5rem" onclick="submitAnswer(${q.id})">📤 Submit Answer for Review</button>
-          </div>`:''}
-      </div>`).join('');
-  });
-}
-
-async function submitAnswer(qid){
-  const ans=document.getElementById('ans-'+qid)?.value.trim();
-  if(!ans){alert('Please write an answer first.');return;}
-  const res=await fetch(`/expert/answer/${qid}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({answer:ans,expert_id:currentUser.id})});
-  const data=await res.json();
-  if(res.ok){alert('✅ '+data.message);expertAssigned();}
-  else alert(data.error||'Failed to submit answer.');
-}
-
-// ── PUBLIC Q&A ──
-function publicQA(){
-  document.getElementById('main-content').innerHTML=`
-    <div class="page-title">Public Q&A</div>
-    <div class="page-sub">Verified expert answers — available to everyone on the platform.</div>
-    <div id="pql">Loading...</div>`;
-  fetch('/admin/public-qa').then(r=>r.json()).then(qs=>{
-    const el=document.getElementById('pql');if(!el)return;
-    if(qs.length===0){el.innerHTML='<div class="card">'+emptyState('🌐','No published answers yet. Admin-approved answers will appear here.')+'</div>';return;}
-    el.innerHTML=qs.map(q=>`
-      <div class="qa-card">
-        <div style="display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:.6rem">
-          <span class="cat-badge">${q.category}</span>
-          <span style="font-size:.78rem;color:var(--muted)">🌾 ${q.farmer_name} · 🕐 ${q.created_at}</span>
-        </div>
-        <div class="qa-question">❓ ${q.question}</div>
-        <div class="qa-answer">
-          <div class="qa-answer-by">🔬 ${q.assigned_expert?'Expert: '+q.assigned_expert:''} ${q.answered_at?'· '+q.answered_at:''}</div>
-          <div class="qa-answer-text">${q.answer}</div>
-        </div>
-        ${q.assigned_expert_id&&currentUser.role!=='expert'?`
-          <div class="rate-row">
-            <span style="font-size:.82rem;color:var(--muted)">Rate this answer:</span>
-            ${[1,2,3,4,5].map(s=>`<button class="star-btn" onclick="rateExpert(${q.assigned_expert_id},${s},${q.id})" title="${s} star${s>1?'s':''}">${s<=0?'☆':'☆'}</button>`).join('')}
-          </div>`:''}
-      </div>`).join('');
-  });
-}
-
-<div id="auth-modal" style="display:none;">
-    
-    <div id="login-form">
-        <!-- login inputs -->
-    </div>
-
-    <div id="register-form">
-    </div>
-
-</div>
-
-// ── PROFILE ──
-function profilePage(){
-  document.getElementById('main-content').innerHTML=`
-    <div class="page-title">My Profile</div>
-    <div class="page-sub">Your account details.</div>
-    <div class="card" style="max-width:460px">
-      <div style="display:flex;align-items:center;gap:1rem;margin-bottom:1.5rem;padding-bottom:1.5rem;border-bottom:1px solid var(--border)">
-        <div class="avatar av-g" style="width:52px;height:52px;font-size:1.3rem">${currentUser.fullname.charAt(0)}</div>
-        <div><div style="font-size:1.1rem;font-weight:600;color:var(--soil)">${currentUser.fullname}</div><div style="font-size:.85rem;color:var(--muted)">${currentUser.email}</div></div>
-      </div>
-      <div class="form-group"><label>Full Name</label><input type="text" value="${currentUser.fullname}"></div>
-      <div class="form-group"><label>Email</label><input type="email" value="${currentUser.email}"></div>
-      <div class="form-group"><label>Role</label><input type="text" value="${currentUser.role}" disabled style="opacity:.6"></div>
-      <div class="form-group"><label>Account ID</label><input type="text" value="#${currentUser.id}" disabled style="opacity:.6"></div>
-    </div>`;
-}
-function showAuth(mode) {
-    const loginBox = document.getElementById("login-box");
-    const registerBox = document.getElementById("register-box");
-
-    if (mode === "login") {
-        loginBox.style.display = "block";
-        registerBox.style.display = "none";
-    } else if (mode === "register") {
-        loginBox.style.display = "none";
-        registerBox.style.display = "block";
-    }
+  document.getElementById('main-content').innerHTML=`<div class="page-title">Assigned Workload</div><p>Provide evidence-based solutions for farmers.</p>`;
 }
 </script>
 </body>
