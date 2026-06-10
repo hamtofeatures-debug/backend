@@ -25,6 +25,29 @@ class Expert(db.Model):
     qualification = db.Column(db.String(100))
     experience = db.Column(db.Integer, default=0)
 
+class Business(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+
+    business_name = db.Column(db.String(200), nullable=False)
+    services = db.Column(db.Text, nullable=False)
+
+    phone = db.Column(db.String(20))
+    location = db.Column(db.String(200))
+    description = db.Column(db.Text)
+
+    status = db.Column(db.String(20), default='pending')
+    # pending, approved, rejected, suspended
+
+    verification_status = db.Column(db.String(20), default='none')
+    # none, verified, premium_verified
+
+    blue_tick = db.Column(db.Boolean, default=False)
+
+    payment_status = db.Column(db.String(20), default='unpaid')
+    # unpaid, pending, paid
+
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
 class Question(db.Model):
     # All these must be indented by 4 spaces
     id = db.Column(db.Integer, primary_key=True)

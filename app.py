@@ -3,6 +3,7 @@ from config import Config
 from extensions import db
 from models import User # important: import user
 from sqlalchemy import func
+import os
 
 # Explicitly import the blueprints directly from their route files
 from routes.auth import auth_bp
@@ -157,5 +158,6 @@ if __name__ == '__main__':
     with app.app_context():
         db.create_all()
         print("Database created!")
-    app.run(host='0.0.0.0', port=5000, debug=True)
+        port = int(os.environ.get("PORT", 5000))
+    app.run(host='0.0.0.0', port=port, debug=True)
    
