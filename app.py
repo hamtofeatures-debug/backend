@@ -93,10 +93,6 @@ def react_to_answer(qid):
     db.session.commit()
     return jsonify({"likes": q.likes, "dislikes": q.dislikes}), 200
 
-@app.route('/register')
-def register_page():
-    return render_template('register.html')
-
 @app.route('/api/rate/<int:qid>', methods=['POST'])
 def rate_answer(qid):
     """ Allows users to drop a 1 to 5 star rating down on an answer. """
@@ -156,6 +152,10 @@ app.register_blueprint(auth_bp, url_prefix='/auth')
 app.register_blueprint(admin_bp, url_prefix='/admin')
 app.register_blueprint(expert_bp, url_prefix='/expert')
 app.register_blueprint(farmer_bp, url_prefix='/farmer')
+
+@app.route('/register')
+def register_page():
+    return render_template('register.html')
 
 if __name__ == '__main__':
     with app.app_context():
