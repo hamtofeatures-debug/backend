@@ -193,9 +193,20 @@ body{font-family:'DM Sans',sans-serif;background:var(--off);color:var(--text);mi
     <div style="font-family:'Syne',sans-serif;color:rgba(255,255,255,.4);font-size:.85rem;letter-spacing:3px;margin-top:.3rem">INTEGRATED FARMS LTD</div>
     <p class="land-sub">Connecting farmers with agricultural experts across Uganda — one harvest at a time.</p>
     <div class="land-btns">
+      <button onclick="window.location.href='/register-business'">
+    Register Business
+</button>
       <button class="btn-primary" onclick="showAuth('register')">Create Account</button>
       <button class="btn-outline" onclick="showAuth('login')">Sign In</button>
     </div>
+    <div id="business-register" style="display:none;">
+    <h2>Register Your Business</h2>
+    <form>
+        <input type="text" placeholder="Business Name">
+        <input type="text" placeholder="Location">
+        <button type="submit">Submit</button>
+    </form>
+</div>
     <div class="land-roles">
       <span class="role-pill">🌾 Farmers</span>
       <span class="role-pill">🔬 Experts</span>

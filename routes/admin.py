@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, render_template
 from extensions import db
 from models import User, Question, Announcement, AnnouncementReaction, ExpertRating, Articles, Business
 
@@ -348,27 +348,19 @@ def confirm_payment(business_id):
         "message": "Payment confirmed"
     })
 
-
-@admin_bp.route('/business/<int:business_id>/verify', methods=['POST'])
+@admin_bp.route('/admin/verify-business/<int:business_id>', methods=['POST'])
 def verify_business(business_id):
-
     business = Business.query.get_or_404(business_id)
-
-    if business.status != "approved":
-        return jsonify({
-            "error": "Business must be approved first"
-        }), 400
-
-    if business.payment_status != "paid":
-        return jsonify({
-            "error": "Payment required before verification"
-        }), 400
-
     business.verification_status = "verified"
     business.blue_tick = True
-
     db.session.commit()
+    return jsonify({"message": "Blue tick granted"})
 
-    return jsonify({
-        "message": "Blue tick granted"
-    })
+# ← No indentation here
+@admin_bp.route('/admin/businesses')
+def admin_businesses():
+    businesses = Business.query.all()
+    return render_template(
+        'admin_businesses.html',
+        businesses=businesses
+    )

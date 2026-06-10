@@ -3,518 +3,664 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Agrosphere Workspace</title>
-    <link rel="stylesheet" href="/static/css/style.css">
+    <title>AGROSPHERE — Admin</title>
     <style>
-        /* Modern layout fallback rules for structural safety */
-        body { margin: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f8f9fa; color: #333; }
-        .wrapper { display: flex; min-height: 100vh; }
-        .sidebar { width: 260px; background: #ffffff; border-right: 1px solid #e9ecef; padding: 25px 20px; display: flex; flex-direction: column; gap: 30px; }
-        .brand { font-size: 22px; font-weight: bold; color: #2e7d32; display: flex; align-items: center; gap: 8px; }
-        .menu { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 8px; }
-        .menu-item { padding: 12px 15px; border-radius: 8px; cursor: pointer; color: #495057; font-weight: 500; display: flex; align-items: center; gap: 10px; transition: all 0.2s; }
-        .menu-item:hover { background: #f1f3f5; color: #212529; }
-        .menu-item.active { background: #e8f5e9; color: #2e7d32; font-weight: 600; }
-        .main-content { flex: 1; padding: 40px; }
-        .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #dee2e6; padding-bottom: 20px; margin-bottom: 30px; }
-        .user-badge { display: flex; align-items: center; gap: 12px; }
-        .badge-tag { background: #e8f5e9; color: #2e7d32; padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: bold; }
-        .view-section { display: none; }
-        .view-section.active { display: block; }
-        .metrics-row { display: flex; gap: 24px; margin-bottom: 35px; }
-        .metric-card { flex: 1; background: #ffffff; border: 1px solid #e9ecef; border-radius: 12px; padding: 24px; box-shadow: 0 4px 6px rgba(0,0,0,0.02); }
-        .metric-card p { margin: 0; color: #6c757d; font-size: 13px; text-transform: uppercase; font-weight: bold; letter-spacing: 0.5px; }
-        .metric-card h3 { margin: 12px 0 0 0; font-size: 32px; color: #212529; font-weight: 700; }
-        .card-grid { display: flex; gap: 30px; align-items: flex-start; }
-        .main-card { flex: 2; background: #ffffff; border-radius: 12px; border: 1px solid #e9ecef; padding: 24px; box-shadow: 0 4px 6px rgba(0,0,0,0.02); }
-        .side-card { flex: 1; background: #ffffff; border-radius: 12px; border: 1px solid #e9ecef; padding: 24px; box-shadow: 0 4px 6px rgba(0,0,0,0.02); }
-        table { width: 100%; border-collapse: collapse; margin-top: 15px; background: #ffffff; }
-        th { background-color: #f8f9fa; color: #495057; font-weight: 600; padding: 14px; text-align: left; border-bottom: 2px solid #dee2e6; }
-        td { padding: 14px; border-bottom: 1px solid #dee2e6; color: #212529; }
-        .btn-logout { background: #f8f9fa; border: 1px solid #ced4da; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: 500; transition: all 0.2s; }
-        .btn-logout:hover { background: #e9ecef; color: #dc3545; border-color: #dc3545; }
-        
-        /* Action Buttons styling */
-        .btn-approve { background-color: #2e7d32; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-weight: bold; margin-right: 5px; }
-        .btn-reject { background-color: #c62828; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-weight: bold; }
-        .btn-approve:hover { background-color: #1b5e20; }
-        .btn-reject:hover { background-color: #b71c1c; }
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-        /* Expert Layout Components */
-        .task-card { background: #fff; border: 1px solid #e9ecef; border-radius: 8px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.01); }
-        .task-meta { display: flex; gap: 15px; font-size: 13px; color: #6c757d; margin-bottom: 10px; }
-        .task-textarea { width: 100%; padding: 12px; border-radius: 6px; border: 1px solid #ced4da; font-family: inherit; margin-top: 10px; resize: vertical; box-sizing: border-box; }
-        .btn-submit-ans { background-color: #2e7d32; color: #fff; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: bold; margin-top: 10px; transition: background 0.2s; }
-        .btn-submit-ans:hover { background-color: #1b5e20; }
+        :root {
+            --green-dark: #1b4332;
+            --green-mid: #2d6a4f;
+            --green-light: #52b788;
+            --green-pale: #d8f3dc;
+            --accent: #40916c;
+            --bg: #f4f6f4;
+            --white: #ffffff;
+            --border: #e2e8e4;
+            --text: #1c2b22;
+            --muted: #6b7c72;
+            --danger: #c62828;
+            --warn-bg: #fff8e1;
+            --warn: #e65100;
+        }
+
+        body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+        /* ── Layout ── */
+        .wrapper { display: flex; min-height: 100vh; }
+
+        .sidebar {
+            width: 240px; min-width: 240px;
+            background: var(--white);
+            border-right: 1px solid var(--border);
+            display: flex; flex-direction: column;
+            padding: 0;
+        }
+
+        .brand {
+            padding: 22px 20px 18px;
+            font-size: 17px; font-weight: 700;
+            color: var(--green-dark);
+            border-bottom: 1px solid var(--border);
+            letter-spacing: .3px;
+            display: flex; align-items: center; gap: 8px;
+        }
+
+        .menu { list-style: none; padding: 12px 0; flex: 1; }
+
+        .menu-item {
+            padding: 11px 20px;
+            cursor: pointer; font-size: 14px; font-weight: 500;
+            color: var(--muted);
+            display: flex; align-items: center; gap: 10px;
+            transition: background .15s, color .15s;
+            border-left: 3px solid transparent;
+        }
+        .menu-item:hover { background: var(--green-pale); color: var(--green-dark); }
+        .menu-item.active { background: #eaf4ee; color: var(--green-dark); font-weight: 600; border-left-color: var(--green-mid); }
+
+        /* ── Main ── */
+        .main-content { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+
+        .topbar {
+            background: var(--white);
+            border-bottom: 1px solid var(--border);
+            padding: 0 32px;
+            height: 60px;
+            display: flex; align-items: center; justify-content: space-between;
+            position: sticky; top: 0; z-index: 10;
+        }
+        .topbar-title { font-size: 15px; font-weight: 600; color: var(--text); }
+        .topbar-right { display: flex; align-items: center; gap: 12px; }
+        .badge-role { background: var(--green-pale); color: var(--green-dark); padding: 3px 10px; border-radius: 20px; font-size: 12px; font-weight: 700; }
+        .btn-signout { background: none; border: 1px solid var(--border); padding: 6px 14px; border-radius: 6px; cursor: pointer; font-size: 13px; color: var(--muted); transition: all .15s; }
+        .btn-signout:hover { border-color: var(--danger); color: var(--danger); }
+
+        .page { padding: 28px 32px; display: none; }
+        .page.active { display: block; }
+
+        /* ── Section title ── */
+        .section-head { margin-bottom: 22px; }
+        .section-head h2 { font-size: 20px; font-weight: 700; color: var(--text); }
+        .section-head p { font-size: 13px; color: var(--muted); margin-top: 4px; }
+
+        /* ── Metric cards ── */
+        .metrics-row { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 16px; margin-bottom: 28px; }
+        .metric-card { background: var(--white); border: 1px solid var(--border); border-radius: 10px; padding: 18px 20px; }
+        .metric-card .label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .6px; color: var(--muted); }
+        .metric-card .value { font-size: 30px; font-weight: 700; color: var(--text); margin-top: 8px; }
+        .metric-card .sub { font-size: 11px; color: var(--muted); margin-top: 4px; }
+        .metric-card .sub a { color: var(--green-mid); text-decoration: none; font-weight: 600; }
+
+        /* ── Cards ── */
+        .card { background: var(--white); border: 1px solid var(--border); border-radius: 10px; padding: 22px; margin-bottom: 22px; }
+        .card h3 { font-size: 15px; font-weight: 700; margin-bottom: 4px; }
+        .card .card-sub { font-size: 13px; color: var(--muted); margin-bottom: 16px; }
+
+        .two-col { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; }
+
+        /* ── Quick Actions ── */
+        .quick-actions { display: flex; flex-direction: column; gap: 10px; }
+        .qa-btn { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 13px 16px; cursor: pointer; text-align: left; font-size: 14px; color: var(--text); display: flex; align-items: center; gap: 10px; transition: background .15s; }
+        .qa-btn:hover { background: var(--green-pale); border-color: var(--green-light); }
+
+        /* ── Tables ── */
+        .tbl-wrap { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        th { background: var(--bg); padding: 11px 14px; text-align: left; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; color: var(--muted); border-bottom: 1px solid var(--border); }
+        td { padding: 13px 14px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+        tr:last-child td { border-bottom: none; }
+        tr:hover td { background: #fafcfa; }
+
+        /* ── Badges ── */
+        .pill { display: inline-block; padding: 3px 9px; border-radius: 12px; font-size: 11px; font-weight: 700; }
+        .pill-green { background: var(--green-pale); color: var(--green-dark); }
+        .pill-grey { background: #eee; color: #555; }
+        .pill-orange { background: var(--warn-bg); color: var(--warn); }
+        .pill-blue { background: #e3f2fd; color: #1565c0; }
+
+        /* ── Buttons ── */
+        .btn { border: none; padding: 7px 14px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600; transition: opacity .15s; }
+        .btn:hover { opacity: .85; }
+        .btn-primary { background: var(--green-mid); color: #fff; }
+        .btn-danger { background: var(--danger); color: #fff; }
+        .btn-ghost { background: var(--bg); border: 1px solid var(--border); color: var(--text); }
+        .btn-verified { background: #aaa; color: #fff; cursor: default; }
+        .btn:disabled { opacity: .5; cursor: default; }
+
+        /* ── Forms ── */
+        .form-group { margin-bottom: 16px; }
+        .form-group label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px; }
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%; padding: 9px 12px; border: 1px solid var(--border);
+            border-radius: 6px; font-size: 14px; font-family: inherit;
+            transition: border-color .15s;
+        }
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+            outline: none; border-color: var(--green-light);
+        }
+        .form-group textarea { resize: vertical; }
+
+        /* ── Profile card ── */
+        .profile-row { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+        .avatar { width: 40px; height: 40px; border-radius: 50%; background: var(--green-pale); display: flex; align-items: center; justify-content: center; font-size: 18px; }
+        .profile-info p { font-size: 13px; color: var(--muted); margin-top: 2px; }
+        .profile-detail { font-size: 13px; margin-bottom: 8px; display: flex; gap: 6px; }
+        .profile-detail span:first-child { color: var(--muted); min-width: 60px; }
+
+        /* ── Task cards ── */
+        .task-card { background: var(--white); border: 1px solid var(--border); border-radius: 8px; padding: 18px; margin-bottom: 16px; }
+        .task-meta { display: flex; gap: 14px; font-size: 12px; color: var(--muted); margin-bottom: 10px; flex-wrap: wrap; }
+        .task-question { font-size: 15px; font-weight: 500; color: var(--text); margin: 10px 0; }
+
+        /* ── Empty state ── */
+        .empty { text-align: center; padding: 48px 20px; color: var(--muted); }
+        .empty .icon { font-size: 36px; margin-bottom: 10px; }
+
+        select.inline { padding: 5px 8px; border: 1px solid var(--border); border-radius: 5px; font-size: 13px; }
     </style>
 </head>
 <body>
 
-    <div class="wrapper">
-        <div class="sidebar">
-            <div class="brand">🌱 Agrosphere</div>
-            <ul class="menu" id="dynamicMenu">
-                <li class="menu-item active" onclick="switchTab('overview', this)">📊 Overview</li>
-            </ul>
-        </div>
+<div class="wrapper">
 
-        <div class="main-content">
-            <div class="header">
-                <div>
-                    <h1 id="welcomeTitle" style="margin: 0; font-size: 24px;">Welcome Back!</h1>
-                    <p id="workspaceSubtitle" style="margin: 5px 0 0 0; color: #6c757d;">Administrative Control Panel</p>
-                </div>
-                <div class="user-badge">
-                    <span id="navAdminName" style="font-weight: 500;">User Account</span>
-                    <span class="badge-tag" id="roleBadgeTag">ADMIN</span>
-                    <button class="btn-logout" onclick="handleSignOut()">Sign Out</button>
-                </div>
-            </div>
-
-            <div id="view-overview" class="view-section">
-                <div class="metrics-row">
-                    <div class="metric-card">
-                        <p>Total Users</p>
-                        <h3 id="totalUsersCount">...</h3>
-                    </div>
-                    <div class="metric-card">
-                        <p>Registered Farmers</p>
-                        <h3 id="totalFarmersCount">...</h3>
-                    </div>
-                    <div class="metric-card">
-                        <p>Active Experts</p>
-                        <h3 id="totalExpertsCount">...</h3>
-                    </div>
-                </div>
-
-                <div class="card-grid">
-                    <div class="main-card">
-                        <h3 style="margin-top: 0; color: #212529;">Incoming Farmer Inquiries</h3>
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>Farmer Name</th>
-                                    <th>Question Text</th>
-                                    <th>Status</th>
-                                    <th>Assigned Expert</th>
-                                    <th>Action (Assign)</th>
-                                </tr>
-                            </thead>
-                            <tbody id="questionsTableBody">
-                                <tr>
-                                    <td colspan="5" style="text-align: center; color: #888;">Loading inquiries...</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-
-                    <div class="side-card">
-                        <h3 style="margin-top: 0; color: #212529;">Your Account</h3>
-                        <p style="margin: 15px 0 8px 0;"><b>Name:</b> <span id="profileName">...</span></p>
-                        <p style="margin: 0 0 8px 0;"><b>Email:</b> <span id="profileEmail">...</span></p>
-                        <p style="margin: 0;"><b>Role Authority:</b> <span style="color: #2e7d32; font-weight: bold;">Full Access</span></p>
-                    </div>
-                </div>
-            </div>
-
-            <div id="view-users" class="view-section">
-                <div class="main-card">
-                    <h3 style="margin-top: 0;">Registered System Accounts</h3>
-                    <p style="color: #6c757d; font-size: 14px;">Review and manage platform users currently active on Agrosphere.</p>
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>User ID</th>
-                                <th>Full Name</th>
-                                <th>Email Address</th>
-                                <th>System Role</th>
-                            </tr>
-                        </thead>
-                        <tbody id="allUsersTableBody">
-                            <tr>
-                                <td colspan="4" style="text-align: center; color: #888;">Loading platform profiles...</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            <div id="view-reviews" class="view-section">
-                <div class="main-card">
-                    <h3 style="margin-top: 0;">Expert Solutions Awaiting Verification</h3>
-                    <p style="color: #6c757d; font-size: 14px;">Verify completed expert answers before they are published to the public knowledge feed.</p>
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Farmer</th>
-                                <th>Inquiry Question</th>
-                                <th>Expert Contributor</th>
-                                <th>Submitted Answer</th>
-                                <th>Moderation Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody id="reviewsTableBody">
-                            <tr>
-                                <td colspan="5" style="text-align: center; color: #888;">Loading moderation pipeline...</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            <div id="view-tasks" class="view-section">
-                <div class="main-card" style="width: 100%; box-sizing: border-box;">
-                    <h3 style="margin-top: 0;">📋 Assigned Farmer Consultations</h3>
-                    <p style="color: #6c757d; font-size: 14px; margin-bottom: 20px;">Provide diagnostic feedback and guidance for queries assigned directly to your desk.</p>
-                    <div id="expertTasksContainer">
-                        <p style="color:#888;">Loading your consulting queue...</p>
-                    </div>
-                </div>
-            </div>
-
-            <div id="view-publish" class="view-section">
-                <div class="main-card" style="width: 100%; max-width: 800px;">
-                    <h3 style="margin-top: 0;">✍️ Publish a Community Knowledge Article</h3>
-                    <p style="color: #6c757d; font-size: 14px; margin-bottom: 20px;">Share agricultural management insights, zero-grazing tips, or biological system advice.</p>
-                    
-                    <label style="display:block; font-weight:600; margin-bottom:5px;">Article Title</label>
-                    <input type="text" id="artTitle" placeholder="e.g., Managing Sudden Weight Loss & Feed Drop in Cattle" style="width:100%; padding:10px; border:1px solid #ced4da; border-radius:6px; margin-bottom:15px; box-sizing: border-box;">
-
-                    <label style="display:block; font-weight:600; margin-bottom:5px;">Target Category</label>
-                    <select id="artCategory" style="width:100%; padding:10px; border:1px solid #ced4da; border-radius:6px; margin-bottom:15px; box-sizing: border-box;">
-                        <option value="Animal Health">Animal Health & Production</option>
-                        <option value="Dairy Science">Dairy Management</option>
-                        <option value="Crop Protection">Crop Protection & Entomology</option>
-                        <option value="General Agriculture">General Agriculture</option>
-                    </select>
-
-                    <label style="display:block; font-weight:600; margin-bottom:5px;">Article Content Body</label>
-                    <textarea id="artContent" rows="8" placeholder="Write comprehensive, step-by-step educational analysis..." class="task-textarea" style="margin-bottom:15px;"></textarea>
-
-                    <button class="btn-submit-ans" onclick="publishExpertArticle()">Publish to Community Board</button>
-                </div>
-            </div>
-
-        </div>
+    <!-- ── Sidebar ── -->
+    <div class="sidebar">
+        <div class="brand">🌿 AGROSPHERE</div>
+        <ul class="menu" id="dynamicMenu">
+            <li class="menu-item active" onclick="switchTab('overview', this)">📊 Overview</li>
+        </ul>
     </div>
 
-    <script>
-    // Extract session reference values dynamically
-    const currentUserId = localStorage.getItem('user_id') || 1; 
-    let currentUserRole = 'admin'; 
+    <!-- ── Main ── -->
+    <div class="main-content">
 
-    // Tab switching engine
-    function switchTab(tabName, element) {
-        document.querySelectorAll('.view-section').forEach(view => view.classList.remove('active'));
-        if (element) {
-            document.querySelectorAll('.menu-item').forEach(item => item.classList.remove('active'));
-            element.classList.add('active');
-        }
-        
-        const targetView = document.getElementById(`view-${tabName}`);
-        if(targetView) targetView.classList.add('active');
+        <div class="topbar">
+            <span class="topbar-title" id="workspaceSubtitle">Admin Dashboard</span>
+            <div class="topbar-right">
+                <span id="navAdminName" style="font-size:14px; font-weight:500;">—</span>
+                <span class="badge-role" id="roleBadgeTag">ADMIN</span>
+                <button class="btn-signout" onclick="handleSignOut()">Sign Out</button>
+            </div>
+        </div>
 
-        // Trigger dynamic fetches depending on loaded tab
-        if (tabName === 'users') {
-            loadAllUsersList();
-        } else if (tabName === 'reviews') {
-            loadPendingReviewsList();
-        } else if (tabName === 'overview') {
-            loadAdminDashboard();
-        } else if (tabName === 'tasks') {
-            loadExpertTasksQueue();
-        }
-    }
+        <!-- OVERVIEW -->
+        <div id="page-overview" class="page active">
+            <div class="section-head">
+                <h2 id="welcomeTitle">Welcome back!</h2>
+                <p>Here's what's happening on the platform today.</p>
+            </div>
 
-    // Role Initialization Logic
-    async function initializeWorkspaceView() {
-        try {
-            const profileResponse = await fetch(`/admin/user`);
-            if (profileResponse.ok) {
-                const usersList = await profileResponse.json();
-                const matchedUser = usersList.find(u => u.id == currentUserId) || usersList[0];
-                
-                if (matchedUser) {
-                    currentUserRole = matchedUser.role.toLowerCase();
-                    
-                    document.getElementById('welcomeTitle').innerText = `Welcome, ${matchedUser.fullname}!`;
-                    document.getElementById('navAdminName').innerText = matchedUser.fullname;
-                    // FIX: Changed from .toUpperCase to valid .toUpperCase() native JS method execution
-                    document.getElementById('roleBadgeTag').innerText = matchedUser.role.toUpperCase();
-                    document.getElementById('profileName').innerText = matchedUser.fullname;
-                    document.getElementById('profileEmail').innerText = matchedUser.email;
-                }
-            }
-            
-            buildSidebarMenu();
-        } catch (err) {
-            console.error("Workspace initialization failure:", err);
-            buildSidebarMenu(); 
-        }
-    }
+            <div class="metrics-row">
+                <div class="metric-card"><div class="label">Users</div><div class="value" id="totalUsersCount">…</div></div>
+                <div class="metric-card"><div class="label">Farmers</div><div class="value" id="totalFarmersCount">…</div></div>
+                <div class="metric-card"><div class="label">Experts</div><div class="value" id="totalExpertsCount">…</div></div>
+                <div class="metric-card"><div class="label">Questions</div><div class="value" id="totalQCount">…</div></div>
+                <div class="metric-card">
+                    <div class="label">Pending Review</div>
+                    <div class="value" id="totalPendingCount">…</div>
+                    <div class="sub"><a href="#" onclick="switchTabByName('reviews')">Needs approval</a></div>
+                </div>
+                <div class="metric-card">
+                    <div class="label">Published</div>
+                    <div class="value" id="totalPublishedCount">…</div>
+                    <div class="sub"><a href="#" onclick="switchTabByName('publicqa')">Live Q&A</a></div>
+                </div>
+            </div>
 
-    // Dynamic sidebar builder according to user permissions
-    function buildSidebarMenu() {
-        const menuContainer = document.getElementById('dynamicMenu');
-        menuContainer.innerHTML = '';
+            <div class="two-col">
+                <div class="card">
+                    <h3>Quick Actions</h3>
+                    <div class="card-sub">Common admin tasks</div>
+                    <div class="quick-actions">
+                        <button class="qa-btn" onclick="switchTabByName('questions')">📋 Post question for farmer</button>
+                        <button class="qa-btn" onclick="switchTabByName('reviews')">🔍 Review pending answers</button>
+                        <button class="qa-btn" onclick="switchTabByName('announcements')">📢 Post announcement</button>
+                        <button class="qa-btn" onclick="switchTabByName('businesses')">🏢 View business registrations</button>
+                    </div>
+                </div>
+                <div class="card">
+                    <h3>Your Account</h3>
+                    <div class="card-sub">Logged-in administrator</div>
+                    <div class="profile-row">
+                        <div class="avatar">👤</div>
+                        <div class="profile-info">
+                            <strong id="profileName">—</strong>
+                            <p id="profileRole">Administrator</p>
+                        </div>
+                    </div>
+                    <div class="profile-detail"><span>Email</span><span id="profileEmail">—</span></div>
+                    <div class="profile-detail"><span>Role</span><span style="color:var(--green-mid);font-weight:600;">Administrator #<span id="profileId">—</span></span></div>
+                </div>
+            </div>
+        </div>
 
-        if (currentUserRole === 'expert') {
-            document.getElementById('workspaceSubtitle').innerText = "Specialized Agricultural Expert Workspace";
-            menuContainer.innerHTML = `
-                <li class="menu-item active" onclick="switchTab('tasks', this)">📋 Assigned Tasks</li>
-                <li class="menu-item" onclick="switchTab('publish', this)">✍️ Write Article</li>
-            `;
-            switchTab('tasks', null);
-        } else {
-            document.getElementById('workspaceSubtitle').innerText = "Administrative Control Panel";
-            menuContainer.innerHTML = `
-                <li class="menu-item active" onclick="switchTab('overview', this)">📊 Overview</li>
-                <li class="menu-item" onclick="switchTab('users', this)">👥 All Users</li>
-                <li class="menu-item" onclick="switchTab('reviews', this)">🔍 Pending Reviews</li>
-            `;
-            switchTab('overview', null);
-        }
-    }
+        <!-- ALL USERS -->
+        <div id="page-users" class="page">
+            <div class="section-head"><h2>All Users</h2><p>Everyone registered on the platform.</p></div>
+            <div class="card">
+                <div class="tbl-wrap">
+                    <table>
+                        <thead><tr><th>#</th><th>Full Name</th><th>Email</th><th>Role</th></tr></thead>
+                        <tbody id="allUsersTableBody"><tr><td colspan="4" style="text-align:center;color:var(--muted);">Loading…</td></tr></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
 
-    // =====================================================================
-    // CORE ADMIN PIPELINE MANAGEMENT FUNCTIONS
-    // =====================================================================
-    async function loadAdminDashboard() {
-        try {
-            const profileResponse = await fetch(`/admin/user`);
-            if (profileResponse.ok) {
-                const usersList = await profileResponse.json();
-                document.getElementById('totalUsersCount').innerText = usersList.length;
-                document.getElementById('totalFarmersCount').innerText = usersList.filter(u => u.role === 'farmer').length;
-                document.getElementById('totalExpertsCount').innerText = usersList.filter(u => u.role === 'expert').length;
-            }
+        <!-- ALL QUESTIONS -->
+        <div id="page-questions" class="page">
+            <div class="section-head"><h2>All Questions</h2><p>Assign experts to farmer questions.</p></div>
+            <div class="card">
+                <div class="tbl-wrap">
+                    <table>
+                        <thead><tr><th>Farmer</th><th>Question</th><th>Status</th><th>Assigned Expert</th><th>Assign</th></tr></thead>
+                        <tbody id="questionsTableBody"><tr><td colspan="5" style="text-align:center;color:var(--muted);">Loading…</td></tr></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
 
-            const qResponse = await fetch('/admin/questions');
-            const qData = await qResponse.json();
-            
-            const eResponse = await fetch('/admin/experts');
-            const eExperts = await eResponse.json();
+        <!-- PENDING REVIEWS -->
+        <div id="page-reviews" class="page">
+            <div class="section-head"><h2>Pending Review</h2><p>Approve or reject expert answers before publishing.</p></div>
+            <div class="card">
+                <div class="tbl-wrap">
+                    <table>
+                        <thead><tr><th>Farmer</th><th>Question</th><th>Expert</th><th>Answer</th><th>Actions</th></tr></thead>
+                        <tbody id="reviewsTableBody"><tr><td colspan="5" style="text-align:center;color:var(--muted);">Loading…</td></tr></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
 
-            const tableBody = document.getElementById('questionsTableBody');
-            tableBody.innerHTML = ''; 
+        <!-- ANNOUNCEMENTS -->
+        <div id="page-announcements" class="page">
+            <div class="section-head"><h2>Announcements</h2><p>Broadcast messages to all platform users.</p></div>
+            <div class="card" style="max-width:620px;">
+                <h3>Post New Announcement</h3>
+                <div class="card-sub">Visible to all farmers and experts on their dashboards.</div>
+                <div class="form-group"><label>Title</label><input type="text" id="annTitle" placeholder="e.g. Platform maintenance scheduled"></div>
+                <div class="form-group"><label>Message</label><textarea id="annMessage" rows="4" placeholder="Write your announcement here…"></textarea></div>
+                <button class="btn btn-primary" onclick="postAnnouncement()">Post Announcement</button>
+            </div>
+            <div class="card">
+                <h3>Previous Announcements</h3>
+                <div class="tbl-wrap" id="annList"><p style="color:var(--muted);font-size:13px;">Loading…</p></div>
+            </div>
+        </div>
 
-            if (!qData || qData.length === 0) {
-                tableBody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: #888;">No questions submitted yet.</td></tr>`;
-                return;
-            }
+        <!-- EXPERT RANKINGS -->
+        <div id="page-rankings" class="page">
+            <div class="section-head"><h2>Expert Rankings</h2><p>Top contributors ranked by answers and ratings.</p></div>
+            <div class="card">
+                <div class="tbl-wrap">
+                    <table>
+                        <thead><tr><th>Rank</th><th>Expert Name</th><th>Answers</th><th>Avg Rating</th></tr></thead>
+                        <tbody id="rankingsTableBody"><tr><td colspan="4" style="text-align:center;color:var(--muted);">Loading…</td></tr></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
 
-            qData.forEach(q => {
-                let expertOptions = `<option value="">-- Assign Expert --</option>`;
-                if(eExperts) {
-                    eExperts.forEach(exp => {
-                        const isSelected = q.assigned_expert_id === exp.id ? "selected" : "";
-                        expertOptions += `<option value="${exp.id}" ${isSelected}>${exp.fullname}</option>`;
-                    });
-                }
+        <!-- PUBLIC Q&A -->
+        <div id="page-publicqa" class="page">
+            <div class="section-head"><h2>Public Q&A</h2><p>Published answers visible to the public.</p></div>
+            <div class="card">
+                <div class="tbl-wrap">
+                    <table>
+                        <thead><tr><th>Farmer</th><th>Question</th><th>Expert</th><th>Answer</th></tr></thead>
+                        <tbody id="publicQATableBody"><tr><td colspan="4" style="text-align:center;color:var(--muted);">Loading…</td></tr></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
 
-                tableBody.innerHTML += `
-                    <tr>
-                        <td><b>${q.farmer_name}</b></td>
-                        <td>${q.question}</td>
-                        <td><span style="padding: 4px 8px; border-radius: 4px; font-size: 12px; background: #e9ecef;">${q.status}</span></td>
-                        <td style="color: #2e7d32; font-weight: bold;">${q.assigned_expert ? q.assigned_expert : "Unassigned"}</td>
-                        <td>
-                            <select onchange="assignExpert(${q.id}, this.value)" style="padding: 6px; border-radius: 6px; border: 1px solid #ced4da;">
-                                ${expertOptions}
-                            </select>
-                        </td>
-                    </tr>
-                `;
-            });
-        } catch (error) {
-            console.error("Dashboard engine failure:", error);
-        }
-    }
+        <!-- BUSINESSES -->
+        <div id="page-businesses" class="page">
+            <div class="section-head"><h2>Business Registrations</h2><p>Review and verify submitted businesses.</p></div>
+            <div class="card">
+                <div class="tbl-wrap">
+                    <table>
+                        <thead><tr><th>#</th><th>Business Name</th><th>Services</th><th>Phone</th><th>Location</th><th>Description</th><th>Status</th><th>Action</th></tr></thead>
+                        <tbody id="businessesTableBody"><tr><td colspan="8" style="text-align:center;color:var(--muted);">Loading…</td></tr></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
 
-    async function loadAllUsersList() {
-        try {
-            const response = await fetch('/admin/user'); 
-            const users = await response.json();
-            const tableBody = document.getElementById('allUsersTableBody');
-            tableBody.innerHTML = '';
+        <!-- REPORTS -->
+        <div id="page-reports" class="page">
+            <div class="section-head"><h2>Reports</h2><p>Live platform statistics.</p></div>
+            <div class="metrics-row">
+                <div class="metric-card"><div class="label">Total Users</div><div class="value" id="rptUsers">…</div></div>
+                <div class="metric-card"><div class="label">Farmers</div><div class="value" id="rptFarmers">…</div></div>
+                <div class="metric-card"><div class="label">Experts</div><div class="value" id="rptExperts">…</div></div>
+                <div class="metric-card"><div class="label">Admins</div><div class="value" id="rptAdmins">…</div></div>
+                <div class="metric-card"><div class="label">All Questions</div><div class="value" id="rptAllQ">…</div></div>
+                <div class="metric-card"><div class="label">Pending</div><div class="value" id="rptPending">…</div></div>
+                <div class="metric-card"><div class="label">In Review</div><div class="value" id="rptReview">…</div></div>
+                <div class="metric-card"><div class="label">Published</div><div class="value" id="rptPublished">…</div></div>
+            </div>
+        </div>
 
-            users.forEach(user => {
-                tableBody.innerHTML += `
-                    <tr>
-                        <td>#${user.id}</td>
-                        <td><b>${user.fullname}</b></td>
-                        <td>${user.email}</td>
-                        <td><span class="badge-tag">${user.role.toUpperCase()}</span></td>
-                    </tr>
-                `;
-            });
-        } catch (error) {
-            document.getElementById('allUsersTableBody').innerHTML = `<tr><td colspan="4" style="text-align: center; color: #dc3545;">Failed to load system accounts.</td></tr>`;
-        }
-    }
+    </div><!-- /main-content -->
+</div><!-- /wrapper -->
 
-   
+<script>
+// ── State ──
+const currentUserId = localStorage.getItem('user_id') || 1;
+let currentUserRole = 'admin';
 
-    async function handleModeration(questionId, actionState) {
-        try {
-            const response = await fetch(`/admin/questions/${questionId}/verify`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ action: actionState })
-            });
-            const result = await response.json();
-            if(response.ok) {
-                alert(result.message);
-                loadPendingReviewsList();
-            } else {
-                alert("Error: " + result.error);
-            }
-        } catch (error) {
-            console.error("Moderation error:", error);
-        }
-    }
+// ── Tab helpers ──
+function switchTab(tabName, el) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active'));
+    const page = document.getElementById('page-' + tabName);
+    if (page) page.classList.add('active');
+    if (el) el.classList.add('active');
+    loadTabData(tabName);
+}
 
-   async function publishAnswer(questionId) {
-    if (!confirm("Are you sure you want to publish this answer to the public feed?")) return;
+function switchTabByName(tabName) {
+    const item = document.querySelector(`.menu-item[data-tab="${tabName}"]`);
+    switchTab(tabName, item);
+}
 
+function loadTabData(tabName) {
+    if (tabName === 'overview')      { loadOverview(); }
+    if (tabName === 'users')         { loadUsers(); }
+    if (tabName === 'questions')     { loadQuestions(); }
+    if (tabName === 'reviews')       { loadReviews(); }
+    if (tabName === 'announcements') { loadAnnouncements(); }
+    if (tabName === 'rankings')      { loadRankings(); }
+    if (tabName === 'publicqa')      { loadPublicQA(); }
+    if (tabName === 'businesses')    { loadBusinesses(); }
+    if (tabName === 'reports')       { loadReports(); }
+}
+
+// ── Init ──
+async function initWorkspace() {
     try {
-        const response = await fetch(`/admin/questions/${questionId}/publish`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' }
-        });
-        
-        const result = await response.json();
-        
-        if (response.ok) {
-            alert("Success: " + result.message);
-            // Reload the dashboard to update the UI (e.g., change button state)
-            loadAdminDashboard();
-        } else {
-            alert("Error: " + result.error);
+        const res = await fetch('/admin/user');
+        if (res.ok) {
+            const users = await res.json();
+            const me = users.find(u => u.id == currentUserId) || users[0];
+            if (me) {
+                currentUserRole = me.role.toLowerCase();
+                document.getElementById('welcomeTitle').innerText = `Welcome back, ${me.fullname}!`;
+                document.getElementById('navAdminName').innerText = me.fullname;
+                document.getElementById('roleBadgeTag').innerText = me.role.toUpperCase();
+                document.getElementById('profileName').innerText = me.fullname;
+                document.getElementById('profileEmail').innerText = me.email;
+                document.getElementById('profileId').innerText = me.id;
+                document.getElementById('profileRole').innerText = me.role;
+            }
         }
-    } catch (error) {
-        console.error("Transmission error:", error);
+    } catch(e) { console.warn('Profile load failed', e); }
+    buildMenu();
+}
+
+function buildMenu() {
+    const menu = document.getElementById('dynamicMenu');
+    if (currentUserRole === 'expert') {
+        document.getElementById('workspaceSubtitle').innerText = 'Expert Workspace';
+        menu.innerHTML = `
+            <li class="menu-item active" data-tab="tasks" onclick="switchTab('tasks',this)">📋 Assigned Tasks</li>
+            <li class="menu-item" data-tab="publish" onclick="switchTab('publish',this)">✍️ Write Article</li>`;
+    } else {
+        document.getElementById('workspaceSubtitle').innerText = 'Admin Dashboard';
+        menu.innerHTML = `
+            <li class="menu-item active" data-tab="overview"       onclick="switchTab('overview',this)">📊 Overview</li>
+            <li class="menu-item"        data-tab="users"          onclick="switchTab('users',this)">👥 All Users</li>
+            <li class="menu-item"        data-tab="questions"      onclick="switchTab('questions',this)">❓ All Questions</li>
+            <li class="menu-item"        data-tab="reviews"        onclick="switchTab('reviews',this)">🔍 Pending Review</li>
+            <li class="menu-item"        data-tab="announcements"  onclick="switchTab('announcements',this)">📢 Announcements</li>
+            <li class="menu-item"        data-tab="rankings"       onclick="switchTab('rankings',this)">🏆 Expert Rankings</li>
+            <li class="menu-item"        data-tab="publicqa"       onclick="switchTab('publicqa',this)">🌐 Public Q&A</li>
+            <li class="menu-item"        data-tab="businesses"     onclick="switchTab('businesses',this)">🏢 Businesses</li>
+            <li class="menu-item"        data-tab="reports"        onclick="switchTab('reports',this)">📈 Reports</li>`;
+        switchTab('overview', menu.querySelector('[data-tab="overview"]'));
     }
 }
 
-    // =====================================================================
-    // CORE EXPERT DASHBOARD MANAGEMENT FUNCTIONS
-    // =====================================================================
-    async function loadExpertTasksQueue() {
-        const container = document.getElementById('expertTasksContainer');
-        try {
-            const response = await fetch(`/expert/tasks/${currentUserId}`);
-            if(!response.ok) {
-                container.innerHTML = `<p style="color:#c62828;">Error loading workspace consulting items.</p>`;
-                return;
-            }
-            const tasks = await response.json();
-            container.innerHTML = '';
+// ── Overview ──
+async function loadOverview() {
+    try {
+        const [uRes, qRes] = await Promise.all([fetch('/admin/user'), fetch('/admin/questions')]);
+        const users = uRes.ok ? await uRes.json() : [];
+        const questions = qRes.ok ? await qRes.json() : [];
 
-            if(tasks.length === 0) {
-                container.innerHTML = `<p style="color:#666; text-align:center; padding: 20px;">🎉 Great job! You have zero pending farm diagnostic assignments remaining.</p>`;
-                return;
-            }
+        document.getElementById('totalUsersCount').innerText   = users.length;
+        document.getElementById('totalFarmersCount').innerText = users.filter(u=>u.role==='farmer').length;
+        document.getElementById('totalExpertsCount').innerText = users.filter(u=>u.role==='expert').length;
+        document.getElementById('totalQCount').innerText       = questions.length;
+        document.getElementById('totalPendingCount').innerText = questions.filter(q=>q.status==='pending'||q.status==='PENDING').length;
+        document.getElementById('totalPublishedCount').innerText = questions.filter(q=>q.status==='published'||q.is_verified).length;
 
-            tasks.forEach(task => {
-                // FIX: Check for uppercase 'ANSWERED' string matches from backend updates
-                const isAnswered = task.status === 'ANSWERED';
-                const verificationBadge = task.is_verified ? 
-                    `<span style="color:#2e7d32; font-weight:bold;">[✅ Published]</span>` : 
-                    (isAnswered ? `<span style="color:#f57c00; font-weight:bold;">[⏳ Pending Admin Approval]</span>` : `<span style="color:#c62828; font-weight:bold;">[❌ Unanswered Task]</span>`);
-
-                container.innerHTML += `
-                    <div class="task-card">
-                        <div class="task-meta">
-                            <span><b>Farmer:</b> ${task.farmer_name}</span>
-                            <span><b>Category:</b> ${task.category}</span>
-                            <span><b>Assigned On:</b> ${task.created_at || "Recent"}</span>
-                            <span>${verificationBadge}</span>
-                        </div>
-                        <p style="font-size:16px; margin: 10px 0; font-weight:500; color:#111;">"${task.question}"</p>
-                        
-                        <label style="display:block; font-size:13px; font-weight:bold; margin-top:15px; color:#444;">Your Diagnostic Solution Advice</label>
-                        <textarea id="answer-text-${task.id}" class="task-textarea" rows="4" placeholder="Write treatment prescriptions, containment procedures, or system advice clearly...">${task.answer || ""}</textarea>
-                        
-                        <button class="btn-submit-ans" onclick="submitExpertAnswer(${task.id})">
-                            ${isAnswered ? "Update Submitted Solution" : "Submit Secure Answer"}
-                        </button>
-                    </div>
-                `;
-            });
-        } catch (err) {
-            console.error(err);
-            container.innerHTML = `<p style="color:#c62828;">Could not connect to task pipeline.</p>`;
+        const me = users.find(u=>u.id==currentUserId)||users[0];
+        if(me){
+            document.getElementById('profileName').innerText  = me.fullname;
+            document.getElementById('profileEmail').innerText = me.email;
+            document.getElementById('profileId').innerText    = me.id;
         }
-    }
+    } catch(e){ console.error(e); }
+}
 
-    async function submitExpertAnswer(questionId) {
-        const textElement = document.getElementById(`answer-text-${questionId}`);
-        if(!textElement || !textElement.value.trim()) {
-            alert("Answer content cannot be empty.");
-            return;
-        }
+// ── Users ──
+async function loadUsers() {
+    const tb = document.getElementById('allUsersTableBody');
+    try {
+        const res = await fetch('/admin/user');
+        const users = await res.json();
+        if(!users.length){ tb.innerHTML=`<tr><td colspan="4" class="empty">No users found.</td></tr>`; return; }
+        tb.innerHTML = users.map((u,i)=>`
+            <tr>
+                <td>#${u.id}</td>
+                <td><strong>${u.fullname}</strong></td>
+                <td>${u.email}</td>
+                <td><span class="pill ${rolePill(u.role)}">${u.role.toUpperCase()}</span></td>
+            </tr>`).join('');
+    } catch(e){ tb.innerHTML=`<tr><td colspan="4" style="color:var(--danger);text-align:center;">Failed to load users.</td></tr>`; }
+}
 
-        try {
-            // FIX: Remapped the POST path to point directly to unified endpoint: '/expert/answer/<id>'
-            const response = await fetch(`/expert/answer/${questionId}`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ answer: textElement.value.trim() })
-            });
-            const data = await response.json();
-            if(response.ok) {
-                alert("Success: " + data.message);
-                loadExpertTasksQueue();
-            } else {
-                alert("Error: " + data.error);
-            }
-        } catch (err) {
-            console.error(err);
-            alert("Error transmitting information to backend processing points.");
-        }
-    }
+function rolePill(role){
+    if(role==='admin') return 'pill-blue';
+    if(role==='expert') return 'pill-green';
+    return 'pill-grey';
+}
 
-    async function publishExpertArticle() {
-        const title = document.getElementById('artTitle').value.trim();
-        const category = document.getElementById('artCategory').value;
-        const content = document.getElementById('artContent').value.trim();
+// ── Questions ──
+async function loadQuestions() {
+    const tb = document.getElementById('questionsTableBody');
+    try {
+        const [qRes, eRes] = await Promise.all([fetch('/admin/questions'), fetch('/admin/experts')]);
+        const questions = qRes.ok ? await qRes.json() : [];
+        const experts   = eRes.ok ? await eRes.json() : [];
+        if(!questions.length){ tb.innerHTML=`<tr><td colspan="5" style="text-align:center;color:var(--muted);">No questions yet.</td></tr>`; return; }
+        tb.innerHTML = questions.map(q=>{
+            const opts = `<option value="">— Assign —</option>` + experts.map(e=>`<option value="${e.id}" ${q.assigned_expert_id==e.id?'selected':''}>${e.fullname}</option>`).join('');
+            return `<tr>
+                <td><strong>${q.farmer_name}</strong></td>
+                <td>${q.question}</td>
+                <td><span class="pill pill-grey">${q.status}</span></td>
+                <td style="color:var(--green-mid);font-weight:600;">${q.assigned_expert||'Unassigned'}</td>
+                <td><select class="inline" onchange="assignExpert(${q.id},this.value)">${opts}</select></td>
+            </tr>`;
+        }).join('');
+    } catch(e){ tb.innerHTML=`<tr><td colspan="5" style="color:var(--danger);text-align:center;">Failed to load questions.</td></tr>`; }
+}
 
-        if (!title || !content) {
-            alert("Please complete both the title and content areas before publishing.");
-            return;
-        }
+async function assignExpert(qId, expertId) {
+    if(!expertId) return;
+    try {
+        const res = await fetch(`/admin/questions/${qId}/assign`, {
+            method:'POST', headers:{'Content-Type':'application/json'},
+            body: JSON.stringify({expert_id: expertId})
+        });
+        const d = await res.json();
+        if(res.ok){ loadQuestions(); } else { alert('Error: '+d.error); }
+    } catch(e){ console.error(e); }
+}
 
-        try {
-            const response = await fetch('/expert/publish-article', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ title, content, category, expert_id: currentUserId })
-            });
-            const data = await response.json();
-            if (response.ok) {
-                alert("Success: " + data.message);
-                document.getElementById('artTitle').value = '';
-                document.getElementById('artContent').value = '';
-                if(document.querySelector('.menu-item[onclick*="tasks"]')) {
-                    switchTab('tasks', document.querySelector('.menu-item[onclick*="tasks"]'));
-                }
-            } else {
-                alert("Error: " + data.error);
-            }
-        } catch (err) {
-            console.error(err);
-            alert("Could not connect to article publishing pipeline.");
-        }
-    }
+// ── Reviews ──
+async function loadReviews() {
+    const tb = document.getElementById('reviewsTableBody');
+    try {
+        const res = await fetch('/admin/questions/pending-review');
+        const items = res.ok ? await res.json() : [];
+        if(!items.length){ tb.innerHTML=`<tr><td colspan="5" style="text-align:center;color:var(--muted);">Nothing pending review.</td></tr>`; return; }
+        tb.innerHTML = items.map(q=>`
+            <tr>
+                <td>${q.farmer_name}</td>
+                <td>${q.question}</td>
+                <td>${q.assigned_expert||'—'}</td>
+                <td style="max-width:260px;">${q.answer||'—'}</td>
+                <td style="display:flex;gap:6px;flex-wrap:wrap;">
+                    <button class="btn btn-primary" onclick="handleModeration(${q.id},'approve')">Approve</button>
+                    <button class="btn btn-danger"  onclick="handleModeration(${q.id},'reject')">Reject</button>
+                </td>
+            </tr>`).join('');
+    } catch(e){ tb.innerHTML=`<tr><td colspan="5" style="color:var(--danger);text-align:center;">Failed to load reviews.</td></tr>`; }
+}
 
-    function handleSignOut() {
-        localStorage.clear();
-        window.location.href = '/';
-    }
+async function handleModeration(qId, action) {
+    try {
+        const res = await fetch(`/admin/questions/${qId}/verify`, {
+            method:'POST', headers:{'Content-Type':'application/json'},
+            body: JSON.stringify({action})
+        });
+        const d = await res.json();
+        if(res.ok){ alert(d.message); loadReviews(); } else { alert('Error: '+d.error); }
+    } catch(e){ console.error(e); }
+}
 
-    // Initialize workspace on execution start
-    window.onload = initializeWorkspaceView;
-    </script>
+// ── Announcements ──
+async function loadAnnouncements() {
+    const el = document.getElementById('annList');
+    try {
+        const res = await fetch(`/admin/announcements?user_id=${currentUserId}`);
+        const data = res.ok ? await res.json() : [];
+        if(!data.length){ el.innerHTML=`<p style="color:var(--muted);font-size:13px;">No announcements posted yet.</p>`; return; }
+        el.innerHTML = `<table><thead><tr><th>Title</th><th>Message</th><th>Posted</th></tr></thead><tbody>`
+            + data.map(a=>`<tr><td><strong>${a.title||a.message?.slice(0,40)}</strong></td><td>${a.message||''}</td><td style="color:var(--muted);font-size:12px;">${a.created_at||''}</td></tr>`).join('')
+            + `</tbody></table>`;
+    } catch(e){ el.innerHTML=`<p style="color:var(--danger);font-size:13px;">Failed to load announcements.</p>`; }
+}
+
+async function postAnnouncement() {
+    const title   = document.getElementById('annTitle').value.trim();
+    const message = document.getElementById('annMessage').value.trim();
+    if(!message){ alert('Message cannot be empty.'); return; }
+    try {
+        const res = await fetch('/admin/announcements', {
+            method:'POST', headers:{'Content-Type':'application/json'},
+            body: JSON.stringify({title, message, user_id: currentUserId})
+        });
+        const d = await res.json();
+        if(res.ok){
+            document.getElementById('annTitle').value='';
+            document.getElementById('annMessage').value='';
+            alert('Announcement posted!');
+            loadAnnouncements();
+        } else { alert('Error: '+d.error); }
+    } catch(e){ console.error(e); }
+}
+
+// ── Rankings ──
+async function loadRankings() {
+    const tb = document.getElementById('rankingsTableBody');
+    try {
+        const res = await fetch('/admin/expert-rankings');
+        const data = res.ok ? await res.json() : [];
+        if(!data.length){ tb.innerHTML=`<tr><td colspan="4" style="text-align:center;color:var(--muted);">No rankings yet.</td></tr>`; return; }
+        tb.innerHTML = data.map((e,i)=>`
+            <tr>
+                <td><strong>#${i+1}</strong></td>
+                <td>${e.fullname}</td>
+                <td>${e.total_answers}</td>
+                <td>⭐ ${e.rating_score}</td>
+            </tr>`).join('');
+    } catch(e){ tb.innerHTML=`<tr><td colspan="4" style="color:var(--danger);text-align:center;">Failed to load rankings.</td></tr>`; }
+}
+
+// ── Public Q&A ──
+async function loadPublicQA() {
+    const tb = document.getElementById('publicQATableBody');
+    try {
+        const res = await fetch('/admin/public-qa');
+        const data = res.ok ? await res.json() : [];
+        if(!data.length){ tb.innerHTML=`<tr><td colspan="4" style="text-align:center;color:var(--muted);">No published answers yet.</td></tr>`; return; }
+        tb.innerHTML = data.map(q=>`
+            <tr>
+                <td>${q.farmer_name}</td>
+                <td>${q.question}</td>
+                <td>${q.assigned_expert||'—'}</td>
+                <td>${q.answer||'—'}</td>
+            </tr>`).join('');
+    } catch(e){ tb.innerHTML=`<tr><td colspan="4" style="color:var(--danger);text-align:center;">Failed to load Q&A.</td></tr>`; }
+}
+
+// ── Businesses ──
+async function loadBusinesses() {
+    const tb = document.getElementById('businessesTableBody');
+    try {
+        const res = await fetch('/admin/businesses-data');
+        const data = res.ok ? await res.json() : [];
+        if(!data.length){ tb.innerHTML=`<tr><td colspan="8" style="text-align:center;color:var(--muted);">No businesses registered yet.</td></tr>`; return; }
+        tb.innerHTML = data.map((b,i)=>`
+            <tr id="brow-${b.id}">
+                <td>${i+1}</td>
+                <td><strong>${b.business_name}</strong></td>
+                <td>${b.services||'—'}</td>
+                <td>${b.phone||'—'}</td>
+                <td>${b.location||'—'}</td>
+                <td style="max-width:180px;">${b.description||'—'}</td>
+                <td id="bstatus-${b.id}">
+                    ${b.verification_status==='verified'
+                        ? `<span class="pill pill-green">✔ Verified</span>`
+                        : `<span class="pill pill-orange">⏳ Pending</span>`}
+                </td>
+                <td>
+                    ${b.verification_status==='verified'
+                        ? `<button class="btn btn-verified" disabled>Verified</button>`
+                        : `<button class="btn btn-primary" id="bbtn-${b.id}" onclick="verifyBusiness(${b.id})">Verify</button>`}
+                </td>
+            </tr>`).join('');
+    } catch(e){ tb.innerHTML=`<tr><td colspan="8" style="color:var(--danger);text-align:center;">Failed to load businesses.</td></tr>`; }
+}
+
+async function verifyBusiness(id) {
+    try {
+        const res = await fetch('/admin/verify-business/'+id, {method:'POST'});
+        const d = await res.json();
+        if(res.ok){
+            document.getElementById('bstatus-'+id).innerHTML = `<span class="pill pill-green">✔ Verified</span>`;
+            const btn = document.getElementById('bbtn-'+id);
+            if(btn) btn.outerHTML = `<button class="btn btn-verified" disabled>Verified</button>`;
+        } else { alert('Error: '+(d.message||'Could not verify')); }
+    } catch(e){ console.error(e); }
+}
+
+// ── Reports ──
+async function loadReports() {
+    try {
+        const [uRes, qRes] = await Promise.all([fetch('/admin/user'), fetch('/admin/questions')]);
+        const users = uRes.ok ? await uRes.json() : [];
+        const qs    = qRes.ok ? await qRes.json() : [];
+        document.getElementById('rptUsers').innerText    = users.length;
+        document.getElementById('rptFarmers').innerText  = users.filter(u=>u.role==='farmer').length;
+        document.getElementById('rptExperts').innerText  = users.filter(u=>u.role==='expert').length;
+        document.getElementById('rptAdmins').innerText   = users.filter(u=>u.role==='admin').length;
+        document.getElementById('rptAllQ').innerText     = qs.length;
+        document.getElementById('rptPending').innerText  = qs.filter(q=>q.status==='pending').length;
+        document.getElementById('rptReview').innerText   = qs.filter(q=>q.status==='in_review'||q.status==='ANSWERED').length;
+        document.getElementById('rptPublished').innerText= qs.filter(q=>q.is_verified||q.status==='published').length;
+    } catch(e){ console.error(e); }
+}
+
+function handleSignOut() { localStorage.clear(); window.location.href='/'; }
+
+window.onload = initWorkspace;
+</script>
 </body>
 </html>

@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Businesses – AGROSPHERE Admin</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Segoe UI', sans-serif; background: #f5f5f5; }
+
+        nav {
+            background: white;
+            padding: 16px 32px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #eee;
+        }
+        nav .brand { font-weight: 700; font-size: 18px; color: #2d6a4f; }
+        nav .user-info { display: flex; gap: 12px; align-items: center; font-size: 14px; }
+        nav .badge { background: #2d6a4f; color: white; padding: 3px 10px; border-radius: 12px; font-size: 12px; }
+        nav a { text-decoration: none; color: #555; font-size: 14px; }
+
+        .layout { display: flex; min-height: 100vh; }
+
+        .sidebar {
+            width: 220px;
+            background: white;
+            border-right: 1px solid #eee;
+            padding: 24px 0;
+        }
+        .sidebar a {
+            display: block;
+            padding: 10px 24px;
+            color: #555;
+            text-decoration: none;
+            font-size: 14px;
+        }
+        .sidebar a:hover { background: #f0faf4; color: #2d6a4f; }
+        .sidebar a.active { background: #e8f5e9; color: #2d6a4f; font-weight: 600;
+            border-left: 3px solid #2d6a4f; }
+
+        .main { flex: 1; padding: 32px; }
+        h2 { font-size: 22px; margin-bottom: 6px; }
+        .subtitle { color: #888; font-size: 14px; margin-bottom: 24px; }
+
+        table { width: 100%; border-collapse: collapse; background: white;
+            border-radius: 8px; overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
+        th { background: #f9f9f9; padding: 12px 16px; text-align: left;
+            font-size: 12px; text-transform: uppercase; color: #888; border-bottom: 1px solid #eee; }
+        td { padding: 14px 16px; font-size: 14px; border-bottom: 1px solid #f0f0f0; vertical-align: middle; }
+        tr:last-child td { border-bottom: none; }
+
+        .status-badge {
+            padding: 3px 10px; border-radius: 12px; font-size: 12px; font-weight: 600;
+        }
+        .status-pending { background: #fff3cd; color: #856404; }
+        .status-verified { background: #d1e7dd; color: #0f5132; }
+
+        .btn-verify {
+            background: #2d6a4f; color: white; border: none;
+            padding: 6px 14px; border-radius: 6px; cursor: pointer; font-size: 13px;
+        }
+        .btn-verify:hover { background: #1b4332; }
+        .btn-verified { background: #aaa; color: white; border: none;
+            padding: 6px 14px; border-radius: 6px; font-size: 13px; cursor: default; }
+
+        .blue-tick { color: #1d9bf0; font-size: 16px; }
+        .empty { text-align: center; padding: 48px; color: #aaa; }
+    </style>
+</head>
+<body>
+
+<nav>
+    <span class="brand">🌿 AGROSPHERE</span>
+    <div class="user-info">
+        <span>TUMUHAMIREHO HAMLET</span>
+        <span class="badge">ADMIN</span>
+        <a href="/auth/logout">Sign Out</a>
+    </div>
+</nav>
+
+<div class="layout">
+    <div class="sidebar">
+        <a href="/">Overview</a>
+        <a href="/admin/user">All Users</a>
+        <a href="/admin/questions">All Questions</a>
+        <a href="/admin/questions/pending">Pending Review</a>
+        <a href="/admin/announcements">Announcements</a>
+        <a href="/admin/expert-rankings">Expert Rankings</a>
+        <a href="/admin/public-qa">Public Q&A</a>
+        <a href="/admin/businesses" class="active">🏢 Businesses</a>
+        <a href="/admin/reports">Reports</a>
+    </div>
+
+    <div class="main">
+        <h2>Business Registrations</h2>
+        <p class="subtitle">Review and verify submitted businesses.</p>
+
+        {% if businesses %}
+        <table>
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Business Name</th>
+                    <th>Services</th>
+                    <th>Phone</th>
+                    <th>Location</th>
+                    <th>Description</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for b in businesses %}
+                <tr id="row-{{ b.id }}">
+                    <td>{{ loop.index }}</td>
+                    <td><strong>{{ b.business_name }}</strong></td>
+                    <td>{{ b.services_provided }}</td>
+                    <td>{{ b.phone }}</td>
+                    <td>{{ b.location }}</td>
+                    <td>{{ b.description }}</td>
+                    <td>
+                        {% if b.verification_status == 'verified' %}
+                            <span class="status-badge status-verified">
+                                ✔ Verified <span class="blue-tick">✔</span>
+                            </span>
+                        {% else %}
+                            <span class="status-badge status-pending" id="status-{{ b.id }}">
+                                ⏳ Pending
+                            </span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if b.verification_status == 'verified' %}
+                            <button class="btn-verified" disabled>Verified</button>
+                        {% else %}
+                       <button class="btn-verify" id="btn-{{ b.id }}" data-id="{{ b.id }}" onclick="verifyBusiness(this.dataset.id)">
+                                Verify
+                            </button>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+            <div class="empty">
+                <p>No businesses registered yet.</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+async function verifyBusiness(id) {
+    const res = await fetch('/admin/verify-business/' + id, { method: 'POST' });
+    const data = await res.json();
+    if (res.ok) {
+        var statusEl = document.getElementById('status-' + id);
+        if (statusEl) {
+            statusEl.outerHTML = '<span class="status-badge status-verified">✔ Verified</span>';
+        }
+        var btn = document.getElementById('btn-' + id);
+        if (btn) {
+            btn.outerHTML = '<button class="btn-verified" disabled>Verified</button>';
+        }
+    } else {
+        alert('Error: ' + (data.message || 'Could not verify'));
+    }
+}
+</script>
+
+</body>
+</html>

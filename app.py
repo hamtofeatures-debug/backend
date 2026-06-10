@@ -1,4 +1,4 @@
-from flask import Flask, render_template, jsonify, request
+from flask import Flask, render_template, jsonify, request, redirect, url_for
 from config import Config
 from extensions import db
 from models import User # important: import user
@@ -12,7 +12,7 @@ from routes.expert import expert_bp
 from routes.farmer import farmer_bp
 
 # Import models to ensure SQLAlchemy detects them during db.create_all()
-from models import User, Question, ExpertRating, Announcement, AnnouncementReaction
+from models import User, Question, ExpertRating, Announcement, AnnouncementReaction, Business
 
 app = Flask(__name__)
 app.config.from_object(Config)
@@ -149,13 +149,28 @@ def get_expert_leaderboard():
 
 # Register blueprints with explicit variables
 app.register_blueprint(auth_bp, url_prefix='/auth')
-app.register_blueprint(admin_bp, url_prefix='/admin')
+app.register_blueprint(admin_bp, url_prefix='/admin') 
 app.register_blueprint(expert_bp, url_prefix='/expert')
 app.register_blueprint(farmer_bp, url_prefix='/farmer')
 
-@app.route('/register')
-def register_page():
+@app.route('/register-business', methods=['GET', 'POST'])
+def register_business():
+    if request.method == 'POST':
+        business = Business(
+            business_name=request.form['business_name'],
+            services=request.form['services'],
+            phone=request.form['phone'],
+            location=request.form['location'],
+            description=request.form.get['description', '']
+        )
+
+        db.session.add(business)
+        db.session.commit()
+
+        return redirect('/')
+
     return render_template('register.html')
+    
 
 if __name__ == '__main__':
     with app.app_context():
@@ -163,4 +178,5 @@ if __name__ == '__main__':
         print("Database created!")
         port = int(os.environ.get("PORT", 5000))
     app.run(host='0.0.0.0', port=port, debug=True)
+   
    
