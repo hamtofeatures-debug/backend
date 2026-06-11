@@ -31,7 +31,6 @@ class Business(db.Model):
     business_name = db.Column(db.String(200), nullable=False)
     services = db.Column(db.Text, nullable=False)
 
-    phone = db.Column(db.String(20))
     location = db.Column(db.String(200))
     description = db.Column(db.Text)
 

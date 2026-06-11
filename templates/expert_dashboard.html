@@ -1,198 +1,371 @@
+<h1>EXPERT DASHBOARD VERSION 2026-06-11 11:15</h1>
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Agrosphere Expert Workspace</title>
-    <link rel="stylesheet" href="/static/css/style.css">
-    <style>
-        body { margin: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f8f9fa; color: #333; }
-        .wrapper { display: flex; min-height: 100vh; }
-        .sidebar { width: 260px; background: #ffffff; border-right: 1px solid #e9ecef; padding: 25px 20px; display: flex; flex-direction: column; gap: 30px; }
-        .brand { font-size: 22px; font-weight: bold; color: #2e7d32; display: flex; align-items: center; gap: 8px; }
-        .menu { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 8px; }
-        .menu-item { padding: 12px 15px; border-radius: 8px; cursor: pointer; color: #495057; font-weight: 500; display: flex; align-items: center; gap: 10px; transition: all 0.2s; }
-        .menu-item:hover { background: #f1f3f5; color: #212529; }
-        .menu-item.active { background: #e8f5e9; color: #2e7d32; font-weight: 600; }
-        .main-content { flex: 1; padding: 40px; }
-        .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #dee2e6; padding-bottom: 20px; margin-bottom: 30px; }
-        .view-section { display: none; }
-        .view-section.active { display: block; }
-        .card { background: #ffffff; border-radius: 12px; border: 1px solid #e9ecef; padding: 24px; box-shadow: 0 4px 6px rgba(0,0,0,0.02); margin-bottom: 25px; }
-        textarea, input, select { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #ced4da; margin-top: 8px; margin-bottom: 15px; box-sizing: border-box; }
-        .btn { background-color: #2e7d32; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: bold; }
-        .btn:hover { background-color: #1b5e20; }
-        .btn-logout { background: #f8f9fa; border: 1px solid #ced4da; padding: 8px 16px; border-radius: 6px; cursor: pointer; }
-        .btn-logout:hover { color: #dc3545; border-color: #dc3545; }
-        .q-card { border-left: 5px solid #2e7d32; background: #fafafa; padding: 15px; margin-bottom: 15px; border-radius: 4px; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Expert Dashboard - AGROSPHERE</title>
+<style>
+    * { margin:0; padding:0; box-sizing:border-box; font-family: 'Segoe UI', Arial, sans-serif; }
+    body { display:flex; min-height:100vh; background:#f7f5ef; }
+
+    /* Sidebar */
+    .sidebar {
+        width: 250px;
+        background:#fff;
+        border-right:1px solid #e5e0d5;
+        padding:20px 0;
+    }
+    .menu-label {
+        font-size:0.75rem;
+        letter-spacing:2px;
+        color:#999;
+        font-weight:700;
+        padding:0 24px 14px 24px;
+    }
+    .sidebar nav { display:flex; flex-direction:column; gap:2px; }
+    .sidebar nav a {
+        display:flex;
+        align-items:center;
+        gap:12px;
+        padding:12px 24px;
+        text-decoration:none;
+        color:#444;
+        font-size:0.95rem;
+        font-weight:600;
+    }
+    .sidebar nav a:hover { background:#f7f9f7; }
+    .sidebar nav a.active {
+        background:#dff5ec;
+        color:#0f7a52;
+        border-radius:6px;
+        margin:0 10px;
+    }
+    .sidebar nav a .icon { font-size:1.1rem; }
+
+    /* Main */
+    .main { flex:1; display:flex; flex-direction:column; }
+
+    .topbar {
+        background:#fff;
+        border-bottom:1px solid #e5e0d5;
+        display:flex;
+        align-items:center;
+        justify-content:space-between;
+        padding:18px 30px;
+    }
+    .topbar .brand {
+        font-size:1.3rem;
+        font-weight:800;
+        letter-spacing:1px;
+        color:#1c1c1c;
+        display:flex;
+        align-items:center;
+        gap:8px;
+    }
+    .brand .dot { color:#2e7d32; font-size:1.4rem; }
+    .topbar .right { display:flex; align-items:center; gap:14px; }
+    .username { color:#888; font-weight:700; letter-spacing:1px; font-size:0.85rem; }
+    .badge-expert {
+        background:#fdecd2;
+        color:#a8651a;
+        font-weight:700;
+        font-size:0.75rem;
+        letter-spacing:1px;
+        padding:6px 14px;
+        border-radius:20px;
+    }
+    .btn-signout {
+        border:1px solid #ccc;
+        background:#fff;
+        padding:8px 16px;
+        border-radius:6px;
+        font-weight:600;
+        cursor:pointer;
+        font-size:0.85rem;
+        color:#333;
+    }
+    .btn-signout:hover { background:#f5f5f5; }
+
+    .content { padding:30px; flex:1; }
+    .content h1 { font-size:1.8rem; color:#1c1c1c; margin-bottom:6px; }
+    .content > p.subtitle { color:#777; margin-bottom:24px; }
+
+    .grid-2 {
+        display:grid;
+        grid-template-columns: 1.3fr 1fr;
+        gap:20px;
+        margin-bottom:24px;
+        align-items:start;
+    }
+
+    .panel {
+        background:#fff;
+        border:1px solid #eee2cf;
+        border-radius:10px;
+        padding:24px;
+    }
+    .panel h2 { font-size:1.2rem; margin-bottom:18px; color:#1c1c1c; }
+
+    .quick-action {
+        display:flex;
+        align-items:center;
+        gap:12px;
+        border:1px solid #eee;
+        border-radius:8px;
+        padding:14px 16px;
+        cursor:pointer;
+        font-weight:600;
+        color:#333;
+        font-size:0.95rem;
+        text-decoration:none;
+        margin-bottom:14px;
+    }
+    .quick-action:last-child { margin-bottom:0; }
+    .quick-action:hover { background:#fafafa; }
+    .quick-action .icon { font-size:1.2rem; }
+
+    .info-row {
+        display:flex;
+        align-items:center;
+        gap:10px;
+        margin-bottom:14px;
+        color:#444;
+        font-weight:600;
+        font-size:0.95rem;
+    }
+    .info-row .icon { font-size:1.1rem; }
+
+    /* Publish Article Section */
+    .publish-form label {
+        display:block;
+        font-weight:700;
+        font-size:0.85rem;
+        color:#444;
+        margin-bottom:6px;
+        margin-top:14px;
+    }
+    .publish-form label:first-of-type { margin-top:0; }
+    .publish-form input[type="text"],
+    .publish-form textarea {
+        width:100%;
+        padding:10px 12px;
+        border:1px solid #ddd;
+        border-radius:6px;
+        font-size:0.9rem;
+        font-family:inherit;
+        resize:vertical;
+    }
+    .publish-form textarea { min-height:120px; }
+
+    .file-drop {
+        display:block;
+        border:2px dashed #cfcabf;
+        border-radius:8px;
+        padding:24px;
+        text-align:center;
+        color:#888;
+        font-size:0.9rem;
+        cursor:pointer;
+        margin-top:6px;
+        background:#fcfbf8;
+    }
+    .file-drop:hover { background:#f5f3ee; }
+    .file-drop .icon { font-size:1.6rem; display:block; margin-bottom:6px; }
+    .preview-grid {
+        display:flex;
+        flex-wrap:wrap;
+        gap:10px;
+        margin-top:12px;
+    }
+    .preview-grid img {
+        width:90px; height:90px;
+        object-fit:cover;
+        border-radius:6px;
+        border:1px solid #eee;
+    }
+
+    .btn-primary {
+        margin-top:18px;
+        background:#2e7d32;
+        color:#fff;
+        border:none;
+        padding:12px 22px;
+        border-radius:6px;
+        font-weight:700;
+        font-size:0.95rem;
+        cursor:pointer;
+    }
+    .btn-primary:hover { background:#256528; }
+
+    /* Articles list */
+    .article-card {
+        border:1px solid #eee;
+        border-radius:8px;
+        padding:14px 16px;
+        margin-bottom:10px;
+    }
+    .article-card:last-child { margin-bottom:0; }
+    .article-card h4 { font-size:0.95rem; margin-bottom:4px; color:#1c1c1c; }
+    .article-card p { font-size:0.85rem; color:#777; }
+    .article-card .meta { font-size:0.75rem; color:#aaa; margin-top:6px; }
+
+    /* Business posts */
+    .business-post {
+        display:flex;
+        gap:14px;
+        border:1px solid #eee;
+        border-radius:8px;
+        padding:14px;
+        margin-bottom:12px;
+    }
+    .business-post:last-child { margin-bottom:0; }
+    .business-post img {
+        width:80px; height:80px;
+        object-fit:cover;
+        border-radius:6px;
+        flex-shrink:0;
+        background:#f0f0f0;
+    }
+    .business-post .body h4 { font-size:0.95rem; color:#1c1c1c; margin-bottom:4px; }
+    .business-post .body .biz-name { font-size:0.8rem; color:#0f7a52; font-weight:700; margin-bottom:6px; }
+    .business-post .body p { font-size:0.85rem; color:#666; }
+
+    .empty-state {
+        color:#999;
+        font-size:0.9rem;
+        text-align:center;
+        padding:20px 0;
+    }
+</style>
 </head>
 <body>
 
-    <div class="wrapper">
-        <div class="sidebar">
-            <div class="brand">🌱 Agrosphere</div>
-            <ul class="menu">
-                <li class="menu-item active" onclick="switchTab('tasks', this)">📋 Farmer Requests</li>
-                <li class="menu-item" onclick="switchTab('publish', this)">✍️ Write Article</li>
-            </ul>
+<aside class="sidebar">
+    <div class="menu-label">MENU</div>
+    <nav>
+        <a href="{{ url_for('expert_dashboard') }}" class="active"><span class="icon">🏠</span> My Dashboard</a>
+        <a href="{{ url_for('expert_questions') }}"><span class="icon">📄</span> My Questions</a>
+        <a href="{{ url_for('expert_announcements') }}"><span class="icon">📢</span> Announcements</a>
+        <a href="{{ url_for('expert_rankings') }}"><span class="icon">🏆</span> Expert Rankings</a>
+        <a href="{{ url_for('public_qa') }}"><span class="icon">🌐</span> Public Q&amp;A</a>
+        <a href="{{ url_for('expert_profile') }}"><span class="icon">👤</span> My Profile</a>
+    </nav>
+</aside>
+
+<div class="main">
+    <header class="topbar">
+        <div class="brand"><span class="dot">●</span> AGROSPHERE</div>
+        <div class="right">
+            <span class="username">{{ current_user.name.upper() }}</span>
+            <span class="badge-expert">EXPERT</span>
+            <form action="{{ url_for('logout') }}" method="POST" style="margin:0;">
+                <button type="submit" class="btn-signout">Sign Out</button>
+            </form>
+        </div>
+    </header>
+
+    <div class="content">
+        <h1>Expert Dashboard</h1>
+        <p class="subtitle">Hello {{ current_user.name.split(' ')[0]|upper }}, answer assigned farmer questions.</p>
+
+        <div class="grid-2">
+            <div class="panel">
+                <h2>Quick Actions</h2>
+                <a href="{{ url_for('expert_questions') }}" class="quick-action">
+                    <span class="icon">📄</span> View assigned questions
+                </a>
+                <a href="{{ url_for('expert_announcements') }}" class="quick-action">
+                    <span class="icon">📢</span> Announcements
+                </a>
+                <a href="{{ url_for('expert_rankings') }}" class="quick-action">
+                    <span class="icon">🏆</span> Expert rankings
+                </a>
+            </div>
+
+            <div class="panel">
+                <h2>Your Info</h2>
+                <div class="info-row"><span class="icon">👤</span> {{ current_user.name.upper() }}</div>
+                <div class="info-row"><span class="icon">📧</span> {{ current_user.email }}</div>
+                <div class="info-row"><span class="icon">#️⃣</span> #{{ current_user.id }}</div>
+            </div>
         </div>
 
-        <div class="main-content">
-            <div class="header">
-                <div>
-                    <h1 id="expertWelcome">Expert Workspace</h1>
-                    <p style="margin: 5px 0 0 0; color: #6c757d;">Consultation & Knowledge Portal</p>
-                </div>
-                <button class="btn-logout" onclick="handleSignOut()">Sign Out</button>
+        <!-- Publish Article Section -->
+        <div class="panel" style="margin-bottom:24px;">
+            <h2>Publish Article</h2>
+            <form class="publish-form" action="{{ url_for('expert_publish_article') }}" method="POST" enctype="multipart/form-data">
+                <label for="article_title">Title</label>
+                <input type="text" id="article_title" name="title" placeholder="e.g. Improving soil fertility with cover crops" required>
+
+                <label for="article_content">Content</label>
+                <textarea id="article_content" name="content" placeholder="Write your article here..." required></textarea>
+
+                <label for="article_photos">Upload Photos</label>
+                <label class="file-drop" for="article_photos">
+                    <span class="icon">📷</span>
+                    Click to upload or drag photos here (JPG, PNG)
+                </label>
+                <input type="file" id="article_photos" name="photos" accept="image/*" multiple style="display:none;" onchange="previewPhotos(event)">
+                <div class="preview-grid" id="photoPreview"></div>
+
+                <button type="submit" class="btn-primary">Publish Article</button>
+            </form>
+
+            {% if my_articles %}
+            <h2 style="margin-top:28px;">Your Published Articles</h2>
+            {% for article in my_articles %}
+            <div class="article-card">
+                <h4>{{ article.title }}</h4>
+                <p>{{ article.content[:140] }}{% if article.content|length > 140 %}...{% endif %}</p>
+                <div class="meta">Published {{ article.created_at.strftime('%b %d, %Y') }}</div>
             </div>
-
-            <div id="view-tasks" class="view-section active">
-                <h2>Assigned Consultation Requests</h2>
-                <div id="tasksContainer">Loading requests...</div>
-            </div>
-
-            <div id="view-publish" class="view-section">
-                <div class="card">
-                    <h2>Publish Educational Article</h2>
-                    <p style="color: #6c757d;">Share technical agricultural insights directly into the community feed.</p>
-                    
-                    <label>Article Title</label>
-                    <input type="text" id="articleTitle" placeholder="e.g., Managing Maize Lethal Necrosis Disease">
-
-                    <label>Category Tag</label>
-                    <select id="articleCategory">
-                        <option value="Crop Disease">Crop Disease</option>
-                        <option value="Animal Health">Animal Health</option>
-                        <option value="Soil Management">Soil Management</option>
-                        <option value="Dairy Farm Production">Dairy Farm Production</option>
-                    </select>
-
-                    <label>Content Body</label>
-                    <textarea id="articleContent" rows="8" placeholder="Type your full knowledge text here..."></textarea>
-
-                    <button class="btn" onclick="publishArticle()">Publish Article</button>
-                </div>
-            </div>
+            {% endfor %}
+            {% endif %}
         </div>
+
+        <!-- Business Section Posts -->
+        <div class="panel">
+            <h2>Business Section Posts</h2>
+            {% if business_posts %}
+                {% for post in business_posts %}
+                <div class="business-post">
+                    {% if post.image_url %}
+                    <img src="{{ post.image_url }}" alt="{{ post.title }}">
+                    {% else %}
+                    <img src="https://via.placeholder.com/80?text=No+Img" alt="No image">
+                    {% endif %}
+                    <div class="body">
+                        <h4>{{ post.title }}</h4>
+                        <div class="biz-name">{{ post.business_name }}</div>
+                        <p>{{ post.description[:120] }}{% if post.description|length > 120 %}...{% endif %}</p>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="empty-state">No business posts yet.</div>
+            {% endif %}
+        </div>
+
     </div>
+</div>
 
-    <script>
-        // Dynamically get logged expert ID, fallback to 2 for local sandboxed testing
-        const currentExpertId = localStorage.getItem('user_id') || 2; 
+<script>
+function previewPhotos(event) {
+    const preview = document.getElementById('photoPreview');
+    preview.innerHTML = '';
+    const files = event.target.files;
+    for (let i = 0; i < files.length; i++) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const img = document.createElement('img');
+            img.src = e.target.result;
+            preview.appendChild(img);
+        };
+        reader.readAsDataURL(files[i]);
+    }
+}
+</script>
 
-        function switchTab(tabName, element) {
-            document.querySelectorAll('.view-section').forEach(v => v.classList.remove('active'));
-            document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active'));
-            document.getElementById(`view-${tabName}`).classList.add('active');
-            element.classList.add('active');
-        }
-
-        // LOAD ASSIGNED QUESTIONS
-        async function loadTasks() {
-            try {
-                const response = await fetch(`/expert/tasks/${currentExpertId}`);
-                const tasks = await response.json();
-                const container = document.getElementById('tasksContainer');
-                container.innerHTML = '';
-
-                if (!tasks || tasks.length === 0) {
-                    container.innerHTML = '<p style="color: #888;">No assigned farmer requests found at the moment.</p>';
-                    return;
-                }
-
-                tasks.forEach(t => {
-                    if(t.status !== 'answered') {
-                        container.innerHTML += `
-                            <div class="card q-card">
-                                <p style="font-size: 13px; color: #6c757d; margin: 0;"><b>Farmer:</b> ${t.farmer_name} | <b>Category:</b> ${t.category}</p>
-                                <p style="font-size: 16px; font-weight: 500; margin: 10px 0;">${t.question}</p>
-                                <textarea id="answer-text-${t.id}" rows="3" placeholder="Type your professional expert advice here..."></textarea>
-                                <button class="btn" style="margin-top: 5px;" onclick="submitExpertAnswer(${t.id})">Submit Secure Answer</button>
-                            </div>
-                        `;
-                    }
-                });
-                
-                // If everything evaluated is already resolved
-                if (container.innerHTML === '') {
-                     container.innerHTML = '<p style="color: #888;">No pending farmer requests found at the moment.</p>';
-                }
-            } catch (err) {
-                console.error(err);
-                document.getElementById('tasksContainer').innerHTML = '<p style="color: red;">Error connecting to API.</p>';
-            }
-        }
-
-        // POST ADVICE CORRECTION
-        async function submitExpertAnswer(qid) {
-            const answerTextField = document.getElementById(`answer-text-${qid}`);
-            if (!answerTextField || !answerTextField.value.trim()) {
-                alert("Please write your answer response before clicking submit.");
-                return;
-            }
-
-            try {
-                const response = await fetch(`/expert/answer-question/${qid}`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ answer: answerTextField.value.trim() })
-                });
-
-                const result = await response.json();
-                if (response.ok) {
-                    alert("Success: Answer forwarded to administration preview suite!");
-                    loadTasks(); // Instantly update view without reloading page
-                } else {
-                    alert("Error: " + result.error);
-                }
-            } catch (err) {
-                alert("Failed to submit solution.");
-            }
-        }
-
-        // PUBLISH KNOWLEDGE PIECES
-        async function publishArticle() {
-            const title = document.getElementById('articleTitle').value.trim();
-            const content = document.getElementById('articleContent').value.trim();
-            const category = document.getElementById('articleCategory').value;
-
-            if(!title || !content) {
-                alert("Please fill out both title and content blocks.");
-                return;
-            }
-
-            try {
-                const response = await fetch('/expert/publish-article', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ 
-                        title: title, 
-                        content: content, 
-                        category: category, 
-                        expert_id: parseInt(currentExpertId) 
-                    })
-                });
-
-                const result = await response.json();
-                if(response.ok) {
-                    alert(result.message);
-                    document.getElementById('articleTitle').value = '';
-                    document.getElementById('articleContent').value = '';
-                } else {
-                    alert("Error: " + result.error);
-                }
-            } catch(e) {
-                alert("Failed to submit article.");
-            }
-        }
-
-        function handleSignOut() {
-            localStorage.clear();
-            window.location.href = '/';
-        }
-
-        window.onload = loadTasks;
-    </script>
 </body>
 </html>

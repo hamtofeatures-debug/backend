@@ -10,6 +10,7 @@ from routes.auth import auth_bp
 from routes.admin import admin_bp
 from routes.expert import expert_bp
 from routes.farmer import farmer_bp
+from routes.business import business_bp
 
 # Import models to ensure SQLAlchemy detects them during db.create_all()
 from models import User, Question, ExpertRating, Announcement, AnnouncementReaction, Business
@@ -160,6 +161,7 @@ app.register_blueprint(auth_bp, url_prefix='/auth')
 app.register_blueprint(admin_bp, url_prefix='/admin') 
 app.register_blueprint(expert_bp, url_prefix='/expert')
 app.register_blueprint(farmer_bp, url_prefix='/farmer')
+app.register_blueprint(business_bp, url_prefix='/business')
 
 @app.route('/register-business', methods=['GET', 'POST'])
 def register_business():

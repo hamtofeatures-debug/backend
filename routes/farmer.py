@@ -1,8 +1,12 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, render_template
 from extensions import db
 from models import Question, User
 
 farmer_bp = Blueprint('farmer', __name__)
+
+@farmer_bp.route('/')
+def home():
+    return render_template('farmer_dashboard.html')
 
 # ==========================================
 # 1. FARMER SUBMITS A NEW QUESTION

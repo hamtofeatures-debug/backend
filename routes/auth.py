@@ -30,10 +30,10 @@ def register():
     if User.query.filter_by(email=email).first():
         return jsonify({"error": "Email already registered"}), 400
         
-    # Limit Admin accounts to 3
+    # Limit Admin accounts to 1
     if role == "admin":
         admin_count = User.query.filter_by(role="admin").count()
-        if admin_count >= 3:
+        if admin_count >= 1:
             return jsonify({"error": "Maximum number of admins reached"}), 400
         
     # Hash password safely using Werkzeug's supported format
@@ -88,12 +88,20 @@ def login():
         
         # Decide where to route the user next based on role validation
         if user.role == 'admin':
-            redirect_url = url_for('admin.home')  # Points to /admin/dashboard
+            redirect_url = '/admin/dashboard'
+
         elif user.role == 'expert':
-            redirect_url = '/expert/dashboard'  # Or your specific expert view path
+            redirect_url = '/expert/dashboard'
+
+        elif user.role == 'farmer':
+            redirect_url = '/farmer/dashboard'
+
+        elif user.role == 'business':
+            redirect_url = '/business/dashboard'    
+
         else:
-            redirect_url = '/'  # Farmers return to home base
-            
+            redirect_url = '/'  
+                        
         return jsonify({
             "message": f"Welcome back {user.fullname}!",
             "redirect_to": redirect_url,
@@ -121,7 +129,6 @@ def register_business():
 
     business_name = data.get('business_name')
     services = data.get('services')
-    phone = data.get('phone')
     location = data.get('location')
     description = data.get('description')
 
@@ -142,7 +149,6 @@ def register_business():
     business = Business(
         business_name=business_name,
         services=services,
-        phone=phone,
         location=location,
         description=description,
         status="pending",

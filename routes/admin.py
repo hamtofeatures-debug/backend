@@ -6,7 +6,7 @@ admin_bp = Blueprint('admin', __name__)
 
 @admin_bp.route('/')
 def home():
-    return jsonify({"message": "Welcome to Admin Dashboard!"})
+    return render_template('admin_dashboard.html')
 
 # ── USERS ──
 @admin_bp.route('/user')
@@ -277,7 +277,6 @@ def get_businesses():
             "id": b.id,
             "business_name": b.business_name,
             "services": b.services,
-            "phone": b.phone,
             "location": b.location,
             "status": b.status,
             "verification_status": b.verification_status,
@@ -300,7 +299,6 @@ def pending_businesses():
             "id": b.id,
             "business_name": b.business_name,
             "services": b.services,
-            "phone": b.phone,
             "location": b.location
         }
         for b in businesses

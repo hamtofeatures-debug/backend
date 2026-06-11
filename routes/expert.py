@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, render_template
 from extensions import db
 from models import User, Farmer, Expert, Question
 from datetime import datetime
@@ -7,7 +7,7 @@ expert_bp = Blueprint('expert', __name__)
 
 @expert_bp.route('/')
 def home():
-    return jsonify({"message": "Welcome to Expert Dashboard!"})
+    return render_template('expert_dashboard.html') 
 
 @expert_bp.route('/my-questions/<int:expert_id>')
 def my_questions(expert_id):

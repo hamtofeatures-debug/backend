@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Dashboard - AGROSPHERE</title>
+<style>
+    * { margin:0; padding:0; box-sizing:border-box; font-family: 'Segoe UI', Arial, sans-serif; }
+    body { display:flex; min-height:100vh; background:#eef1ee; }
+
+    /* Sidebar */
+    .sidebar {
+        width: 250px;
+        background:#fff;
+        border-right:1px solid #e0e0e0;
+        display:flex;
+        flex-direction:column;
+        padding:20px 0;
+    }
+    .sidebar .logo {
+        display:flex;
+        align-items:center;
+        gap:8px;
+        font-size:1.3rem;
+        font-weight:800;
+        color:#1b5e20;
+        padding:0 20px 20px 20px;
+    }
+    .sidebar nav { display:flex; flex-direction:column; gap:2px; }
+    .sidebar nav a {
+        display:flex;
+        align-items:center;
+        gap:12px;
+        padding:12px 20px;
+        text-decoration:none;
+        color:#444;
+        font-size:0.95rem;
+        font-weight:600;
+        border-left:4px solid transparent;
+    }
+    .sidebar nav a:hover { background:#f5f7f5; }
+    .sidebar nav a.active {
+        background:#eaf3ea;
+        color:#1b5e20;
+        border-left:4px solid #2e7d32;
+    }
+    .sidebar nav a .icon { font-size:1.1rem; }
+
+    /* Main area */
+    .main { flex:1; display:flex; flex-direction:column; }
+
+    /* Top bar */
+    .topbar {
+        background:#fff;
+        border-bottom:1px solid #e0e0e0;
+        display:flex;
+        align-items:center;
+        justify-content:space-between;
+        padding:18px 30px;
+    }
+    .topbar h1 { font-size:1.4rem; color:#1c1c1c; }
+    .topbar .right { display:flex; align-items:center; gap:14px; }
+    .badge-admin {
+        background:#dff5e1;
+        color:#1b5e20;
+        font-weight:700;
+        font-size:0.75rem;
+        letter-spacing:1px;
+        padding:6px 14px;
+        border-radius:20px;
+    }
+    .btn-signout {
+        border:1px solid #ccc;
+        background:#fff;
+        padding:8px 16px;
+        border-radius:6px;
+        font-weight:600;
+        cursor:pointer;
+        font-size:0.85rem;
+        color:#333;
+    }
+    .btn-signout:hover { background:#f5f5f5; }
+
+    /* Content */
+    .content { padding:30px; flex:1; }
+    .welcome h2 { font-size:1.6rem; margin-bottom:6px; color:#1c1c1c; }
+    .welcome p { color:#666; margin-bottom:24px; }
+
+    .stats-grid {
+        display:grid;
+        grid-template-columns:repeat(2, 1fr);
+        gap:20px;
+        max-width:760px;
+        margin-bottom:24px;
+    }
+    .stat-card {
+        background:#fff;
+        border-radius:10px;
+        padding:22px 24px;
+        box-shadow:0 1px 3px rgba(0,0,0,0.04);
+    }
+    .stat-card .label {
+        font-size:0.75rem;
+        font-weight:700;
+        letter-spacing:1px;
+        color:#888;
+        margin-bottom:10px;
+    }
+    .stat-card .value {
+        font-size:2.2rem;
+        font-weight:800;
+        color:#1c1c1c;
+    }
+    .stat-card .sub {
+        margin-top:6px;
+        font-size:0.8rem;
+        font-weight:600;
+        color:#2e7d32;
+    }
+
+    .bottom-grid {
+        display:grid;
+        grid-template-columns:repeat(2, 1fr);
+        gap:20px;
+        max-width:760px;
+    }
+    .panel {
+        background:#fff;
+        border-radius:10px;
+        padding:22px 24px;
+        box-shadow:0 1px 3px rgba(0,0,0,0.04);
+    }
+    .panel h3 { font-size:1.1rem; margin-bottom:4px; color:#1c1c1c; }
+    .panel p.sub-text { color:#888; font-size:0.85rem; margin-bottom:16px; }
+
+    .quick-action {
+        display:flex;
+        align-items:center;
+        gap:12px;
+        border:1px solid #e0e0e0;
+        border-radius:8px;
+        padding:14px;
+        cursor:pointer;
+        font-weight:600;
+        color:#333;
+        font-size:0.9rem;
+        text-decoration:none;
+    }
+    .quick-action:hover { background:#f7f9f7; }
+    .quick-action .icon { font-size:1.2rem; }
+
+    .account-row {
+        display:flex;
+        align-items:center;
+        gap:12px;
+        margin-bottom:14px;
+    }
+    .avatar {
+        width:44px; height:44px;
+        border-radius:50%;
+        background:#dff5e1;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        font-size:1.3rem;
+    }
+    .account-row .name { font-weight:700; color:#1c1c1c; }
+    .account-row .role { font-size:0.8rem; color:#888; }
+    .account-detail { font-size:0.85rem; color:#555; margin-top:4px; }
+    .account-detail span.label { color:#888; }
+</style>
+</head>
+<body>
+
+<aside class="sidebar">
+    <div class="logo">🌿 AGROSPHERE</div>
+    <nav>
+        <a href="{{ url_for('admin_overview') }}" class="active"><span class="icon">📊</span> Overview</a>
+        <a href="{{ url_for('admin_users') }}"><span class="icon">👥</span> All Users</a>
+        <a href="{{ url_for('admin_questions') }}"><span class="icon">❓</span> All Questions</a>
+        <a href="{{ url_for('admin_pending') }}"><span class="icon">🔍</span> Pending Review</a>
+        <a href="{{ url_for('admin_announcements') }}"><span class="icon">📢</span> Announcements</a>
+        <a href="{{ url_for('admin_rankings') }}"><span class="icon">🏆</span> Expert Rankings</a>
+        <a href="{{ url_for('admin_public_qa') }}"><span class="icon">🌐</span> Public Q&amp;A</a>
+        <a href="{{ url_for('admin_businesses') }}"><span class="icon">🏢</span> Businesses</a>
+        <a href="{{ url_for('admin_reports') }}"><span class="icon">📈</span> Reports</a>
+    </nav>
+</aside>
+
+<div class="main">
+    <header class="topbar">
+        <h1>Admin Dashboard</h1>
+        <div class="right">
+            <span class="badge-admin">ADMIN</span>
+            <form action="{{ url_for('logout') }}" method="POST" style="margin:0;">
+                <button type="submit" class="btn-signout">Sign Out</button>
+            </form>
+        </div>
+    </header>
+
+    <div class="content">
+        <div class="welcome">
+            <h2>Welcome back!</h2>
+            <p>Here's what's happening on the platform today.</p>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="label">USERS</div>
+                <div class="value">{{ stats.users }}</div>
+            </div>
+            <div class="stat-card">
+                <div class="label">FARMERS</div>
+                <div class="value">{{ stats.farmers }}</div>
+            </div>
+            <div class="stat-card">
+                <div class="label">EXPERTS</div>
+                <div class="value">{{ stats.experts }}</div>
+            </div>
+            <div class="stat-card">
+                <div class="label">QUESTIONS</div>
+                <div class="value">{{ stats.questions }}</div>
+            </div>
+            <div class="stat-card">
+                <div class="label">PENDING REVIEW</div>
+                <div class="value">{{ stats.pending }}</div>
+                <div class="sub">Needs approval</div>
+            </div>
+            <div class="stat-card">
+                <div class="label">PUBLISHED</div>
+                <div class="value">{{ stats.published }}</div>
+                <div class="sub">Live Q&amp;A</div>
+            </div>
+        </div>
+
+        <div class="bottom-grid">
+            <div class="panel">
+                <h3>Quick Actions</h3>
+                <p class="sub-text">Common admin tasks</p>
+                <a href="{{ url_for('post_question_for_farmer') }}" class="quick-action">
+                    <span class="icon">📋</span> Post question for farmer
+                </a>
+            </div>
+
+            <div class="panel">
+                <h3>Your Account</h3>
+                <p class="sub-text">Logged-in administrator</p>
+                <div class="account-row">
+                    <div class="avatar">👤</div>
+                    <div>
+                        <div class="name">{{ current_user.name }}</div>
+                        <div class="role">Administrator</div>
+                    </div>
+                </div>
+                <div class="account-detail"><span class="label">Email:</span> {{ current_user.email }}</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>
