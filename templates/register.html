@@ -1,56 +1,222 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Business Registration</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Create Account - AGROSPHERE</title>
+<style>
+    * { margin:0; padding:0; box-sizing:border-box; font-family:'Segoe UI', Arial, sans-serif; }
+    body {
+        min-height:100vh;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        background:#f7f5ef;
+        padding:20px;
+    }
+    .card {
+        background:#fff;
+        border:1px solid #eee2cf;
+        border-radius:14px;
+        padding:40px;
+        width:100%;
+        max-width:460px;
+    }
+    .card h1 { font-size:1.8rem; color:#1c1c1c; margin-bottom:6px; }
+    .card p.subtitle { color:#777; margin-bottom:24px; }
+
+    .tabs {
+        display:flex;
+        background:#f1efe9;
+        border-radius:8px;
+        padding:4px;
+        margin-bottom:24px;
+    }
+    .tabs a {
+        flex:1;
+        text-align:center;
+        padding:10px;
+        border-radius:6px;
+        text-decoration:none;
+        font-weight:700;
+        font-size:0.95rem;
+        color:#666;
+    }
+    .tabs a.active { background:#2e7d32; color:#fff; }
+
+    label {
+        display:block;
+        font-weight:700;
+        font-size:0.85rem;
+        color:#444;
+        margin-bottom:6px;
+        margin-top:16px;
+    }
+    label:first-of-type { margin-top:0; }
+    input, select {
+        width:100%;
+        padding:12px 14px;
+        border:1px solid #ddd;
+        border-radius:6px;
+        font-size:0.95rem;
+        font-family:inherit;
+        background:#fff;
+    }
+
+    .role-note {
+        margin-top:8px;
+        font-size:0.82rem;
+        color:#888;
+        background:#f7f9f7;
+        border-radius:6px;
+        padding:8px 12px;
+        display:none;
+    }
+    .role-note.show { display:block; }
+
+    .btn-primary {
+        margin-top:24px;
+        width:100%;
+        background:#2e7d32;
+        color:#fff;
+        border:none;
+        padding:14px;
+        border-radius:6px;
+        font-weight:700;
+        font-size:1rem;
+        cursor:pointer;
+    }
+    .btn-primary:hover { background:#256528; }
+    .btn-primary:disabled { background:#9bbf9d; cursor:not-allowed; }
+
+    .error-msg, .success-msg {
+        margin-top:14px;
+        border-radius:6px;
+        padding:10px 14px;
+        font-size:0.9rem;
+        display:none;
+    }
+    .error-msg { background:#fdecea; color:#c0392b; border:1px solid #f5c6cb; }
+    .success-msg { background:#e9f7ef; color:#0f7a52; border:1px solid #b7e4c7; }
+
+    .back-home {
+        display:block;
+        margin-top:20px;
+        text-align:center;
+        color:#666;
+        text-decoration:none;
+        font-size:0.9rem;
+    }
+    .back-home:hover { text-decoration:underline; }
+</style>
 </head>
 <body>
 
-    <h1>Register Your Business</h1>
+<div class="card">
+    <h1>Join AGROSPHERE</h1>
+    <p class="subtitle">Create your account below</p>
 
-    <form id="businessForm">
+    <div class="tabs">
+        <a href="{{ url_for('login_page') }}">Sign In</a>
+        <a href="{{ url_for('register_page') }}" class="active">Register</a>
+    </div>
 
-        <label>Business Name</label><br>
-        <input type="text" id="business_name" required><br><br>
+    <form id="registerForm">
+        <label for="fullname">Full Name</label>
+        <input type="text" id="fullname" name="fullname" placeholder="Your full name" required>
 
-        <label>Services Provided</label><br>
-        <textarea id="services" required></textarea><br><br>
+        <label for="email">Email</label>
+        <input type="email" id="email" name="email" placeholder="you@example.com" required autocomplete="email">
 
-        <label>Location</label><br>
-        <input type="text" id="location"><br><br>
+        <label for="phone">Phone</label>
+        <input type="tel" id="phone" name="phone" placeholder="+256 700 000000" required>
 
-        <label>Description</label><br>
-        <textarea id="description"></textarea><br><br>
+        <label for="password">Password</label>
+        <input type="password" id="password" name="password" placeholder="Min. 6 characters" required minlength="6" autocomplete="new-password">
 
-        <button type="submit">Register Business</button>
+        <label for="role">I am a...</label>
+        <select id="role" name="role" required>
+            <option value="">Select your role...</option>
+            <option value="farmer">🌾 Farmer</option>
+            <option value="expert">🔬 Expert</option>
+            <option value="business">🏢 Business</option>
+            <option value="admin">⚙️ Admin</option>
+        </select>
 
+        <div class="role-note" id="businessNote">
+            🏢 After creating your account, you'll be taken to a short form to register your business details (name, services, location) for admin approval.
+        </div>
+
+        <div class="error-msg" id="errorMsg"></div>
+        <div class="success-msg" id="successMsg"></div>
+
+        <button type="submit" class="btn-primary" id="submitBtn">Create Account</button>
     </form>
 
-    <p id="message"></p>
+    <a href="{{ url_for('index') }}" class="back-home">&larr; Back to home</a>
+</div>
 
-    <script>
-        document.getElementById("businessForm").addEventListener("submit", async function(e) {
+<script>
+const roleSelect = document.getElementById('role');
+const businessNote = document.getElementById('businessNote');
 
-            e.preventDefault();
+roleSelect.addEventListener('change', function () {
+    businessNote.classList.toggle('show', this.value === 'business');
+});
 
-            const response = await fetch("/auth/register-business", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({
-                    business_name: document.getElementById("business_name").value,
-                    services: document.getElementById("services").value,
-                    location: document.getElementById("location").value,
-                    description: document.getElementById("description").value
-                })
-            });
+document.getElementById('registerForm').addEventListener('submit', async function (e) {
+    e.preventDefault();
 
-            const data = await response.json();
+    const submitBtn = document.getElementById('submitBtn');
+    const errorMsg = document.getElementById('errorMsg');
+    const successMsg = document.getElementById('successMsg');
+    errorMsg.style.display = 'none';
+    successMsg.style.display = 'none';
 
-            document.getElementById("message").innerText =
-                data.message || data.error;
+    const payload = {
+        fullname: document.getElementById('fullname').value.trim(),
+        email: document.getElementById('email').value.trim(),
+        phone: document.getElementById('phone').value.trim(),
+        password: document.getElementById('password').value,
+        role: document.getElementById('role').value
+    };
+
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Creating account...';
+
+    try {
+        const res = await fetch('/auth/register', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
         });
-    </script>
+
+        const data = await res.json();
+
+        if (res.ok) {
+            if (payload.role === 'business') {
+                // Send to the business details form, carrying the email
+                // so it can be linked to this account.
+                window.location.href = '/register-business?email=' + encodeURIComponent(payload.email);
+            } else {
+                successMsg.textContent = data.message + ' Redirecting to sign in...';
+                successMsg.style.display = 'block';
+                setTimeout(() => window.location.href = '/login', 1200);
+            }
+        } else {
+            errorMsg.textContent = data.error || 'Registration failed. Please try again.';
+            errorMsg.style.display = 'block';
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Create Account';
+        }
+    } catch (err) {
+        errorMsg.textContent = 'Something went wrong. Please try again.';
+        errorMsg.style.display = 'block';
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Create Account';
+    }
+});
+</script>
 
 </body>
 </html>

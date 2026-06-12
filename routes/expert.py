@@ -1,13 +1,10 @@
-from flask import Blueprint, request, jsonify, render_template
+from flask import Blueprint, request, jsonify
 from extensions import db
 from models import User, Farmer, Expert, Question
 from datetime import datetime
 
 expert_bp = Blueprint('expert', __name__)
 
-@expert_bp.route('/')
-def home():
-    return render_template('expert_dashboard.html') 
 
 @expert_bp.route('/my-questions/<int:expert_id>')
 def my_questions(expert_id):
@@ -28,6 +25,7 @@ def my_questions(expert_id):
         })
     return jsonify(result)
 
+
 @expert_bp.route('/answer/<int:qid>', methods=['POST'])
 def answer_question(qid):
     data = request.get_json()
@@ -46,6 +44,7 @@ def answer_question(qid):
     q.answered_at = datetime.utcnow()
     db.session.commit()
     return jsonify({"message": "Answer submitted for admin review!"}), 200
+
 
 @expert_bp.route('/profile/<int:user_id>')
 def profile(user_id):

@@ -1,5 +1,184 @@
-<input type="text" name="business_name" required>
-<textarea name="services" required></textarea>   <!-- not services_provided -->
-<input type="text" name="phone" required>
-<input type="text" name="location" required>
-<textarea name="description"></textarea>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Register Your Business - AGROSPHERE</title>
+<style>
+    * { margin:0; padding:0; box-sizing:border-box; font-family:'Segoe UI', Arial, sans-serif; }
+    body {
+        min-height:100vh;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        background:#f7f5ef;
+        padding:20px;
+    }
+    .card {
+        background:#fff;
+        border:1px solid #eee2cf;
+        border-radius:14px;
+        padding:40px;
+        width:100%;
+        max-width:480px;
+    }
+    .card h1 { font-size:1.8rem; color:#1c1c1c; margin-bottom:6px; }
+    .card p.subtitle { color:#777; margin-bottom:24px; }
+
+    label {
+        display:block;
+        font-weight:700;
+        font-size:0.85rem;
+        color:#444;
+        margin-bottom:6px;
+        margin-top:16px;
+    }
+    label:first-of-type { margin-top:0; }
+    input, textarea {
+        width:100%;
+        padding:12px 14px;
+        border:1px solid #ddd;
+        border-radius:6px;
+        font-size:0.95rem;
+        font-family:inherit;
+        background:#fff;
+        resize:vertical;
+    }
+    textarea { min-height:90px; }
+
+    .btn-primary {
+        margin-top:24px;
+        width:100%;
+        background:#1a4fbf;
+        color:#fff;
+        border:none;
+        padding:14px;
+        border-radius:6px;
+        font-weight:700;
+        font-size:1rem;
+        cursor:pointer;
+    }
+    .btn-primary:hover { background:#15409c; }
+    .btn-primary:disabled { background:#9bb6e6; cursor:not-allowed; }
+
+    .error-msg, .success-msg {
+        margin-top:14px;
+        border-radius:6px;
+        padding:10px 14px;
+        font-size:0.9rem;
+        display:none;
+    }
+    .error-msg { background:#fdecea; color:#c0392b; border:1px solid #f5c6cb; }
+    .success-msg { background:#e9f7ef; color:#0f7a52; border:1px solid #b7e4c7; }
+
+    .back-home {
+        display:block;
+        margin-top:20px;
+        text-align:center;
+        color:#666;
+        text-decoration:none;
+        font-size:0.9rem;
+    }
+    .back-home:hover { text-decoration:underline; }
+
+    .note {
+        background:#e8eefc;
+        color:#1a4fbf;
+        border-radius:6px;
+        padding:10px 14px;
+        font-size:0.85rem;
+        margin-bottom:20px;
+    }
+</style>
+</head>
+<body>
+
+<div class="card">
+    <h1>Register Your Business</h1>
+    <p class="subtitle">Tell us about your business — an admin will review and approve it.</p>
+
+    <div class="note">
+        🏢 Your business account email: <strong id="bizEmailDisplay"></strong>
+    </div>
+
+    <form id="businessForm">
+        <input type="hidden" id="email" name="email">
+
+        <label for="business_name">Business Name</label>
+        <input type="text" id="business_name" name="business_name" placeholder="e.g. Gulu Dairy Cooperative" required>
+
+        <label for="services">Services / Products Offered</label>
+        <textarea id="services" name="services" placeholder="e.g. Animal feed supply, veterinary products, dairy equipment..." required></textarea>
+
+        <label for="location">Location</label>
+        <input type="text" id="location" name="location" placeholder="e.g. Gulu, Uganda">
+
+        <label for="description">Description</label>
+        <textarea id="description" name="description" placeholder="Brief description of your business..."></textarea>
+
+        <div class="error-msg" id="errorMsg"></div>
+        <div class="success-msg" id="successMsg"></div>
+
+        <button type="submit" class="btn-primary" id="submitBtn">Submit for Approval</button>
+    </form>
+
+    <a href="{{ url_for('index') }}" class="back-home">&larr; Back to home</a>
+</div>
+
+<script>
+// Read the email passed from the registration step
+const params = new URLSearchParams(window.location.search);
+const email = params.get('email') || '';
+document.getElementById('email').value = email;
+document.getElementById('bizEmailDisplay').textContent = email || '(not set)';
+
+document.getElementById('businessForm').addEventListener('submit', async function (e) {
+    e.preventDefault();
+
+    const submitBtn = document.getElementById('submitBtn');
+    const errorMsg = document.getElementById('errorMsg');
+    const successMsg = document.getElementById('successMsg');
+    errorMsg.style.display = 'none';
+    successMsg.style.display = 'none';
+
+    const payload = {
+        email: document.getElementById('email').value,
+        business_name: document.getElementById('business_name').value.trim(),
+        services: document.getElementById('services').value.trim(),
+        location: document.getElementById('location').value.trim(),
+        description: document.getElementById('description').value.trim()
+    };
+
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Submitting...';
+
+    try {
+        const res = await fetch('/auth/register-business', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+
+        const data = await res.json();
+
+        if (res.ok) {
+            successMsg.textContent = 'Business submitted! Pending admin approval. Redirecting to sign in...';
+            successMsg.style.display = 'block';
+            setTimeout(() => window.location.href = '/login', 1500);
+        } else {
+            errorMsg.textContent = data.error || 'Submission failed. Please try again.';
+            errorMsg.style.display = 'block';
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Submit for Approval';
+        }
+    } catch (err) {
+        errorMsg.textContent = 'Something went wrong. Please try again.';
+        errorMsg.style.display = 'block';
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Submit for Approval';
+    }
+});
+</script>
+
+</body>
+</html>

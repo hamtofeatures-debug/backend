@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Login - AGROSPHERE</title>
+<style>
+    * { margin:0; padding:0; box-sizing:border-box; font-family:'Segoe UI', Arial, sans-serif; }
+    body {
+        min-height:100vh;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        background:#f7f5ef;
+    }
+    .card {
+        background:#fff;
+        border:1px solid #eee2cf;
+        border-radius:14px;
+        padding:40px;
+        width:100%;
+        max-width:420px;
+    }
+    .card h1 { font-size:1.8rem; color:#1c1c1c; margin-bottom:6px; }
+    .card p.subtitle { color:#777; margin-bottom:24px; }
+
+    .tabs {
+        display:flex;
+        background:#f1efe9;
+        border-radius:8px;
+        padding:4px;
+        margin-bottom:24px;
+    }
+    .tabs a {
+        flex:1;
+        text-align:center;
+        padding:10px;
+        border-radius:6px;
+        text-decoration:none;
+        font-weight:700;
+        font-size:0.95rem;
+        color:#666;
+    }
+    .tabs a.active {
+        background:#2e7d32;
+        color:#fff;
+    }
+
+    label {
+        display:block;
+        font-weight:700;
+        font-size:0.85rem;
+        color:#444;
+        margin-bottom:6px;
+        margin-top:16px;
+    }
+    label:first-of-type { margin-top:0; }
+    input[type="email"],
+    input[type="password"] {
+        width:100%;
+        padding:12px 14px;
+        border:1px solid #ddd;
+        border-radius:6px;
+        font-size:0.95rem;
+        font-family:inherit;
+    }
+
+    .btn-primary {
+        margin-top:24px;
+        width:100%;
+        background:#2e7d32;
+        color:#fff;
+        border:none;
+        padding:14px;
+        border-radius:6px;
+        font-weight:700;
+        font-size:1rem;
+        cursor:pointer;
+    }
+    .btn-primary:hover { background:#256528; }
+    .btn-primary:disabled { background:#9bbf9d; cursor:not-allowed; }
+
+    .error-msg {
+        margin-top:14px;
+        background:#fdecea;
+        color:#c0392b;
+        border:1px solid #f5c6cb;
+        border-radius:6px;
+        padding:10px 14px;
+        font-size:0.9rem;
+        display:none;
+    }
+
+    .back-home {
+        display:block;
+        margin-top:20px;
+        text-align:center;
+        color:#666;
+        text-decoration:none;
+        font-size:0.9rem;
+    }
+    .back-home:hover { text-decoration:underline; }
+</style>
+</head>
+<body>
+
+<div class="card">
+    <h1>Welcome back</h1>
+    <p class="subtitle">Sign in to your account</p>
+
+    <div class="tabs">
+        <a href="{{ url_for('index') }}#login" class="active">Sign In</a>
+        <a href="{{ url_for('index') }}#register">Register</a>
+    </div>
+
+    <form id="loginForm">
+        <label for="email">Email</label>
+        <input type="email" id="email" name="email" placeholder="you@example.com" required autocomplete="email">
+
+        <label for="password">Password</label>
+        <input type="password" id="password" name="password" placeholder="Enter your password" required autocomplete="current-password">
+
+        <div class="error-msg" id="errorMsg"></div>
+
+        <button type="submit" class="btn-primary" id="submitBtn">Sign In</button>
+    </form>
+
+    <a href="{{ url_for('index') }}" class="back-home">&larr; Back to home</a>
+</div>
+
+<script>
+document.getElementById('loginForm').addEventListener('submit', async function (e) {
+    e.preventDefault();
+
+    const submitBtn = document.getElementById('submitBtn');
+    const errorMsg = document.getElementById('errorMsg');
+    errorMsg.style.display = 'none';
+
+    const email = document.getElementById('email').value.trim();
+    const password = document.getElementById('password').value;
+
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Signing in...';
+
+    try {
+        const res = await fetch('/auth/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, password })
+        });
+
+        const data = await res.json();
+
+        if (res.ok) {
+            // Redirect to the role-specific dashboard returned by the server
+            window.location.href = data.redirect_to || '/';
+        } else {
+            errorMsg.textContent = data.error || 'Login failed. Please try again.';
+            errorMsg.style.display = 'block';
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Sign In';
+        }
+    } catch (err) {
+        errorMsg.textContent = 'Something went wrong. Please try again.';
+        errorMsg.style.display = 'block';
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Sign In';
+    }
+});
+</script>
+
+</body>
+</html>

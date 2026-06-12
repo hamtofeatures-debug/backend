@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Public Q&A - AGROSPHERE</title>
+<style>
+    * { margin:0; padding:0; box-sizing:border-box; font-family: 'Segoe UI', Arial, sans-serif; }
+    body { display:flex; min-height:100vh; background:#f7f5ef; }
+
+    /* Sidebar */
+    .sidebar {
+        width: 250px;
+        background:#fff;
+        border-right:1px solid #e5e0d5;
+        padding:20px 0;
+    }
+    .menu-label {
+        font-size:0.75rem;
+        letter-spacing:2px;
+        color:#999;
+        font-weight:700;
+        padding:0 24px 14px 24px;
+    }
+    .sidebar nav { display:flex; flex-direction:column; gap:2px; }
+    .sidebar nav a {
+        display:flex;
+        align-items:center;
+        gap:12px;
+        padding:12px 24px;
+        text-decoration:none;
+        color:#444;
+        font-size:0.95rem;
+        font-weight:600;
+    }
+    .sidebar nav a:hover { background:#f7f9f7; }
+    .sidebar nav a.active {
+        background:#dff5ec;
+        color:#0f7a52;
+        border-radius:6px;
+        margin:0 10px;
+    }
+    .sidebar nav a .icon { font-size:1.1rem; }
+
+    /* Main */
+    .main { flex:1; display:flex; flex-direction:column; }
+
+    .topbar {
+        background:#fff;
+        border-bottom:1px solid #e5e0d5;
+        display:flex;
+        align-items:center;
+        justify-content:space-between;
+        padding:18px 30px;
+    }
+    .topbar .brand {
+        font-size:1.3rem;
+        font-weight:800;
+        letter-spacing:1px;
+        color:#1c1c1c;
+        display:flex;
+        align-items:center;
+        gap:8px;
+    }
+    .brand .dot { color:#2e7d32; font-size:1.4rem; }
+    .topbar .right { display:flex; align-items:center; gap:14px; }
+    .username { color:#888; font-weight:700; letter-spacing:1px; font-size:0.85rem; }
+    .badge-farmer {
+        background:#dff5e1;
+        color:#1b5e20;
+        font-weight:700;
+        font-size:0.75rem;
+        letter-spacing:1px;
+        padding:6px 14px;
+        border-radius:20px;
+    }
+    .btn-signout {
+        border:1px solid #ccc;
+        background:#fff;
+        padding:8px 16px;
+        border-radius:6px;
+        font-weight:600;
+        cursor:pointer;
+        font-size:0.85rem;
+        color:#333;
+    }
+    .btn-signout:hover { background:#f5f5f5; }
+
+    .content { padding:30px; flex:1; }
+    .content h1 { font-size:1.8rem; color:#1c1c1c; margin-bottom:6px; }
+    .content > p.subtitle { color:#777; margin-bottom:24px; }
+
+    /* Ask an Expert form */
+    .panel {
+        background:#fff;
+        border:1px solid #eee2cf;
+        border-radius:10px;
+        padding:24px;
+        margin-bottom:24px;
+    }
+    .panel h2 { font-size:1.2rem; margin-bottom:18px; color:#1c1c1c; }
+
+    .ask-form label {
+        display:block;
+        font-weight:700;
+        font-size:0.85rem;
+        color:#444;
+        margin-bottom:6px;
+        margin-top:14px;
+    }
+    .ask-form label:first-of-type { margin-top:0; }
+    .ask-form input[type="text"],
+    .ask-form select,
+    .ask-form textarea {
+        width:100%;
+        padding:10px 12px;
+        border:1px solid #ddd;
+        border-radius:6px;
+        font-size:0.9rem;
+        font-family:inherit;
+        resize:vertical;
+    }
+    .ask-form textarea { min-height:100px; }
+
+    .file-drop {
+        display:block;
+        border:2px dashed #cfcabf;
+        border-radius:8px;
+        padding:24px;
+        text-align:center;
+        color:#888;
+        font-size:0.9rem;
+        cursor:pointer;
+        margin-top:6px;
+        background:#fcfbf8;
+    }
+    .file-drop:hover { background:#f5f3ee; }
+    .file-drop .icon { font-size:1.6rem; display:block; margin-bottom:6px; }
+    .preview-grid {
+        display:flex;
+        flex-wrap:wrap;
+        gap:10px;
+        margin-top:12px;
+    }
+    .preview-grid .thumb {
+        position:relative;
+        width:90px; height:90px;
+    }
+    .preview-grid img {
+        width:90px; height:90px;
+        object-fit:cover;
+        border-radius:6px;
+        border:1px solid #eee;
+    }
+    .preview-grid .remove {
+        position:absolute;
+        top:-6px; right:-6px;
+        background:#c0392b;
+        color:#fff;
+        border:none;
+        border-radius:50%;
+        width:20px; height:20px;
+        font-size:0.7rem;
+        line-height:20px;
+        text-align:center;
+        cursor:pointer;
+        padding:0;
+    }
+
+    .btn-primary {
+        margin-top:18px;
+        background:#2e7d32;
+        color:#fff;
+        border:none;
+        padding:12px 22px;
+        border-radius:6px;
+        font-weight:700;
+        font-size:0.95rem;
+        cursor:pointer;
+    }
+    .btn-primary:hover { background:#256528; }
+
+    /* Q&A card */
+    .qa-card {
+        background:#fff;
+        border:1px solid #eee2cf;
+        border-radius:10px;
+        padding:24px;
+        margin-bottom:20px;
+    }
+    .qa-card .tag {
+        display:inline-block;
+        border:1px solid #ddd;
+        border-radius:20px;
+        padding:4px 14px;
+        font-size:0.8rem;
+        color:#666;
+        margin-bottom:10px;
+    }
+    .qa-card .meta {
+        display:inline-block;
+        font-size:0.85rem;
+        color:#888;
+        margin-left:8px;
+    }
+    .qa-card .question {
+        font-size:1.05rem;
+        font-weight:700;
+        color:#1c1c1c;
+        margin:10px 0 14px 0;
+        display:flex;
+        align-items:center;
+        gap:6px;
+    }
+    .qa-card .q-photos {
+        display:flex;
+        flex-wrap:wrap;
+        gap:10px;
+        margin-bottom:14px;
+    }
+    .qa-card .q-photos img {
+        width:120px; height:120px;
+        object-fit:cover;
+        border-radius:8px;
+        border:1px solid #eee;
+        cursor:pointer;
+    }
+    .answer-box {
+        background:#e9f7ef;
+        border-radius:8px;
+        padding:18px;
+    }
+    .answer-box .expert-meta {
+        font-weight:700;
+        font-size:0.9rem;
+        color:#1c1c1c;
+        margin-bottom:8px;
+    }
+    .answer-box .answer-text { color:#0f7a52; }
+
+    .stars { margin-top:16px; color:#777; font-size:0.9rem; }
+    .stars .star {
+        font-size:1.2rem;
+        color:#ccc;
+        cursor:pointer;
+        margin-left:4px;
+    }
+    .stars .star:hover,
+    .stars .star.active { color:#f0a500; }
+
+    .empty-state { color:#999; font-size:0.9rem; text-align:center; padding:30px 0; }
+
+    /* Community post card */
+    .post-card {
+        background:#fff;
+        border:1px solid #eee2cf;
+        border-radius:10px;
+        padding:20px;
+        margin-bottom:16px;
+    }
+    .post-card .meta {
+        font-size:0.85rem;
+        color:#888;
+        margin-bottom:8px;
+    }
+    .post-card .text { color:#333; margin-bottom:12px; }
+    .post-card .q-photos {
+        display:flex;
+        flex-wrap:wrap;
+        gap:10px;
+    }
+    .post-card .q-photos img {
+        width:120px; height:120px;
+        object-fit:cover;
+        border-radius:8px;
+        border:1px solid #eee;
+        cursor:pointer;
+    }
+    .section-divider {
+        font-size:1.2rem;
+        font-weight:800;
+        color:#1c1c1c;
+        margin:30px 0 16px 0;
+    }
+</style>
+</head>
+<body>
+
+<aside class="sidebar">
+    <div class="menu-label">MENU</div>
+    <nav>
+        <a href="{{ url_for('farmer_dashboard') }}"><span class="icon">🏠</span> My Dashboard</a>
+        <a href="{{ url_for('ask_expert') }}"><span class="icon">❓</span> Ask an Expert</a>
+        <a href="{{ url_for('farmer_questions') }}"><span class="icon">📄</span> My Questions</a>
+        <a href="{{ url_for('farmer_announcements') }}"><span class="icon">📢</span> Announcements</a>
+        <a href="{{ url_for('expert_rankings') }}"><span class="icon">🏆</span> Expert Rankings</a>
+        <a href="{{ url_for('public_qa') }}" class="active"><span class="icon">🌐</span> Public Q&amp;A</a>
+        <a href="{{ url_for('farm_tips') }}"><span class="icon">💡</span> Farm Tips</a>
+        <a href="{{ url_for('farmer_profile') }}"><span class="icon">👤</span> My Profile</a>
+    </nav>
+</aside>
+
+<div class="main">
+    <header class="topbar">
+        <div class="brand"><span class="dot">●</span> AGROSPHERE</div>
+        <div class="right">
+            <span class="username">{{ current_user.fullname.upper() }}</span>
+            <span class="badge-farmer">FARMER</span>
+            <form action="{{ url_for('logout') }}" method="POST" style="margin:0;">
+                <button type="submit" class="btn-signout">Sign Out</button>
+            </form>
+        </div>
+    </header>
+
+    <div class="content">
+        <h1>Public Q&amp;A</h1>
+        <p class="subtitle">Verified expert answers — available to everyone on the platform.</p>
+
+        <!-- ============================================================
+             SECTION 1: ASK AN EXPERT
+             Farmer submits a private question (with optional photos) to
+             be assigned to an expert. Goes to admin -> expert workflow.
+             Only appears in Public Q&A once an admin approves the answer.
+        ============================================================= -->
+        <div class="panel">
+            <h2>Ask an Expert</h2>
+            <form class="ask-form" action="{{ url_for('ask_expert') }}" method="POST" enctype="multipart/form-data">
+                <label for="category">Category</label>
+                <select id="category" name="category" required>
+                    <option value="">Select a category</option>
+                    <option value="Crop Disease">Crop Disease</option>
+                    <option value="Livestock">Livestock</option>
+                    <option value="Soil &amp; Fertility">Soil &amp; Fertility</option>
+                    <option value="Pests">Pests</option>
+                    <option value="Irrigation">Irrigation</option>
+                    <option value="Other">Other</option>
+                </select>
+
+                <label for="question_text">Your Question</label>
+                <textarea id="question_text" name="question_text" placeholder="Describe your question in detail..." required></textarea>
+
+                <label for="question_photos">Attach Photos (optional)</label>
+                <label class="file-drop" for="question_photos">
+                    <span class="icon">📷</span>
+                    Click to upload or drag photos here (JPG, PNG) — helps the expert see the issue
+                </label>
+                <input type="file" id="question_photos" name="photos" accept="image/*" multiple style="display:none;" onchange="previewPhotos(event)">
+                <div class="preview-grid" id="photoPreview"></div>
+
+                <button type="submit" class="btn-primary">Submit Question</button>
+            </form>
+        </div>
+
+        <!-- ============================================================
+             SECTION 2: COMMUNITY POSTS (Farmer's own posts)
+             Free-form posts by farmers, with optional photos.
+             Published immediately - no admin approval needed.
+        ============================================================= -->
+        <div class="panel">
+            <h2>Create a Post</h2>
+            <form class="ask-form" action="{{ url_for('create_post') }}" method="POST" enctype="multipart/form-data">
+                <label for="post_text">Share something with the community</label>
+                <textarea id="post_text" name="post_text" placeholder="What's on your mind? Share tips, updates, or experiences..." required></textarea>
+
+                <label for="post_photos">Attach Photos (optional)</label>
+                <label class="file-drop" for="post_photos">
+                    <span class="icon">📷</span>
+                    Click to upload or drag photos here (JPG, PNG)
+                </label>
+                <input type="file" id="post_photos" name="photos" accept="image/*" multiple style="display:none;" onchange="previewPhotos(event, 'postPhotoPreview')">
+                <div class="preview-grid" id="postPhotoPreview"></div>
+
+                <button type="submit" class="btn-primary">Post</button>
+            </form>
+        </div>
+
+        <!-- Community Posts feed -->
+        <div class="section-divider">Community Posts</div>
+        {% if community_posts %}
+            {% for post in community_posts %}
+            <div class="post-card">
+                <div class="meta">🌱 {{ post.author_name.upper() }} · 🕒 {{ post.created_at.strftime('%d %b %Y, %H:%M') }}</div>
+                <div class="text">{{ post.text }}</div>
+                {% if post.photos %}
+                <div class="q-photos">
+                    {% for photo in post.photos %}
+                    <img src="{{ photo.url }}" alt="Post photo">
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="empty-state">No community posts yet.</div>
+        {% endif %}
+
+        <div class="section-divider">Public Q&amp;A</div>
+        <!-- ============================================================
+             SECTION 3: PUBLIC Q&A (read-only feed)
+             ONLY shows questions whose answers were verified/approved
+             by an admin. The 'public_qa' query passed to this template
+             must filter by something like Question.status == 'approved'.
+        ============================================================= -->
+        <!-- Public Q&A list -->
+        {% if public_qa %}
+            {% for item in public_qa %}
+            <div class="qa-card">
+                <span class="tag">{{ item.category }}</span>
+                <span class="meta">🌱 {{ item.farmer_name.upper() }} · 🕒 {{ item.created_at.strftime('%d %b %Y, %H:%M') }}</span>
+
+                <div class="question">❓ {{ item.question_text }}</div>
+
+                {% if item.photos %}
+                <div class="q-photos">
+                    {% for photo in item.photos %}
+                    <img src="{{ photo.url }}" alt="Question photo">
+                    {% endfor %}
+                </div>
+                {% endif %}
+
+                {% if item.answer %}
+                <div class="answer-box">
+                    <div class="expert-meta">🎓 Expert: {{ item.expert_name.upper() }} · {{ item.answered_at.strftime('%d %b %Y, %H:%M') }}</div>
+                    <div class="answer-text">{{ item.answer }}</div>
+                </div>
+
+                <div class="stars" data-question-id="{{ item.id }}">
+                    Rate this answer:
+                    {% for i in range(1,6) %}
+                    <span class="star {% if item.user_rating and i <= item.user_rating %}active{% endif %}" data-value="{{ i }}">★</span>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="empty-state">No public Q&amp;A yet.</div>
+        {% endif %}
+
+    </div>
+</div>
+
+<script>
+function previewPhotos(event, targetId) {
+    targetId = targetId || 'photoPreview';
+    const preview = document.getElementById(targetId);
+    preview.innerHTML = '';
+    const files = event.target.files;
+    for (let i = 0; i < files.length; i++) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const thumb = document.createElement('div');
+            thumb.className = 'thumb';
+            const img = document.createElement('img');
+            img.src = e.target.result;
+            thumb.appendChild(img);
+            preview.appendChild(thumb);
+        };
+        reader.readAsDataURL(files[i]);
+    }
+}
+
+// Star rating
+document.querySelectorAll('.stars').forEach(starGroup => {
+    const questionId = starGroup.dataset.questionId;
+    const stars = starGroup.querySelectorAll('.star');
+    stars.forEach(star => {
+        star.addEventListener('click', () => {
+            const value = star.dataset.value;
+            stars.forEach(s => s.classList.toggle('active', s.dataset.value <= value));
+
+            fetch(`/qa/${questionId}/rate`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ rating: value })
+            });
+        });
+    });
+});
+</script>
+
+</body>
+</html>

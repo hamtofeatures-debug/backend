@@ -282,7 +282,7 @@
     <header class="topbar">
         <div class="brand"><span class="dot">●</span> AGROSPHERE</div>
         <div class="right">
-            <span class="username">{{ current_user.name.upper() }}</span>
+            <span class="username">{{ current_user.fullname.upper() }}</span>
             <span class="badge-business">BUSINESS</span>
             <form action="{{ url_for('logout') }}" method="POST" style="margin:0;">
                 <button type="submit" class="btn-signout">Sign Out</button>

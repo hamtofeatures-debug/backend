@@ -4,10 +4,6 @@ from models import User, Question, Announcement, AnnouncementReaction, ExpertRat
 
 admin_bp = Blueprint('admin', __name__)
 
-@admin_bp.route('/')
-def home():
-    return render_template('admin_dashboard.html')
-
 # ── USERS ──
 @admin_bp.route('/user')
 def all_users():
@@ -163,14 +159,12 @@ def react_announcement(aid):
     existing = AnnouncementReaction.query.filter_by(announcement_id=aid, user_id=user_id).first()
     if existing:
         if existing.reaction == reaction:
-            # Undo reaction
             if reaction == 'like': a.likes = max(0, a.likes - 1)
             else: a.dislikes = max(0, a.dislikes - 1)
             db.session.delete(existing)
             db.session.commit()
             return jsonify({"message": "Reaction removed", "likes": a.likes, "dislikes": a.dislikes, "user_reaction": None}), 200
         else:
-            # Switch reaction
             if existing.reaction == 'like': a.likes = max(0, a.likes - 1)
             else: a.dislikes = max(0, a.dislikes - 1)
             existing.reaction = reaction
@@ -178,7 +172,6 @@ def react_announcement(aid):
             else: a.dislikes += 1
             db.session.commit()
             return jsonify({"message": "Reaction updated", "likes": a.likes, "dislikes": a.dislikes, "user_reaction": reaction}), 200
-    # New reaction
     r = AnnouncementReaction(announcement_id=aid, user_id=user_id, reaction=reaction)
     db.session.add(r)
     if reaction == 'like': a.likes += 1
@@ -245,19 +238,15 @@ def publish_question(question_id):
     db.session.commit()
     return jsonify({"message": "Question published successfully!"}), 200
 
-
-
-@admin_bp.route('/admin/pending-articles', methods=['GET'])
+@admin_bp.route('/pending-articles', methods=['GET'])
 def get_pending_articles():
-    # Use 'Question' instead of 'Articles'
-    pending = Question.query.filter_by(is_approved=False).all() 
-    return jsonify([{'id': q.id, 'title': q.question, 'expert_id': q.assigned_expert_id} for q in pending])
+    pending = Articles.query.filter_by(is_approved=False).all()
+    return jsonify([{'id': a.id, 'title': a.title, 'expert_id': a.expert_id} for a in pending])
 
-@admin_bp.route('/admin/articles/<int:id>/approve', methods=['POST'])
+@admin_bp.route('/articles/<int:id>/approve', methods=['POST'])
 def approve_article(id):
-    # Use 'Question' instead of 'Articles'
-    question = Question.query.get_or_404(id)
-    question.is_approved = True
+    article = Articles.query.get_or_404(id)
+    article.is_approved = True
     db.session.commit()
     return jsonify({'message': 'Article approved and now visible to farmers!'}), 200
 
@@ -267,11 +256,7 @@ def approve_article(id):
 
 @admin_bp.route('/businesses', methods=['GET'])
 def get_businesses():
-
-    businesses = Business.query.order_by(
-        Business.id.desc()
-    ).all()
-
+    businesses = Business.query.order_by(Business.id.desc()).all()
     return jsonify([
         {
             "id": b.id,
@@ -286,14 +271,9 @@ def get_businesses():
         for b in businesses
     ])
 
-
 @admin_bp.route('/businesses/pending', methods=['GET'])
 def pending_businesses():
-
-    businesses = Business.query.filter_by(
-        status='pending'
-    ).all()
-
+    businesses = Business.query.filter_by(status='pending').all()
     return jsonify([
         {
             "id": b.id,
@@ -304,49 +284,28 @@ def pending_businesses():
         for b in businesses
     ])
 
-
 @admin_bp.route('/business/<int:business_id>/approve', methods=['POST'])
 def approve_business(business_id):
-
     business = Business.query.get_or_404(business_id)
-
     business.status = "approved"
-
     db.session.commit()
-
-    return jsonify({
-        "message": "Business approved successfully"
-    })
-
+    return jsonify({"message": "Business approved successfully"})
 
 @admin_bp.route('/business/<int:business_id>/reject', methods=['POST'])
 def reject_business(business_id):
-
     business = Business.query.get_or_404(business_id)
-
     business.status = "rejected"
-
     db.session.commit()
-
-    return jsonify({
-        "message": "Business rejected"
-    })
-
+    return jsonify({"message": "Business rejected"})
 
 @admin_bp.route('/business/<int:business_id>/confirm-payment', methods=['POST'])
 def confirm_payment(business_id):
-
     business = Business.query.get_or_404(business_id)
-
     business.payment_status = "paid"
-
     db.session.commit()
+    return jsonify({"message": "Payment confirmed"})
 
-    return jsonify({
-        "message": "Payment confirmed"
-    })
-
-@admin_bp.route('/admin/verify-business/<int:business_id>', methods=['POST'])
+@admin_bp.route('/verify-business/<int:business_id>', methods=['POST'])
 def verify_business(business_id):
     business = Business.query.get_or_404(business_id)
     business.verification_status = "verified"
@@ -354,11 +313,7 @@ def verify_business(business_id):
     db.session.commit()
     return jsonify({"message": "Blue tick granted"})
 
-# ← No indentation here
-@admin_bp.route('/admin/businesses')
+@admin_bp.route('/businesses-page')
 def admin_businesses():
     businesses = Business.query.all()
-    return render_template(
-        'admin_businesses.html',
-        businesses=businesses
-    )
+    return render_template('admin_businesses.html', businesses=businesses)

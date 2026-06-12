@@ -1,4 +1,3 @@
-<h1>EXPERT DASHBOARD VERSION 2026-06-11 11:15</h1>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -257,7 +256,7 @@
     <header class="topbar">
         <div class="brand"><span class="dot">●</span> AGROSPHERE</div>
         <div class="right">
-            <span class="username">{{ current_user.name.upper() }}</span>
+            <span class="username">{{ current_user.fullname.upper() }}</span>
             <span class="badge-expert">EXPERT</span>
             <form action="{{ url_for('logout') }}" method="POST" style="margin:0;">
                 <button type="submit" class="btn-signout">Sign Out</button>
@@ -267,7 +266,7 @@
 
     <div class="content">
         <h1>Expert Dashboard</h1>
-        <p class="subtitle">Hello {{ current_user.name.split(' ')[0]|upper }}, answer assigned farmer questions.</p>
+        <p class="subtitle">Hello {{ current_user.fullname.split(' ')[0]|upper }}, answer assigned farmer questions.</p>
 
         <div class="grid-2">
             <div class="panel">
@@ -285,7 +284,7 @@
 
             <div class="panel">
                 <h2>Your Info</h2>
-                <div class="info-row"><span class="icon">👤</span> {{ current_user.name.upper() }}</div>
+                <div class="info-row"><span class="icon">👤</span> {{ current_user.fullname.upper() }}</div>
                 <div class="info-row"><span class="icon">📧</span> {{ current_user.email }}</div>
                 <div class="info-row"><span class="icon">#️⃣</span> #{{ current_user.id }}</div>
             </div>

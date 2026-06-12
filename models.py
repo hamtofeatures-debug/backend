@@ -1,6 +1,7 @@
 from extensions import db
 from datetime import datetime
 
+
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     fullname = db.Column(db.String(100), nullable=False)
@@ -11,12 +12,14 @@ class User(db.Model):
     language = db.Column(db.String(20), default='English')
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
+
 class Farmer(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     farm_name = db.Column(db.String(100))
     district = db.Column(db.String(100))
     farm_size = db.Column(db.Float)
+
 
 class Expert(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -25,8 +28,11 @@ class Expert(db.Model):
     qualification = db.Column(db.String(100))
     experience = db.Column(db.Integer, default=0)
 
+
 class Business(db.Model):
     id = db.Column(db.Integer, primary_key=True)
+    # Link the business profile to its login account
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
 
     business_name = db.Column(db.String(200), nullable=False)
     services = db.Column(db.Text, nullable=False)
@@ -47,8 +53,8 @@ class Business(db.Model):
 
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
+
 class Question(db.Model):
-    # All these must be indented by 4 spaces
     id = db.Column(db.Integer, primary_key=True)
     farmer_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     question = db.Column(db.Text, nullable=False)
@@ -60,17 +66,30 @@ class Question(db.Model):
     admin_note = db.Column(db.Text, nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     answered_at = db.Column(db.DateTime, nullable=True)
-    # The new field must also be indented at the same level
     is_published = db.Column(db.Boolean, default=False)
+
+    # Relationship to attached photos (farmer can upload photos with question)
+    photos = db.relationship('QuestionPhoto', backref='question', lazy=True,
+                              cascade='all, delete-orphan')
+
+
+class QuestionPhoto(db.Model):
+    """Photos a farmer attaches to a question."""
+    id = db.Column(db.Integer, primary_key=True)
+    question_id = db.Column(db.Integer, db.ForeignKey('question.id'), nullable=False)
+    url = db.Column(db.String(300), nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
 
 class ExpertRating(db.Model):
     """Rating given to an expert after answering a question"""
     id = db.Column(db.Integer, primary_key=True)
-    expert_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    expert_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
     rater_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     question_id = db.Column(db.Integer, db.ForeignKey('question.id'), nullable=True)
     stars = db.Column(db.Integer, nullable=False)  # 1-5
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
 
 class Announcement(db.Model):
     """Admin posts visible to all users"""
@@ -83,6 +102,7 @@ class Announcement(db.Model):
     dislikes = db.Column(db.Integer, default=0)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
+
 class AnnouncementReaction(db.Model):
     """Track who liked/disliked an announcement"""
     id = db.Column(db.Integer, primary_key=True)
@@ -91,10 +111,62 @@ class AnnouncementReaction(db.Model):
     reaction = db.Column(db.String(10), nullable=False)  # 'like' or 'dislike'
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
+
 class Articles(db.Model):
+    """Articles published by experts, with optional photos."""
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(200), nullable=False)
     content = db.Column(db.Text, nullable=False)
     expert_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    # Add this field:
     is_approved = db.Column(db.Boolean, default=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    photos = db.relationship('ArticlePhoto', backref='article', lazy=True,
+                              cascade='all, delete-orphan')
+
+
+class ArticlePhoto(db.Model):
+    """Photos uploaded with an expert article."""
+    id = db.Column(db.Integer, primary_key=True)
+    article_id = db.Column(db.Integer, db.ForeignKey('articles.id'), nullable=False)
+    url = db.Column(db.String(300), nullable=False)
+
+
+class Post(db.Model):
+    """Free-form community posts created by farmers, with optional photos."""
+    id = db.Column(db.Integer, primary_key=True)
+    farmer_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    text = db.Column(db.Text, nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    photos = db.relationship('PostPhoto', backref='post', lazy=True,
+                              cascade='all, delete-orphan')
+
+
+class PostPhoto(db.Model):
+    """Photos attached to a farmer's community post."""
+    id = db.Column(db.Integer, primary_key=True)
+    post_id = db.Column(db.Integer, db.ForeignKey('post.id'), nullable=False)
+    url = db.Column(db.String(300), nullable=False)
+
+
+class BusinessPost(db.Model):
+    """Posts created by business accounts - visible to farmers, experts and admin."""
+    id = db.Column(db.Integer, primary_key=True)
+    business_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    title = db.Column(db.String(200), nullable=False)
+    description = db.Column(db.Text, nullable=False)
+    likes_count = db.Column(db.Integer, default=0)
+    views_count = db.Column(db.Integer, default=0)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    media = db.relationship('BusinessPostMedia', backref='post', lazy=True,
+                             cascade='all, delete-orphan')
+
+
+class BusinessPostMedia(db.Model):
+    """Photos or videos attached to a business post."""
+    id = db.Column(db.Integer, primary_key=True)
+    post_id = db.Column(db.Integer, db.ForeignKey('business_post.id'), nullable=False)
+    url = db.Column(db.String(300), nullable=False)
+    type = db.Column(db.String(10), default='image')  # 'image' or 'video'
