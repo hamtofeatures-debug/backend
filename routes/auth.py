@@ -7,7 +7,7 @@ auth_bp = Blueprint('auth', __name__)
 
 
 # ==========================================
-# LOGIN ROUTE (now sets session so dashboards work)
+# LOGIN ROUTE
 # ==========================================
 @auth_bp.route('/login', methods=['POST'])
 def login():
@@ -21,12 +21,11 @@ def login():
     if not email or not password:
         return jsonify({"error": "Email and password are required"}), 400
 
+    # Phone is not needed for login — removed the erroneous check
     user = User.query.filter_by(email=email).first()
 
     if user and check_password_hash(user.password, password):
-
-        # IMPORTANT: store session so /admin/dashboard, /farmer/dashboard,
-        # /expert/dashboard, /business/dashboard can identify the user
+        # Store session for dashboard access
         session['user_id'] = user.id
         session['role'] = user.role
         session['fullname'] = user.fullname
@@ -61,17 +60,22 @@ def logout():
     session.clear()
     return jsonify({"message": "Logged out"}), 200
 
+
+# ==========================================
+# REGISTRATION (User Account)
+# ==========================================
 @auth_bp.route('/register', methods=['POST'])
 def register():
     data = request.get_json()
 
     fullname = data.get('fullname')
     email = data.get('email')
+    phone = data.get('phone')          # now allowed to be None (nullable=True)
     password = data.get('password')
     role = data.get('role')
 
     if not fullname or not email or not password or not role:
-        return jsonify({"error": "All fields are required"}), 400
+        return jsonify({"error": "All required fields must be provided"}), 400
 
     existing = User.query.filter_by(email=email).first()
     if existing:
@@ -80,6 +84,7 @@ def register():
     user = User(
         fullname=fullname,
         email=email,
+        phone=phone,
         password=generate_password_hash(password),
         role=role
     )
@@ -88,6 +93,16 @@ def register():
     db.session.commit()
 
     return jsonify({"message": "Account created successfully"}), 201
+
+
+# ==========================================
+# BUSINESS REGISTRATION (separate step)
+# ==========================================
+@auth_bp.route('/register-business', methods=['POST'])
+def register_business():
+    data = request.get_json()
+    if not data:
+        return jsonify({"error": "No data provided"}), 400
 
     email = data.get('email')
     business_name = data.get('business_name')
@@ -98,14 +113,15 @@ def register():
     if not email or not business_name or not services:
         return jsonify({"error": "Email, business name and services are required"}), 400
 
-    # The user account (role='business') must already exist from /auth/register
+    # Find the user (must already be created with role='business')
     user = User.query.filter_by(email=email, role='business').first()
     if not user:
         return jsonify({"error": "No business account found for this email. Please register first."}), 404
 
+    # Prevent duplicate business profiles
     existing = Business.query.filter_by(user_id=user.id).first()
     if existing:
-        return jsonify({"error": "Business profile already exists for this account"}), 400
+        return jsonify({"error": "Business profile already exists for this account"}), 409
 
     business = Business(
         user_id=user.id,

@@ -58,3 +58,6 @@ def profile(user_id):
         "qualification": expert.qualification if expert else "",
         "experience": expert.experience if expert else 0
     })
+@expert_bp.route('/publish-article', methods=['POST'])
+def publish_article():
+    return jsonify({"message": "Article submitted"})

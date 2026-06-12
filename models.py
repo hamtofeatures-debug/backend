@@ -6,7 +6,7 @@ class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     fullname = db.Column(db.String(100), nullable=False)
     email = db.Column(db.String(100), unique=True, nullable=False)
-    phone = db.Column(db.String(20), nullable=False)
+    phone = db.Column(db.String(20), nullable=True)
     password = db.Column(db.String(200), nullable=False)
     role = db.Column(db.String(20), nullable=False)
     language = db.Column(db.String(20), default='English')
@@ -36,6 +36,7 @@ class Business(db.Model):
 
     business_name = db.Column(db.String(200), nullable=False)
     services = db.Column(db.Text, nullable=False)
+    phone = db.Column(db.String(20), nullable=True)
 
     location = db.Column(db.String(200))
     description = db.Column(db.Text)

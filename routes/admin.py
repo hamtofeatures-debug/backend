@@ -317,3 +317,26 @@ def verify_business(business_id):
 def admin_businesses():
     businesses = Business.query.all()
     return render_template('admin_businesses.html', businesses=businesses)
+
+# ==================================================
+# REPORTS
+# ==================================================
+
+@admin_bp.route('/reports')
+def reports():
+    stats = {
+        "total_users": User.query.count(),
+        "total_farmers": User.query.filter_by(role='farmer').count(),
+        "total_experts": User.query.filter_by(role='expert').count(),
+        "total_questions": Question.query.count(),
+        "answered_questions": Question.query.filter_by(
+            status='answered'
+        ).count(),
+        "total_businesses": Business.query.count(),
+        "approved_businesses": Business.query.filter_by(
+            status='approved'
+        ).count(),
+        "total_announcements": Announcement.query.count()
+    }
+
+    return jsonify(stats)

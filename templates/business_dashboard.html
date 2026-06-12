@@ -5,264 +5,111 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Business Dashboard - AGROSPHERE</title>
 <style>
-    * { margin:0; padding:0; box-sizing:border-box; font-family: 'Segoe UI', Arial, sans-serif; }
-    body { display:flex; min-height:100vh; background:#f7f5ef; }
 
-    /* Sidebar */
-    .sidebar {
-        width: 250px;
-        background:#fff;
-        border-right:1px solid #e5e0d5;
-        padding:20px 0;
-    }
-    .menu-label {
-        font-size:0.75rem;
-        letter-spacing:2px;
-        color:#999;
-        font-weight:700;
-        padding:0 24px 14px 24px;
-    }
-    .sidebar nav { display:flex; flex-direction:column; gap:2px; }
-    .sidebar nav a {
-        display:flex;
-        align-items:center;
-        gap:12px;
-        padding:12px 24px;
-        text-decoration:none;
-        color:#444;
-        font-size:0.95rem;
-        font-weight:600;
-    }
-    .sidebar nav a:hover { background:#f7f9f7; }
-    .sidebar nav a.active {
-        background:#e8eefc;
-        color:#1a4fbf;
-        border-radius:6px;
-        margin:0 10px;
-    }
-    .sidebar nav a .icon { font-size:1.1rem; }
+* { margin:0; padding:0; box-sizing:border-box; font-family:'Segoe UI', Arial, sans-serif; }
+body { display:flex; min-height:100vh; background:#f7f5ef; }
 
-    /* Main */
-    .main { flex:1; display:flex; flex-direction:column; }
+.sidebar { width:250px; background:#fff; border-right:1px solid #e5e0d5; padding:20px 0; flex-shrink:0; }
+.menu-label { font-size:0.75rem; letter-spacing:2px; color:#999; font-weight:700; padding:0 24px 14px 24px; }
+.sidebar nav { display:flex; flex-direction:column; gap:2px; }
+.sidebar nav a { display:flex; align-items:center; gap:12px; padding:12px 24px; text-decoration:none;
+    color:#444; font-size:0.95rem; font-weight:600; cursor:pointer; border:none; background:none; width:100%; text-align:left; }
+.sidebar nav a:hover { background:#f7f9f7; }
+.sidebar nav a.active { background:#dff5ec; color:#0f7a52; border-radius:6px; margin:0 10px; width:calc(100% - 20px); }
+.sidebar nav a .icon { font-size:1.1rem; }
 
-    .topbar {
-        background:#fff;
-        border-bottom:1px solid #e5e0d5;
-        display:flex;
-        align-items:center;
-        justify-content:space-between;
-        padding:18px 30px;
-    }
-    .topbar .brand {
-        font-size:1.3rem;
-        font-weight:800;
-        letter-spacing:1px;
-        color:#1c1c1c;
-        display:flex;
-        align-items:center;
-        gap:8px;
-    }
-    .brand .dot { color:#2e7d32; font-size:1.4rem; }
-    .topbar .right { display:flex; align-items:center; gap:14px; }
-    .username { color:#888; font-weight:700; letter-spacing:1px; font-size:0.85rem; }
-    .badge-business {
-        background:#e8eefc;
-        color:#1a4fbf;
-        font-weight:700;
-        font-size:0.75rem;
-        letter-spacing:1px;
-        padding:6px 14px;
-        border-radius:20px;
-    }
-    .btn-signout {
-        border:1px solid #ccc;
-        background:#fff;
-        padding:8px 16px;
-        border-radius:6px;
-        font-weight:600;
-        cursor:pointer;
-        font-size:0.85rem;
-        color:#333;
-    }
-    .btn-signout:hover { background:#f5f5f5; }
+.main { flex:1; display:flex; flex-direction:column; min-width:0; }
+.topbar { background:#fff; border-bottom:1px solid #e5e0d5; display:flex; align-items:center; justify-content:space-between; padding:18px 30px; }
+.topbar .brand { font-size:1.3rem; font-weight:800; letter-spacing:1px; color:#1c1c1c; display:flex; align-items:center; gap:8px; }
+.brand .dot { color:#2e7d32; font-size:1.4rem; }
+.topbar .right { display:flex; align-items:center; gap:14px; }
+.username { color:#888; font-weight:700; letter-spacing:1px; font-size:0.85rem; }
+.badge { font-weight:700; font-size:0.75rem; letter-spacing:1px; padding:6px 14px; border-radius:20px; }
+.badge-admin { background:#e8f0fc; color:#1a4fbf; }
+.badge-expert { background:#fdecd2; color:#a8651a; }
+.badge-farmer { background:#dff5e1; color:#1b5e20; }
+.badge-business { background:#e8eefc; color:#1a4fbf; }
+.btn-signout { border:1px solid #ccc; background:#fff; padding:8px 16px; border-radius:6px; font-weight:600; cursor:pointer; font-size:0.85rem; color:#333; }
+.btn-signout:hover { background:#f5f5f5; }
 
-    .content { padding:30px; flex:1; }
-    .content h1 { font-size:1.8rem; color:#1c1c1c; margin-bottom:6px; }
-    .content > p.subtitle { color:#777; margin-bottom:24px; }
+.content { padding:30px; flex:1; }
+.content h1 { font-size:1.8rem; color:#1c1c1c; margin-bottom:6px; }
+.content > p.subtitle { color:#777; margin-bottom:24px; }
 
-    .grid-2 {
-        display:grid;
-        grid-template-columns: 1.3fr 1fr;
-        gap:20px;
-        margin-bottom:24px;
-        align-items:start;
-    }
+.page-section { display:none; }
+.page-section.active { display:block; }
 
-    .panel {
-        background:#fff;
-        border:1px solid #eee2cf;
-        border-radius:10px;
-        padding:24px;
-        margin-bottom:24px;
-    }
-    .panel h2 { font-size:1.2rem; margin-bottom:18px; color:#1c1c1c; }
+.stats-grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(160px,1fr)); gap:20px; max-width:900px; margin-bottom:24px; }
+.stat-card { background:#fff; border:1px solid #eee2cf; border-radius:10px; padding:22px 24px; }
+.stat-card .label { font-size:0.75rem; font-weight:700; letter-spacing:1px; color:#888; margin-bottom:10px; }
+.stat-card .value { font-size:2.2rem; font-weight:800; color:#1c1c1c; }
+.stat-card .sub { margin-top:6px; font-size:0.8rem; font-weight:600; color:#2e7d32; }
 
-    .info-row {
-        display:flex;
-        align-items:center;
-        gap:10px;
-        margin-bottom:14px;
-        color:#444;
-        font-weight:600;
-        font-size:0.95rem;
-    }
-    .info-row .icon { font-size:1.1rem; }
+.grid-2 { display:grid; grid-template-columns:1.3fr 1fr; gap:20px; margin-bottom:24px; align-items:start; }
+.panel { background:#fff; border:1px solid #eee2cf; border-radius:10px; padding:24px; margin-bottom:24px; }
+.panel h2 { font-size:1.2rem; margin-bottom:18px; color:#1c1c1c; }
 
-    .stat-row {
-        display:flex;
-        gap:16px;
-    }
-    .stat-box {
-        flex:1;
-        background:#fafafa;
-        border:1px solid #eee;
-        border-radius:8px;
-        padding:16px;
-        text-align:center;
-    }
-    .stat-box .value { font-size:1.6rem; font-weight:800; color:#1c1c1c; }
-    .stat-box .label { font-size:0.75rem; color:#888; font-weight:700; letter-spacing:1px; margin-top:4px; }
+.quick-action { display:flex; align-items:center; gap:12px; border:1px solid #eee; border-radius:8px; padding:14px 16px;
+    cursor:pointer; font-weight:600; color:#333; font-size:0.95rem; text-decoration:none; margin-bottom:14px; background:none; width:100%; text-align:left; }
+.quick-action:last-child { margin-bottom:0; }
+.quick-action:hover { background:#fafafa; }
+.quick-action .icon { font-size:1.2rem; }
 
-    /* New Post form */
-    .post-form label {
-        display:block;
-        font-weight:700;
-        font-size:0.85rem;
-        color:#444;
-        margin-bottom:6px;
-        margin-top:14px;
-    }
-    .post-form label:first-of-type { margin-top:0; }
-    .post-form input[type="text"],
-    .post-form textarea {
-        width:100%;
-        padding:10px 12px;
-        border:1px solid #ddd;
-        border-radius:6px;
-        font-size:0.9rem;
-        font-family:inherit;
-        resize:vertical;
-    }
-    .post-form textarea { min-height:100px; }
+.info-row { display:flex; align-items:center; gap:10px; margin-bottom:14px; color:#444; font-weight:600; font-size:0.95rem; }
+.info-row .icon { font-size:1.1rem; }
 
-    .upload-row {
-        display:grid;
-        grid-template-columns:1fr 1fr;
-        gap:14px;
-        margin-top:6px;
-    }
-    .file-drop {
-        display:block;
-        border:2px dashed #cfcabf;
-        border-radius:8px;
-        padding:22px;
-        text-align:center;
-        color:#888;
-        font-size:0.9rem;
-        cursor:pointer;
-        background:#fcfbf8;
-    }
-    .file-drop:hover { background:#f5f3ee; }
-    .file-drop .icon { font-size:1.6rem; display:block; margin-bottom:6px; }
+label { display:block; font-weight:700; font-size:0.85rem; color:#444; margin-bottom:6px; margin-top:14px; }
+label:first-of-type { margin-top:0; }
+input[type="text"], input[type="email"], select, textarea {
+    width:100%; padding:10px 12px; border:1px solid #ddd; border-radius:6px; font-size:0.9rem; font-family:inherit; resize:vertical; background:#fff;
+}
+textarea { min-height:100px; }
 
-    .preview-grid {
-        display:flex;
-        flex-wrap:wrap;
-        gap:10px;
-        margin-top:12px;
-    }
-    .preview-grid .thumb {
-        position:relative;
-        width:90px; height:90px;
-    }
-    .preview-grid img,
-    .preview-grid video {
-        width:90px; height:90px;
-        object-fit:cover;
-        border-radius:6px;
-        border:1px solid #eee;
-    }
-    .preview-grid .video-tag {
-        position:absolute;
-        bottom:4px; left:4px;
-        background:rgba(0,0,0,0.6);
-        color:#fff;
-        font-size:0.65rem;
-        padding:2px 6px;
-        border-radius:4px;
-    }
+.file-drop { display:block; border:2px dashed #cfcabf; border-radius:8px; padding:22px; text-align:center; color:#888; font-size:0.9rem; cursor:pointer; background:#fcfbf8; margin-top:6px; }
+.file-drop:hover { background:#f5f3ee; }
+.preview-grid { display:flex; flex-wrap:wrap; gap:10px; margin-top:12px; }
+.preview-grid img, .preview-grid video { width:90px; height:90px; object-fit:cover; border-radius:6px; border:1px solid #eee; }
 
-    .btn-primary {
-        margin-top:18px;
-        background:#1a4fbf;
-        color:#fff;
-        border:none;
-        padding:12px 22px;
-        border-radius:6px;
-        font-weight:700;
-        font-size:0.95rem;
-        cursor:pointer;
-    }
-    .btn-primary:hover { background:#15409c; }
+.btn-primary { margin-top:18px; background:#2e7d32; color:#fff; border:none; padding:12px 22px; border-radius:6px; font-weight:700; font-size:0.95rem; cursor:pointer; }
+.btn-primary:hover { background:#256528; }
+.btn-sm { padding:6px 14px; border-radius:6px; font-size:0.82rem; font-weight:700; cursor:pointer; border:1px solid #ddd; background:#fff; color:#333; margin-right:6px; }
+.btn-sm:hover { background:#f5f5f5; }
+.btn-green { background:#2e7d32; color:#fff; border-color:#2e7d32; }
+.btn-green:hover { background:#256528; }
+.btn-danger { background:#c0392b; color:#fff; border-color:#c0392b; }
+.btn-danger:hover { background:#a13225; }
 
-    /* Posts feed */
-    .post-card {
-        background:#fff;
-        border:1px solid #eee2cf;
-        border-radius:10px;
-        padding:20px;
-        margin-bottom:16px;
-    }
-    .post-card .meta {
-        font-size:0.85rem;
-        color:#888;
-        margin-bottom:8px;
-        display:flex;
-        align-items:center;
-        justify-content:space-between;
-    }
-    .post-card .meta .visibility {
-        font-size:0.7rem;
-        font-weight:700;
-        letter-spacing:1px;
-        color:#1a4fbf;
-        background:#e8eefc;
-        padding:3px 10px;
-        border-radius:14px;
-    }
-    .post-card .text { color:#333; margin-bottom:12px; }
-    .media-grid {
-        display:flex;
-        flex-wrap:wrap;
-        gap:10px;
-    }
-    .media-grid img,
-    .media-grid video {
-        width:160px; height:160px;
-        object-fit:cover;
-        border-radius:8px;
-        border:1px solid #eee;
-        background:#000;
-    }
-    .post-card .engagement {
-        margin-top:12px;
-        font-size:0.85rem;
-        color:#888;
-        display:flex;
-        gap:18px;
-    }
+.list-card { border:1px solid #eee; border-radius:8px; padding:14px 16px; margin-bottom:10px; background:#fff; }
+.list-card:last-child { margin-bottom:0; }
+.list-card .meta { font-size:0.8rem; color:#888; margin-bottom:6px; display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+.list-card h4, .list-card .title { font-size:0.95rem; color:#1c1c1c; margin-bottom:4px; }
+.list-card p { font-size:0.88rem; color:#666; }
 
-    .empty-state { color:#999; font-size:0.9rem; text-align:center; padding:30px 0; }
+.tag { display:inline-block; border:1px solid #ddd; border-radius:20px; padding:3px 12px; font-size:0.75rem; color:#666; }
+.status-pending { background:#fdecd2; color:#a8651a; }
+.status-assigned { background:#dbeafe; color:#1a4fbf; }
+.status-pending_review { background:#ede9fe; color:#5b21b6; }
+.status-answered { background:#dff5e1; color:#1b5e20; }
+.status-badge { display:inline-block; padding:3px 12px; border-radius:20px; font-size:0.72rem; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; }
+
+.answer-box { background:#e9f7ef; border-radius:8px; padding:14px; margin-top:10px; }
+.answer-box .label { font-size:0.75rem; font-weight:700; color:#0f7a52; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:4px; }
+
+.empty-state { color:#999; font-size:0.9rem; text-align:center; padding:30px 0; }
+
+.rank-card { display:flex; align-items:center; gap:16px; border:1px solid #eee2cf; border-radius:10px; padding:16px; margin-bottom:10px; background:#fff; }
+.rank-num { font-size:1.6rem; font-weight:800; color:#ccc; width:36px; text-align:center; flex-shrink:0; }
+.rank-num.top1 { color:#f0a500; }
+.rank-num.top2 { color:#94a3b8; }
+.rank-num.top3 { color:#cd7f32; }
+.rank-info .name { font-weight:700; color:#1c1c1c; }
+.rank-info .stats { font-size:0.82rem; color:#888; margin-top:2px; }
+
+.media-grid { display:flex; flex-wrap:wrap; gap:10px; }
+.media-grid img, .media-grid video { width:140px; height:140px; object-fit:cover; border-radius:8px; border:1px solid #eee; background:#000; }
+
+@media (max-width:900px) { .grid-2 { grid-template-columns:1fr; } .sidebar { display:none; } }
+
 </style>
 </head>
 <body>
@@ -270,11 +117,10 @@
 <aside class="sidebar">
     <div class="menu-label">MENU</div>
     <nav>
-        <a href="{{ url_for('business_dashboard') }}" class="active"><span class="icon">🏠</span> My Dashboard</a>
-        <a href="{{ url_for('business_posts') }}"><span class="icon">🖼️</span> My Posts</a>
-        <a href="{{ url_for('farmer_announcements') }}"><span class="icon">📢</span> Announcements</a>
-        <a href="{{ url_for('public_qa') }}"><span class="icon">🌐</span> Public Q&amp;A</a>
-        <a href="{{ url_for('business_profile') }}"><span class="icon">👤</span> My Profile</a>
+<a href="javascript:void(0)" class="nav-link active" onclick="showSection('overview', this)"><span class="icon">🏠</span> My Dashboard</a>
+<a href="javascript:void(0)" class="nav-link" onclick="showSection('posts', this)"><span class="icon">🖼️</span> My Posts</a>
+<a href="javascript:void(0)" class="nav-link" onclick="showSection('announcements', this)"><span class="icon">📢</span> Announcements</a>
+<a href="javascript:void(0)" class="nav-link" onclick="showSection('publicqa', this)"><span class="icon">🌐</span> Public Q&A</a>
     </nav>
 </aside>
 
@@ -283,143 +129,178 @@
         <div class="brand"><span class="dot">●</span> AGROSPHERE</div>
         <div class="right">
             <span class="username">{{ current_user.fullname.upper() }}</span>
-            <span class="badge-business">BUSINESS</span>
-            <form action="{{ url_for('logout') }}" method="POST" style="margin:0;">
+            <span class="badge badge-business">BUSINESS</span>
+            <form action="{{ url_for('auth.logout') }}" method="POST" style="margin:0;">
                 <button type="submit" class="btn-signout">Sign Out</button>
             </form>
         </div>
     </header>
 
     <div class="content">
-        <h1>Business Dashboard</h1>
-        <p class="subtitle">Share photos and videos of your products and services with farmers, experts and admins.</p>
 
-        <div class="grid-2">
-            <div class="panel" style="margin-bottom:0;">
-                <h2>Your Activity</h2>
-                <div class="stat-row">
-                    <div class="stat-box">
-                        <div class="value">{{ stats.total_posts }}</div>
-                        <div class="label">POSTS</div>
-                    </div>
-                    <div class="stat-box">
-                        <div class="value">{{ stats.total_likes }}</div>
-                        <div class="label">LIKES</div>
-                    </div>
-                    <div class="stat-box">
-                        <div class="value">{{ stats.total_views }}</div>
-                        <div class="label">VIEWS</div>
+        <!-- OVERVIEW -->
+        <div class="page-section active" id="section-overview">
+            <h1>Business Dashboard</h1>
+            <p class="subtitle">Share photos and videos of your products and services with farmers, experts and admins.</p>
+
+            {% if business and business.status == 'pending' %}
+            <div class="panel" style="background:#fdecd2; border-color:#f0c98a;">
+                <strong>Your business is pending admin approval.</strong> You can still create posts, but your business profile won't be marked verified until reviewed.
+            </div>
+            {% endif %}
+
+            <div class="grid-2">
+                <div class="panel" style="margin-bottom:0;">
+                    <h2>Your Activity</h2>
+                    <div class="stats-grid" style="margin-bottom:0;">
+                        <div class="stat-card"><div class="label">POSTS</div><div class="value">{{ stats.total_posts }}</div></div>
+                        <div class="stat-card"><div class="label">LIKES</div><div class="value">{{ stats.total_likes }}</div></div>
+                        <div class="stat-card"><div class="label">VIEWS</div><div class="value">{{ stats.total_views }}</div></div>
                     </div>
                 </div>
-            </div>
-
-            <div class="panel" style="margin-bottom:0;">
-                <h2>Your Info</h2>
-                <div class="info-row"><span class="icon">🏢</span> {{ current_user.business_name.upper() }}</div>
-                <div class="info-row"><span class="icon">📧</span> {{ current_user.email }}</div>
-                <div class="info-row"><span class="icon">#️⃣</span> #{{ current_user.id }}</div>
+                <div class="panel" style="margin-bottom:0;">
+                    <h2>Your Info</h2>
+                    <div class="info-row"><span class="icon">🏢</span> {{ business.business_name.upper() if business else current_user.fullname.upper() }}</div>
+                    <div class="info-row"><span class="icon">📧</span> {{ current_user.email }}</div>
+                    {% if business %}
+                    <div class="info-row"><span class="icon">📍</span> {{ business.location or 'Not set' }}</div>
+                    <div class="info-row"><span class="icon">{{ '✔' if business.blue_tick else '○' }}</span> {{ 'Verified' if business.blue_tick else 'Not verified' }}</div>
+                    {% endif %}
+                </div>
             </div>
         </div>
 
-        <!-- New Post form -->
-        <div class="panel">
-            <h2>Create a Post</h2>
-            <form class="post-form" action="{{ url_for('business_create_post') }}" method="POST" enctype="multipart/form-data">
-                <label for="post_title">Title</label>
-                <input type="text" id="post_title" name="title" placeholder="e.g. New batch of certified maize seed in stock" required>
+        <!-- MY POSTS -->
+        <div class="page-section" id="section-posts">
+            <h1>My Posts</h1>
+            <p class="subtitle">Share photos and videos — visible to farmers, experts and admins.</p>
 
-                <label for="post_text">Description</label>
-                <textarea id="post_text" name="description" placeholder="Tell farmers, experts and admins about your product or service..." required></textarea>
+            <div class="panel">
+                <h2>Create a Post</h2>
+                <form action= "#" method="POST" enctype="multipart/form-data">
+                    <label for="post_title">Title</label>
+                    <input type="text" id="post_title" name="title" placeholder="e.g. New batch of certified maize seed in stock" required>
 
-                <div class="upload-row">
-                    <div>
-                        <label for="post_photos">Photos</label>
-                        <label class="file-drop" for="post_photos">
-                            <span class="icon">📷</span>
-                            Click to upload photos (JPG, PNG)
-                        </label>
-                        <input type="file" id="post_photos" name="photos" accept="image/*" multiple style="display:none;" onchange="previewMedia(event, 'image')">
+                    <label for="post_text">Description</label>
+                    <textarea id="post_text" name="description" placeholder="Tell farmers, experts and admins about your product or service..." required></textarea>
+
+                    <div class="grid-2" style="margin-top:6px; margin-bottom:0;">
+                        <div>
+                            <label for="post_photos">Photos</label>
+                            <label class="file-drop" for="post_photos">📷 Click to upload photos</label>
+                            <input type="file" id="post_photos" name="photos" accept="image/*" multiple style="display:none;" onchange="previewMedia(event, 'mediaPreview', 'image')">
+                        </div>
+                        <div>
+                            <label for="post_videos">Videos</label>
+                            <label class="file-drop" for="post_videos">🎬 Click to upload videos</label>
+                            <input type="file" id="post_videos" name="videos" accept="video/*" multiple style="display:none;" onchange="previewMedia(event, 'mediaPreview', 'video')">
+                        </div>
                     </div>
-                    <div>
-                        <label for="post_videos">Videos</label>
-                        <label class="file-drop" for="post_videos">
-                            <span class="icon">🎬</span>
-                            Click to upload videos (MP4)
-                        </label>
-                        <input type="file" id="post_videos" name="videos" accept="video/*" multiple style="display:none;" onchange="previewMedia(event, 'video')">
+                    <div class="preview-grid" id="mediaPreview"></div>
+
+                    <button type="submit" class="btn-primary">Publish Post</button>
+                </form>
+            </div>
+
+            <h2 style="margin:24px 0 14px;">Your Posts</h2>
+            {% if my_posts %}
+                {% for post in my_posts %}
+                <div class="list-card">
+                    <div class="meta">🕒 {{ post.created_at.strftime('%d %b %Y, %H:%M') }}</div>
+                    <h4>{{ post.title }}</h4>
+                    <p>{{ post.description }}</p>
+                    {% if post.media %}
+                    <div class="media-grid" style="margin-top:10px;">
+                        {% for item in post.media %}
+                            {% if item.type == 'video' %}
+                            <video src="{{ item.url }}" controls></video>
+                            {% else %}
+                            <img src="{{ item.url }}" alt="{{ post.title }}">
+                            {% endif %}
+                        {% endfor %}
                     </div>
+                    {% endif %}
+                    <div class="meta" style="margin-top:10px;">👍 {{ post.likes_count }} likes &nbsp; 👁️ {{ post.views_count }} views</div>
                 </div>
-                <div class="preview-grid" id="mediaPreview"></div>
-
-                <button type="submit" class="btn-primary">Publish Post</button>
-            </form>
+                {% endfor %}
+            {% else %}
+                <div class="empty-state">You haven't posted anything yet.</div>
+            {% endif %}
         </div>
 
-        <!-- Posts feed -->
-        <h2 style="margin-bottom:16px;">Your Posts</h2>
-        {% if my_posts %}
-            {% for post in my_posts %}
-            <div class="post-card">
-                <div class="meta">
-                    <span>🕒 {{ post.created_at.strftime('%d %b %Y, %H:%M') }}</span>
-                    <span class="visibility">VISIBLE TO ALL ROLES</span>
+        <!-- ANNOUNCEMENTS -->
+        <div class="page-section" id="section-announcements">
+            <h1>Announcements</h1>
+            <p class="subtitle">Updates from AGROSPHERE admins.</p>
+            {% if announcements %}
+                {% for a in announcements %}
+                <div class="list-card">
+                    <div class="meta"><span class="tag">{{ a.category }}</span><span>{{ a.created_at.strftime('%d %b %Y, %H:%M') }}</span></div>
+                    <h4>{{ a.title }}</h4>
+                    <p>{{ a.body }}</p>
                 </div>
-                <h3 style="margin-bottom:6px;">{{ post.title }}</h3>
-                <div class="text">{{ post.description }}</div>
+                {% endfor %}
+            {% else %}
+                <div class="empty-state">No announcements yet.</div>
+            {% endif %}
+        </div>
 
-                {% if post.media %}
-                <div class="media-grid">
-                    {% for item in post.media %}
-                        {% if item.type == 'video' %}
-                        <video src="{{ item.url }}" controls></video>
-                        {% else %}
-                        <img src="{{ item.url }}" alt="{{ post.title }}">
-                        {% endif %}
-                    {% endfor %}
+        <!-- PUBLIC Q&A -->
+        <div class="page-section" id="section-publicqa">
+            <h1>Public Q&amp;A</h1>
+            <p class="subtitle">Verified expert answers — available to everyone.</p>
+            {% if public_qa %}
+                {% for q in public_qa %}
+                <div class="list-card">
+                    <div class="meta"><span class="tag">{{ q.category }}</span><span>{{ q.farmer_name }}</span></div>
+                    <p><strong>Q:</strong> {{ q.question }}</p>
+                    <div class="answer-box"><div class="label">Answer by {{ q.assigned_expert }}</div>{{ q.answer }}</div>
                 </div>
-                {% endif %}
-
-                <div class="engagement">
-                    <span>👍 {{ post.likes_count }} likes</span>
-                    <span>👁️ {{ post.views_count }} views</span>
-                </div>
-            </div>
-            {% endfor %}
-        {% else %}
-            <div class="empty-state">You haven't posted anything yet.</div>
-        {% endif %}
+                {% endfor %}
+            {% else %}
+                <div class="empty-state">No public Q&amp;A yet.</div>
+            {% endif %}
+        </div>
 
     </div>
 </div>
 
 <script>
-function previewMedia(event, type) {
-    const preview = document.getElementById('mediaPreview');
+
+function showSection(id, btn) {
+    document.querySelectorAll('.page-section').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('.sidebar nav a').forEach(a => a.classList.remove('active'));
+    const sec = document.getElementById('section-' + id);
+    if (sec) sec.classList.add('active');
+    if (btn) btn.classList.add('active');
+}
+
+function previewMedia(event, targetId, type) {
+    const preview = document.getElementById(targetId);
+    preview.innerHTML = '';
     const files = event.target.files;
     for (let i = 0; i < files.length; i++) {
         const reader = new FileReader();
         reader.onload = function(e) {
-            const thumb = document.createElement('div');
-            thumb.className = 'thumb';
-            if (type === 'video') {
-                const vid = document.createElement('video');
-                vid.src = e.target.result;
-                vid.muted = true;
-                thumb.appendChild(vid);
-                const tag = document.createElement('span');
-                tag.className = 'video-tag';
-                tag.textContent = 'VIDEO';
-                thumb.appendChild(tag);
-            } else {
-                const img = document.createElement('img');
-                img.src = e.target.result;
-                thumb.appendChild(img);
-            }
-            preview.appendChild(thumb);
+            const el = document.createElement(type === 'video' ? 'video' : 'img');
+            el.src = e.target.result;
+            if (type === 'video') el.muted = true;
+            preview.appendChild(el);
         };
         reader.readAsDataURL(files[i]);
     }
 }
+
+async function postJSON(url, data) {
+    const res = await fetch(url, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(data)
+    });
+    return res.json();
+}
+
+
 </script>
 
 </body>

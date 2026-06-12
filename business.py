@@ -38,3 +38,16 @@ def my_posts(business_user_id):
             "media": [{"url": m.url, "type": m.type} for m in p.media]
         })
     return jsonify(result)
+
+from flask import Blueprint, jsonify, request
+
+business_bp = Blueprint('business', __name__)
+
+@business_bp.route('/')
+def home():
+    return jsonify({"message": "Business home"})
+
+
+@business_bp.route('/create-post', methods=['POST'])
+def create_post():
+    return jsonify({"message": "Business post created"})
