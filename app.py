@@ -1,9 +1,11 @@
 from flask import Flask, render_template, jsonify, request, redirect, url_for, session
 from config import Config
 from extensions import db
-from models import User, Question, ExpertRating, Announcement, AnnouncementReaction, Business, Articles
+from models import User, Question, ExpertRating, Announcement, AnnouncementReaction, Business, Articles, BusinessPost, Post
 from sqlalchemy import func
 import os
+from flask_login import LoginManager
+
 
 # Explicitly import the blueprints directly from their route files
 from routes.auth import auth_bp
@@ -15,6 +17,13 @@ from routes.business import business_bp
 app = Flask(__name__)
 app.config.from_object(Config)
 db.init_app(app)
+
+login_manager = LoginManager()
+login_manager.init_app(app)
+
+@login_manager.user_loader
+def load_user(user_id):
+    return User.query.get(int(user_id))
 
 # Register blueprints
 app.register_blueprint(auth_bp, url_prefix='/auth')
@@ -62,45 +71,152 @@ def admin_dashboard_page():
     def fmt_q(q):
         farmer = User.query.get(q.farmer_id)
         expert = User.query.get(q.assigned_expert_id) if q.assigned_expert_id else None
+
         return {
-            "id": q.id, "question": q.question, "category": q.category, "status": q.status,
+            "id": q.id,
+            "question": q.question,
+            "category": q.category,
+            "status": q.status,
             "farmer_name": farmer.fullname if farmer else "Unknown",
             "assigned_expert": expert.fullname if expert else None,
-            "answer": q.answer, "answered_at": q.answered_at,
+            "answer": q.answer,
+            "answered_at": q.answered_at,
         }
 
     all_users = User.query.all()
-    all_questions = [fmt_q(q) for q in Question.query.order_by(Question.id.desc()).all()]
-    pending_review = [fmt_q(q) for q in Question.query.filter_by(status='pending_review').order_by(Question.id.desc()).all()]
+
+    all_questions = [
+        fmt_q(q)
+        for q in Question.query.order_by(Question.id.desc()).all()
+    ]
+
+    pending_review = [
+        fmt_q(q)
+        for q in Question.query.filter_by(
+            status='pending_review'
+        ).order_by(Question.id.desc()).all()
+    ]
+
     experts = User.query.filter_by(role='expert').all()
 
-    announcements = Announcement.query.order_by(Announcement.id.desc()).all()
+    announcements = Announcement.query.order_by(
+        Announcement.id.desc()
+    ).all()
 
+    # Expert rankings
     expert_rankings = []
+
     for e in experts:
-        answered = Question.query.filter_by(assigned_expert_id=e.id, status='answered', answer_verified=True).count()
-        ratings = ExpertRating.query.filter_by(expert_id=e.id).all()
-        avg_rating = round(sum(r.stars for r in ratings) / len(ratings), 1) if ratings else 0
+        answered = Question.query.filter_by(
+            assigned_expert_id=e.id,
+            status='answered',
+            answer_verified=True
+        ).count()
+
+        ratings = ExpertRating.query.filter_by(
+            expert_id=e.id
+        ).all()
+
+        avg_rating = (
+            round(sum(r.stars for r in ratings) / len(ratings), 1)
+            if ratings else 0
+        )
+
         expert_rankings.append({
-            "fullname": e.fullname, "answered": answered,
-            "avg_rating": avg_rating, "rating_count": len(ratings),
+            "fullname": e.fullname,
+            "answered": answered,
+            "avg_rating": avg_rating,
+            "rating_count": len(ratings),
             "score": (answered * 10) + (avg_rating * 20)
         })
-    expert_rankings.sort(key=lambda x: x['score'], reverse=True)
+
+    expert_rankings.sort(
+        key=lambda x: x['score'],
+        reverse=True
+    )
+
     for i, e in enumerate(expert_rankings):
         e['rank'] = i + 1
 
-    public_qa = [fmt_q(q) for q in Question.query.filter_by(status='answered', answer_verified=True).order_by(Question.id.desc()).all()]
+    public_qa = [
+        fmt_q(q)
+        for q in Question.query.filter_by(
+            status='answered',
+            answer_verified=True
+        ).order_by(Question.id.desc()).all()
+    ]
 
-    businesses = Business.query.order_by(Business.id.desc()).all()
+    businesses = Business.query.order_by(
+        Business.id.desc()
+    ).all()
+
+    # =====================================================
+    # EXPERT ARTICLES
+    # =====================================================
+
+    pending_articles = Articles.query.filter_by(
+        is_approved=False
+    ).order_by(
+        Articles.id.desc()
+    ).all()
+
+    approved_articles = Articles.query.filter_by(
+        is_approved=True
+    ).order_by(
+        Articles.id.desc()
+    ).all()
+
+    # Attach expert names
+    for article in pending_articles + approved_articles:
+        expert = User.query.get(article.expert_id)
+        article.expert_name = (
+            expert.fullname if expert else "Unknown"
+        )
+
+    # =====================================================
+    # BUSINESS POSTS
+    # =====================================================
+
+    business_posts = BusinessPost.query.order_by(
+        BusinessPost.id.desc()
+    ).all()
+
+    for p in business_posts:
+        biz_user = User.query.get(p.business_id)
+        p.business_name = (
+            biz_user.fullname if biz_user else "Unknown"
+        )
+
+    # =====================================================
+    # COMMUNITY POSTS
+    # =====================================================
+
+    community_posts = Post.query.order_by(
+        Post.id.desc()
+    ).all()
+
+    for p in community_posts:
+        farmer = User.query.get(p.farmer_id)
+        p.farmer_name = (
+            farmer.fullname if farmer else "Unknown"
+        )
 
     return render_template(
         'admin_dashboard.html',
-        current_user=user, stats=stats,
-        all_users=all_users, all_questions=all_questions,
-        pending_review=pending_review, experts=experts,
-        announcements=announcements, expert_rankings=expert_rankings,
-        public_qa=public_qa, businesses=businesses
+        current_user=user,
+        stats=stats,
+        all_users=all_users,
+        all_questions=all_questions,
+        pending_review=pending_review,
+        experts=experts,
+        announcements=announcements,
+        expert_rankings=expert_rankings,
+        public_qa=public_qa,
+        businesses=businesses,
+        pending_articles=pending_articles,
+        approved_articles=approved_articles,
+        business_posts=business_posts,
+        community_posts=community_posts
     )
 
 
@@ -111,43 +227,114 @@ def farmer_dashboard_page():
 
     user = User.query.get(session['user_id'])
 
-    my_questions = Question.query.filter_by(farmer_id=user.id).order_by(Question.id.desc()).all()
+    my_questions = Question.query.filter_by(
+        farmer_id=user.id
+    ).order_by(
+        Question.id.desc()
+    ).all()
+
     stats = {
         'questions': len(my_questions),
         'answered': len([q for q in my_questions if q.answer_verified]),
         'pending': len([q for q in my_questions if not q.answer_verified]),
     }
 
-    announcements = Announcement.query.order_by(Announcement.id.desc()).all()
+    announcements = Announcement.query.order_by(
+        Announcement.id.desc()
+    ).all()
+
+    # Expert Articles
+    articles = Articles.query.filter_by(
+        is_approved=True
+    ).order_by(
+        Articles.id.desc()
+    ).all()
+
+    for article in articles:
+        expert = User.query.get(article.expert_id)
+        article.expert_name = expert.fullname if expert else "Unknown"
 
     experts = User.query.filter_by(role='expert').all()
+
     expert_rankings = []
     for e in experts:
-        answered = Question.query.filter_by(assigned_expert_id=e.id, status='answered', answer_verified=True).count()
-        ratings = ExpertRating.query.filter_by(expert_id=e.id).all()
-        avg_rating = round(sum(r.stars for r in ratings) / len(ratings), 1) if ratings else 0
-        expert_rankings.append({"fullname": e.fullname, "answered": answered, "avg_rating": avg_rating,
-                                 "score": (answered * 10) + (avg_rating * 20)})
+        answered = Question.query.filter_by(
+            assigned_expert_id=e.id,
+            status='answered',
+            answer_verified=True
+        ).count()
+
+        ratings = ExpertRating.query.filter_by(
+            expert_id=e.id
+        ).all()
+
+        avg_rating = round(
+            sum(r.stars for r in ratings) / len(ratings), 1
+        ) if ratings else 0
+
+        expert_rankings.append({
+            "fullname": e.fullname,
+            "answered": answered,
+            "avg_rating": avg_rating,
+            "score": (answered * 10) + (avg_rating * 20)
+        })
+
     expert_rankings.sort(key=lambda x: x['score'], reverse=True)
+
     for i, e in enumerate(expert_rankings):
         e['rank'] = i + 1
 
     def fmt_q(q):
         expert = User.query.get(q.assigned_expert_id) if q.assigned_expert_id else None
+
         return {
-            "id": q.id, "question": q.question, "category": q.category,
+            "id": q.id,
+            "question": q.question,
+            "category": q.category,
             "farmer_name": user.fullname,
             "assigned_expert": expert.fullname if expert else None,
             "answer": q.answer,
         }
 
-    public_qa = [fmt_q(q) for q in Question.query.filter_by(status='answered', answer_verified=True).order_by(Question.id.desc()).all()]
+    public_qa = [
+        fmt_q(q)
+        for q in Question.query.filter_by(
+            status='answered',
+            answer_verified=True
+        ).order_by(
+            Question.id.desc()
+        ).all()
+    ]
+
+    # Community Posts
+    community_posts = Post.query.order_by(
+        Post.id.desc()
+    ).all()
+
+    for p in community_posts:
+        farmer = User.query.get(p.farmer_id)
+        p.author_name = farmer.fullname if farmer else "Unknown"
+
+    # Business Posts
+    business_posts = BusinessPost.query.order_by(
+        BusinessPost.id.desc()
+    ).all()
+
+    for p in business_posts:
+        biz_user = User.query.get(p.business_id)
+        p.business_name = biz_user.fullname if biz_user else "Unknown"
 
     return render_template(
         'farmer_dashboard.html',
-        current_user=user, stats=stats, my_questions=my_questions,
-        community_posts=[], announcements=announcements,
-        expert_rankings=expert_rankings, public_qa=public_qa
+        current_user=user,
+        stats=stats,
+        my_questions=my_questions,
+        community_posts=community_posts,
+        announcements=announcements,
+        expert_rankings=expert_rankings,
+        public_qa=public_qa,
+        business_posts=business_posts,
+        articles=articles
     )
 
 
@@ -163,11 +350,16 @@ def farmer_public_qa_page():
                   .order_by(Question.answered_at.desc())
                   .all())
 
+    community_posts = Post.query.order_by(Post.id.desc()).all()
+    for p in community_posts:
+        farmer = User.query.get(p.farmer_id)
+        p.author_name = farmer.fullname if farmer else "Unknown"
+
     return render_template(
         'farmer_public_qa.html',
         current_user=user,
         public_qa=public_qa,
-        community_posts=[]
+        community_posts=community_posts
     )
 
 
@@ -182,40 +374,99 @@ def expert_dashboard_page():
         farmer = User.query.get(q.farmer_id)
         expert = User.query.get(q.assigned_expert_id) if q.assigned_expert_id else None
         return {
-            "id": q.id, "question": q.question, "category": q.category, "status": q.status,
+            "id": q.id,
+            "question": q.question,
+            "category": q.category,
+            "status": q.status,
             "farmer_name": farmer.fullname if farmer else "Unknown",
             "assigned_expert": expert.fullname if expert else None,
-            "answer": q.answer, "admin_note": q.admin_note,
+            "answer": q.answer,
+            "admin_note": q.admin_note,
         }
 
-    my_questions = [fmt_q(q) for q in Question.query.filter_by(assigned_expert_id=user.id).order_by(Question.id.desc()).all()]
+    my_questions = [
+        fmt_q(q)
+        for q in Question.query.filter_by(
+            assigned_expert_id=user.id
+        ).order_by(Question.id.desc()).all()
+    ]
 
-    my_articles = Articles.query.filter_by(expert_id=user.id).order_by(Articles.id.desc()).all()
+    my_articles = Articles.query.filter_by(
+        expert_id=user.id
+    ).order_by(Articles.id.desc()).all()
 
-    announcements = Announcement.query.order_by(Announcement.id.desc()).all()
+    announcements = Announcement.query.order_by(
+        Announcement.id.desc()
+    ).all()
 
     experts = User.query.filter_by(role='expert').all()
+
     expert_rankings = []
     for e in experts:
-        answered = Question.query.filter_by(assigned_expert_id=e.id, status='answered', answer_verified=True).count()
-        ratings = ExpertRating.query.filter_by(expert_id=e.id).all()
-        avg_rating = round(sum(r.stars for r in ratings) / len(ratings), 1) if ratings else 0
-        expert_rankings.append({"fullname": e.fullname, "answered": answered, "avg_rating": avg_rating,
-                                 "rating_count": len(ratings), "score": (answered * 10) + (avg_rating * 20)})
+        answered = Question.query.filter_by(
+            assigned_expert_id=e.id,
+            status='answered',
+            answer_verified=True
+        ).count()
+
+        ratings = ExpertRating.query.filter_by(
+            expert_id=e.id
+        ).all()
+
+        avg_rating = round(
+            sum(r.stars for r in ratings) / len(ratings), 1
+        ) if ratings else 0
+
+        expert_rankings.append({
+            "fullname": e.fullname,
+            "answered": answered,
+            "avg_rating": avg_rating,
+            "rating_count": len(ratings),
+            "score": (answered * 10) + (avg_rating * 20)
+        })
+
     expert_rankings.sort(key=lambda x: x['score'], reverse=True)
+
     for i, e in enumerate(expert_rankings):
         e['rank'] = i + 1
 
-    public_qa = [fmt_q(q) for q in Question.query.filter_by(status='answered', answer_verified=True).order_by(Question.id.desc()).all()]
+    public_qa = [
+        fmt_q(q)
+        for q in Question.query.filter_by(
+            status='answered',
+            answer_verified=True
+        ).order_by(Question.id.desc()).all()
+    ]
+
+    # Business posts
+    business_posts = BusinessPost.query.order_by(
+        BusinessPost.id.desc()
+    ).all()
+
+    for p in business_posts:
+        biz_user = User.query.get(p.business_id)
+        p.business_name = biz_user.fullname if biz_user else "Unknown"
+
+    # Community posts
+    community_posts = Post.query.order_by(
+        Post.id.desc()
+    ).all()
+
+    for p in community_posts:
+        farmer = User.query.get(p.farmer_id)
+        p.author_name = farmer.fullname if farmer else "Unknown"
 
     return render_template(
         'expert_dashboard.html',
-        current_user=user, my_questions=my_questions,
-        my_articles=my_articles, business_posts=[],
-        announcements=announcements, expert_rankings=expert_rankings,
+        current_user=user,
+        my_questions=my_questions,
+        my_articles=my_articles,
+        business_posts=business_posts,
+        community_posts=community_posts,
+        announcements=announcements,
+        expert_rankings=expert_rankings,
         public_qa=public_qa
     )
-
 
 @app.route('/business/dashboard')
 def business_dashboard_page():
@@ -225,34 +476,77 @@ def business_dashboard_page():
     user = User.query.get(session['user_id'])
     business = Business.query.filter_by(user_id=user.id).first()
 
+    my_posts = BusinessPost.query.filter_by(
+        business_id=user.id
+    ).order_by(
+        BusinessPost.created_at.desc()
+    ).all()
+
     stats = {
-        'total_posts': 0,
-        'total_likes': 0,
-        'total_views': 0,
+        'total_posts': len(my_posts),
+        'total_likes': sum(p.likes_count for p in my_posts),
+        'total_views': sum(p.views_count for p in my_posts),
     }
 
-    announcements = Announcement.query.order_by(Announcement.id.desc()).all()
+    # Approved expert articles
+    articles = Articles.query.filter_by(
+        is_approved=True
+    ).order_by(
+        Articles.id.desc()
+    ).all()
 
+    for a in articles:
+        expert = User.query.get(a.expert_id)
+        a.expert_name = expert.fullname if expert else "Unknown"
+
+    # Announcements
+    announcements = Announcement.query.order_by(
+        Announcement.id.desc()
+    ).all()
+
+    # Public Q&A
     def fmt_q(q):
         farmer = User.query.get(q.farmer_id)
         expert = User.query.get(q.assigned_expert_id) if q.assigned_expert_id else None
+
         return {
-            "id": q.id, "question": q.question, "category": q.category,
+            "id": q.id,
+            "question": q.question,
+            "category": q.category,
             "farmer_name": farmer.fullname if farmer else "Unknown",
-            "assigned_expert": expert.fullname if expert else None,
+            "assigned_expert": expert.fullname if expert else "Unknown",
             "answer": q.answer,
         }
 
-    public_qa = [fmt_q(q) for q in Question.query.filter_by(status='answered', answer_verified=True).order_by(Question.id.desc()).all()]
+    public_qa = [
+        fmt_q(q)
+        for q in Question.query.filter_by(
+            status='answered',
+            answer_verified=True
+        ).order_by(
+            Question.id.desc()
+        ).all()
+    ]
+
+    # Community posts from farmers
+    community_posts = Post.query.order_by(
+        Post.id.desc()
+    ).all()
+
+    for p in community_posts:
+        farmer = User.query.get(p.farmer_id)
+        p.author_name = farmer.fullname if farmer else "Unknown"
 
     return render_template(
         'business_dashboard.html',
         current_user=user,
         business=business,
         stats=stats,
-        my_posts=[],
+        my_posts=my_posts,
         announcements=announcements,
-        public_qa=public_qa
+        public_qa=public_qa,
+        articles=articles,
+        community_posts=community_posts
     )
 
 

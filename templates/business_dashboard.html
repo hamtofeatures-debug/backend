@@ -112,15 +112,17 @@ textarea { min-height:100px; }
 
 </style>
 </head>
-<body>
+<body data-user-id="{{ current_user.id }}">
 
 <aside class="sidebar">
     <div class="menu-label">MENU</div>
     <nav>
-<a href="javascript:void(0)" class="nav-link active" onclick="showSection('overview', this)"><span class="icon">🏠</span> My Dashboard</a>
-<a href="javascript:void(0)" class="nav-link" onclick="showSection('posts', this)"><span class="icon">🖼️</span> My Posts</a>
-<a href="javascript:void(0)" class="nav-link" onclick="showSection('announcements', this)"><span class="icon">📢</span> Announcements</a>
-<a href="javascript:void(0)" class="nav-link" onclick="showSection('publicqa', this)"><span class="icon">🌐</span> Public Q&A</a>
+<a href="javascript:void(0)" class="nav-link active" data-section="overview"><span class="icon">📊</span> Overview</a>
+<a href="javascript:void(0)" class="nav-link" data-section="posts"><span class="icon">🖼️</span> My Posts</a>
+<a href="javascript:void(0)" class="nav-link" data-section="articles"><span class="icon">📝</span> Articles</a>
+<a href="javascript:void(0)" class="nav-link" data-section="community"><span class="icon">🌱</span> Community Posts</a>
+<a href="javascript:void(0)" class="nav-link" data-section="announcements"><span class="icon">📢</span> Announcements</a>
+<a href="javascript:void(0)" class="nav-link" data-section="publicqa"><span class="icon">🌐</span> Public Q&A</a>
     </nav>
 </aside>
 
@@ -177,7 +179,7 @@ textarea { min-height:100px; }
 
             <div class="panel">
                 <h2>Create a Post</h2>
-                <form action= "#" method="POST" enctype="multipart/form-data">
+                <form action="{{ url_for('business.create_post') }}" method="POST" enctype="multipart/form-data">
                     <label for="post_title">Title</label>
                     <input type="text" id="post_title" name="title" placeholder="e.g. New batch of certified maize seed in stock" required>
 
@@ -188,12 +190,12 @@ textarea { min-height:100px; }
                         <div>
                             <label for="post_photos">Photos</label>
                             <label class="file-drop" for="post_photos">📷 Click to upload photos</label>
-                            <input type="file" id="post_photos" name="photos" accept="image/*" multiple style="display:none;" onchange="previewMedia(event, 'mediaPreview', 'image')">
+                            <input type="file" id="post_photos" name="photos" accept="image/*" multiple style="display:none;" data-preview="mediaPreview" data-preview-type="image">
                         </div>
                         <div>
                             <label for="post_videos">Videos</label>
                             <label class="file-drop" for="post_videos">🎬 Click to upload videos</label>
-                            <input type="file" id="post_videos" name="videos" accept="video/*" multiple style="display:none;" onchange="previewMedia(event, 'mediaPreview', 'video')">
+                            <input type="file" id="post_videos" name="videos" accept="video/*" multiple style="display:none;" data-preview="mediaPreview" data-preview-type="video">
                         </div>
                     </div>
                     <div class="preview-grid" id="mediaPreview"></div>
@@ -227,6 +229,49 @@ textarea { min-height:100px; }
                 <div class="empty-state">You haven't posted anything yet.</div>
             {% endif %}
         </div>
+
+        <!-- ARTICLES -->
+<div class="page-section" id="section-articles">
+    <h1>Articles</h1>
+    <p class="subtitle">Knowledge shared by AGROSPHERE experts.</p>
+    {% if articles %}
+        {% for a in articles %}
+        <div class="list-card">
+            <div class="meta">By {{ a.expert_name }} · {{ a.created_at.strftime('%d %b %Y') }}</div>
+            <h4>{{ a.title }}</h4>
+            <p>{{ a.content[:200] }}{% if a.content|length > 200 %}...{% endif %}</p>
+            {% if a.photos %}
+            <div class="media-grid" style="margin-top:10px;">
+                {% for photo in a.photos %}<img src="{{ photo.url }}" alt="{{ a.title }}">{% endfor %}
+            </div>
+            {% endif %}
+        </div>
+        {% endfor %}
+    {% else %}
+        <div class="empty-state">No articles published yet.</div>
+    {% endif %}
+</div>
+
+<!-- COMMUNITY POSTS -->
+<div class="page-section" id="section-community">
+    <h1>Community Posts</h1>
+    <p class="subtitle">Tips, updates, and experiences shared by farmers.</p>
+    {% if community_posts %}
+        {% for post in community_posts %}
+        <div class="list-card">
+            <div class="meta">🌱 {{ post.author_name.upper() }} · 🕒 {{ post.created_at.strftime('%d %b %Y, %H:%M') }}</div>
+            <p>{{ post.text }}</p>
+            {% if post.photos %}
+            <div class="media-grid" style="margin-top:10px;">
+                {% for photo in post.photos %}<img src="{{ photo.url }}" alt="Post photo">{% endfor %}
+            </div>
+            {% endif %}
+        </div>
+        {% endfor %}
+    {% else %}
+        <div class="empty-state">No community posts yet.</div>
+    {% endif %}
+</div>
 
         <!-- ANNOUNCEMENTS -->
         <div class="page-section" id="section-announcements">
@@ -265,43 +310,7 @@ textarea { min-height:100px; }
     </div>
 </div>
 
-<script>
-
-function showSection(id, btn) {
-    document.querySelectorAll('.page-section').forEach(s => s.classList.remove('active'));
-    document.querySelectorAll('.sidebar nav a').forEach(a => a.classList.remove('active'));
-    const sec = document.getElementById('section-' + id);
-    if (sec) sec.classList.add('active');
-    if (btn) btn.classList.add('active');
-}
-
-function previewMedia(event, targetId, type) {
-    const preview = document.getElementById(targetId);
-    preview.innerHTML = '';
-    const files = event.target.files;
-    for (let i = 0; i < files.length; i++) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            const el = document.createElement(type === 'video' ? 'video' : 'img');
-            el.src = e.target.result;
-            if (type === 'video') el.muted = true;
-            preview.appendChild(el);
-        };
-        reader.readAsDataURL(files[i]);
-    }
-}
-
-async function postJSON(url, data) {
-    const res = await fetch(url, {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify(data)
-    });
-    return res.json();
-}
-
-
-</script>
+<script src="{{ url_for('static', filename='js/script.js') }}"></script>
 
 </body>
 </html>

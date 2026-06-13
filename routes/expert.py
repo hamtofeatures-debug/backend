@@ -1,6 +1,8 @@
-from flask import Blueprint, request, jsonify
+import os
+from flask import Blueprint, request, jsonify, redirect, url_for, session
+from werkzeug.utils import secure_filename
 from extensions import db
-from models import User, Farmer, Expert, Question
+from models import User, Farmer, Expert, Question, Articles, ArticlePhoto, Announcement
 from datetime import datetime
 
 expert_bp = Blueprint('expert', __name__)
@@ -31,18 +33,23 @@ def answer_question(qid):
     data = request.get_json()
     answer = data.get('answer', '').strip()
     expert_id = data.get('expert_id')
+
     if not answer:
         return jsonify({"error": "Answer is required"}), 400
+
     q = Question.query.get(qid)
     if not q:
         return jsonify({"error": "Question not found"}), 404
+
     if q.assigned_expert_id != int(expert_id):
         return jsonify({"error": "Not authorized to answer this question"}), 403
+
     q.answer = answer
     q.status = 'pending_review'
     q.answer_verified = False
     q.answered_at = datetime.utcnow()
     db.session.commit()
+
     return jsonify({"message": "Answer submitted for admin review!"}), 200
 
 
@@ -51,6 +58,7 @@ def profile(user_id):
     user = User.query.filter_by(id=user_id, role='expert').first()
     if not user:
         return jsonify({"error": "Expert not found"}), 404
+
     expert = Expert.query.filter_by(user_id=user.id).first()
     return jsonify({
         "fullname": user.fullname, "email": user.email, "phone": user.phone,
@@ -58,6 +66,34 @@ def profile(user_id):
         "qualification": expert.qualification if expert else "",
         "experience": expert.experience if expert else 0
     })
+
+
+# ---------------------------------------------------------
+# PUBLISH ARTICLE (POST, with photo uploads)
+# ---------------------------------------------------------
 @expert_bp.route('/publish-article', methods=['POST'])
 def publish_article():
-    return jsonify({"message": "Article submitted"})
+    if session.get('role') != 'expert':
+        return redirect(url_for('index'))
+
+    user_id = session['user_id']
+    title = request.form.get('title', '').strip()
+    content = request.form.get('content', '').strip()
+
+    if not title or not content:
+        return redirect(url_for('expert_dashboard_page'))
+
+    new_article = Articles(title=title, content=content, expert_id=user_id)
+    db.session.add(new_article)
+    db.session.flush()
+
+    for photo in request.files.getlist('photos'):
+        if photo and photo.filename:
+            filename = secure_filename(f"article{new_article.id}_{photo.filename}")
+            filepath = os.path.join('static', 'uploads', 'articles', filename)
+            os.makedirs(os.path.dirname(filepath), exist_ok=True)
+            photo.save(filepath)
+            db.session.add(ArticlePhoto(article_id=new_article.id, url=f"/static/uploads/articles/{filename}"))
+
+    db.session.commit()
+    return redirect(url_for('expert_dashboard_page'))

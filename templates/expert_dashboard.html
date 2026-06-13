@@ -112,17 +112,18 @@ textarea { min-height:100px; }
 
 </style>
 </head>
-<body>
+<body data-user-id="{{ current_user.id }}">
 
 <aside class="sidebar">
     <div class="menu-label">MENU</div>
     <nav>
-<a href="javascript:void(0)" class="nav-link active" onclick="showSection('overview', this)"><span class="icon">🏠</span> My Dashboard</a>
-<a href="javascript:void(0)" class="nav-link" onclick="showSection('questions', this)"><span class="icon">📄</span> My Questions</a>
-<a href="javascript:void(0)" class="nav-link" onclick="showSection('articles', this)"><span class="icon">📝</span> Publish Article</a>
-<a href="javascript:void(0)" class="nav-link" onclick="showSection('announcements', this)"><span class="icon">📢</span> Announcements</a>
-<a href="javascript:void(0)" class="nav-link" onclick="showSection('rankings', this)"><span class="icon">🏆</span> Expert Rankings</a>
-<a href="javascript:void(0)" class="nav-link" onclick="showSection('publicqa', this)"><span class="icon">🌐</span> Public Q&A</a>
+<a href="javascript:void(0)" class="nav-link active" data-section="overview"><span class="icon">📊</span> Overview</a>
+<a href="javascript:void(0)" class="nav-link" data-section="questions"><span class="icon">📄</span> My Questions</a>
+<a href="javascript:void(0)" class="nav-link" data-section="articles"><span class="icon">📝</span> Publish Article</a>
+<a href="javascript:void(0)" class="nav-link" data-section="community"><span class="icon">🌱</span> Community Posts</a>
+<a href="javascript:void(0)" class="nav-link" data-section="announcements"><span class="icon">📢</span> Announcements</a>
+<a href="javascript:void(0)" class="nav-link" data-section="rankings"><span class="icon">🏆</span> Expert Rankings</a>
+<a href="javascript:void(0)" class="nav-link" data-section="publicqa"><span class="icon">🌐</span> Public Q&A</a>
     </nav>
 </aside>
 
@@ -189,7 +190,7 @@ textarea { min-height:100px; }
                     {% if q.status == 'assigned' %}
                     <div style="margin-top:10px;">
                         <textarea id="answer-{{ q.id }}" placeholder="Type your answer here..."></textarea>
-                        <button class="btn-sm btn-green" style="margin-top:8px;" onclick="submitAnswer(q.id)">Submit Answer</button>
+                        <button class="btn-sm btn-green" style="margin-top:8px;" data-action="submit-answer" data-qid="{{ q.id }}">Submit Answer</button>
                     </div>
                     {% endif %}
                 </div>
@@ -245,6 +246,27 @@ textarea { min-height:100px; }
                 <div class="empty-state">No business posts yet.</div>
             {% endif %}
         </div>
+
+        <!-- COMMUNITY POSTS -->
+<div class="page-section" id="section-community">
+    <h1>Community Posts</h1>
+    <p class="subtitle">Tips, updates, and experiences shared by farmers.</p>
+    {% if community_posts %}
+        {% for post in community_posts %}
+        <div class="list-card">
+            <div class="meta">🌱 {{ post.author_name.upper() }} · 🕒 {{ post.created_at.strftime('%d %b %Y, %H:%M') }}</div>
+            <p>{{ post.text }}</p>
+            {% if post.photos %}
+            <div class="media-grid" style="margin-top:10px;">
+                {% for photo in post.photos %}<img src="{{ photo.url }}" alt="Post photo">{% endfor %}
+            </div>
+            {% endif %}
+        </div>
+        {% endfor %}
+    {% else %}
+        <div class="empty-state">No community posts yet.</div>
+    {% endif %}
+</div>
 
         <!-- ANNOUNCEMENTS -->
         <div class="page-section" id="section-announcements">
@@ -302,49 +324,7 @@ textarea { min-height:100px; }
     </div>
 </div>
 
-<script>
-
-function showSection(id, btn) {
-    document.querySelectorAll('.page-section').forEach(s => s.classList.remove('active'));
-    document.querySelectorAll('.sidebar nav a').forEach(a => a.classList.remove('active'));
-    const sec = document.getElementById('section-' + id);
-    if (sec) sec.classList.add('active');
-    if (btn) btn.classList.add('active');
-}
-
-function previewMedia(event, targetId, type) {
-    const preview = document.getElementById(targetId);
-    preview.innerHTML = '';
-    const files = event.target.files;
-    for (let i = 0; i < files.length; i++) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            const el = document.createElement(type === 'video' ? 'video' : 'img');
-            el.src = e.target.result;
-            if (type === 'video') el.muted = true;
-            preview.appendChild(el);
-        };
-        reader.readAsDataURL(files[i]);
-    }
-}
-
-async function postJSON(url, data) {
-    const res = await fetch(url, {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify(data)
-    });
-    return res.json();
-}
-
-
-function submitAnswer(qid) {
-    const answer = document.getElementById('answer-' + qid).value.trim();
-    if (!answer) { alert('Please write an answer.'); return; }
-    postJSON(`/expert/answer/${qid}`, { answer, expert_id: current_user.id }).then(() => location.reload());
-}
-
-</script>
+<script src="{{ url_for('static', filename='js/script.js') }}"></script>
 
 </body>
 </html>

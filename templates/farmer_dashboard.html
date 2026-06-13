@@ -112,17 +112,21 @@ textarea { min-height:100px; }
 
 </style>
 </head>
-<body>
+
+<body data-user-id="{{ current_user.id }}">
 
 <aside class="sidebar">
     <div class="menu-label">MENU</div>
     <nav>
-<a href="javascript:void(0)" class="nav-link active" onclick="showSection('overview', this)"><span class="icon">🏠</span> My Dashboard</a>
+<a href="javascript:void(0)" class="nav-link active" data-section="overview"><span class="icon">📊</span> Overview</a>
 <a href="javascript:void(0)" class="nav-link" onclick="showSection('ask', this)"><span class="icon">❓</span> Ask an Expert</a>
-<a href="javascript:void(0)" class="nav-link" onclick="showSection('myquestions', this)"><span class="icon">📄</span> My Questions</a>
-<a href="javascript:void(0)" class="nav-link" onclick="showSection('announcements', this)"><span class="icon">📢</span> Announcements</a>
-<a href="javascript:void(0)" class="nav-link" onclick="showSection('rankings', this)"><span class="icon">🏆</span> Expert Rankings</a>
-<a href="javascript:void(0)" class="nav-link" onclick="showSection('publicqa', this)"><span class="icon">🌐</span> Public Q&A</a>
+<a href="javascript:void(0)" class="nav-link" data-section="myquestions"><span class="icon">📄</span> My Questions</a>
+<a href="javascript:void(0)" class="nav-link" data-section="community"><span class="icon">🌱</span> Community Posts</a>
+<a href="javascript:void(0)" class="nav-link" data-section="articles"><span class="icon">📃</span> Articles</a>
+<a href="javascript:void(0)" class="nav-link" data-section="announcements"><span class="icon">📢</span> Announcements</a>
+<a href="javascript:void(0)" class="nav-link" data-section="rankings"><span class="icon">🏆</span> Expert Rankings</a>
+<a href="javascript:void(0)" class="nav-link" data-section="publicqa"><span class="icon">🌐</span> Public Q&A</a>
+<a href="javascript:void(0)" class="nav-link" data-section="businessposts"><span class="icon">🏪</span> Business Posts</a>
     </nav>
 </aside>
 
@@ -212,24 +216,63 @@ textarea { min-height:100px; }
                     <button type="submit" class="btn-primary">Post</button>
                 </form>
             </div>
+        </div>
 
-            <h2 style="margin:24px 0 14px;">Community Posts</h2>
-            {% if community_posts %}
-                {% for post in community_posts %}
-                <div class="list-card">
-                    <div class="meta">🌱 {{ post.author_name.upper() }} · 🕒 {{ post.created_at.strftime('%d %b %Y, %H:%M') }}</div>
-                    <p>{{ post.text }}</p>
-                    {% if post.photos %}
-                    <div class="media-grid" style="margin-top:10px;">
-                        {% for photo in post.photos %}<img src="{{ photo.url }}" alt="Post photo">{% endfor %}
-                    </div>
-                    {% endif %}
-                </div>
-                {% endfor %}
-            {% else %}
-                <div class="empty-state">No community posts yet.</div>
+         <!-- COMMUNITY POSTS -->
+<div class="page-section" id="section-community">
+    <h1>Community Posts</h1>
+    <p class="subtitle">Tips, updates, and experiences shared by farmers.</p>
+    {% if community_posts %}
+        {% for post in community_posts %}
+        <div class="list-card">
+            <div class="meta">🌱 {{ post.author_name.upper() }} · 🕒 {{ post.created_at.strftime('%d %b %Y, %H:%M') }}</div>
+            <p>{{ post.text }}</p>
+            {% if post.photos %}
+            <div class="media-grid" style="margin-top:10px;">
+                {% for photo in post.photos %}<img src="{{ photo.url }}" alt="Post photo">{% endfor %}
+            </div>
             {% endif %}
         </div>
+        {% endfor %}
+    {% else %}
+        <div class="empty-state">No community posts yet.</div>
+    {% endif %}
+</div>
+
+<!-- ARTICLES -->
+<div class="page-section" id="section-articles">
+    <h1>Expert Articles</h1>
+    <p class="subtitle">Articles shared by agricultural experts.</p>
+
+    {% if articles %}
+        {% for article in articles %}
+        <div class="list-card">
+            <div class="meta">
+                👨‍🌾 {{ article.expert_name }}
+                ·
+                🕒 {{ article.created_at.strftime('%d %b %Y') }}
+            </div>
+
+            <h4>{{ article.title }}</h4>
+
+            <p>
+                {{ article.content[:300] }}
+                {% if article.content|length > 300 %}...{% endif %}
+            </p>
+
+            {% if article.photos %}
+            <div class="media-grid" style="margin-top:10px;">
+                {% for photo in article.photos %}
+                <img src="{{ photo.url }}" alt="{{ article.title }}">
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+        {% endfor %}
+    {% else %}
+        <div class="empty-state">No expert articles available.</div>
+    {% endif %}
+</div>
 
         <!-- MY QUESTIONS -->
         <div class="page-section" id="section-myquestions">
@@ -318,55 +361,35 @@ textarea { min-height:100px; }
             {% endif %}
         </div>
 
+        <!-- BUSINESS POSTS -->
+<div class="page-section" id="section-businessposts">
+    <h1>Business Posts</h1>
+    <p class="subtitle">Products and services from registered businesses.</p>
+    {% if business_posts %}
+        {% for post in business_posts %}
+        <div class="list-card">
+            <div class="meta">🏢 {{ post.business_name }} · 🕒 {{ post.created_at.strftime('%d %b %Y') }}</div>
+            <h4>{{ post.title }}</h4>
+            <p>{{ post.description }}</p>
+            {% if post.media %}
+            <div class="media-grid" style="margin-top:10px;">
+                {% for item in post.media %}
+                    {% if item.type == 'video' %}<video src="{{ item.url }}" controls></video>
+                    {% else %}<img src="{{ item.url }}" alt="{{ post.title }}">{% endif %}
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+        {% endfor %}
+    {% else %}
+        <div class="empty-state">No business posts yet.</div>
+    {% endif %}
+</div>
+
     </div>
 </div>
 
-<script>
-
-function showSection(id, btn) {
-    document.querySelectorAll('.page-section').forEach(s => s.classList.remove('active'));
-    document.querySelectorAll('.sidebar nav a').forEach(a => a.classList.remove('active'));
-    const sec = document.getElementById('section-' + id);
-    if (sec) sec.classList.add('active');
-    if (btn) btn.classList.add('active');
-}
-
-function previewMedia(event, targetId, type) {
-    const preview = document.getElementById(targetId);
-    preview.innerHTML = '';
-    const files = event.target.files;
-    for (let i = 0; i < files.length; i++) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            const el = document.createElement(type === 'video' ? 'video' : 'img');
-            el.src = e.target.result;
-            if (type === 'video') el.muted = true;
-            preview.appendChild(el);
-        };
-        reader.readAsDataURL(files[i]);
-    }
-}
-
-async function postJSON(url, data) {
-    const res = await fetch(url, {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify(data)
-    });
-    return res.json();
-}
-
-
-document.querySelectorAll('[data-question-id]').forEach(group => {
-    const qid = group.dataset.questionId;
-    group.querySelectorAll('.star').forEach(star => {
-        star.addEventListener('click', () => {
-            postJSON(`/api/rate/${qid}`, { stars: star.dataset.value });
-        });
-    });
-});
-
-</script>
+<script src="{{ url_for('static', filename='js/script.js') }}"></script>
 
 </body>
 </html>

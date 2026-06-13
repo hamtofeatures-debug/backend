@@ -112,19 +112,23 @@ textarea { min-height:100px; }
 
 </style>
 </head>
-<body>
+<body data-user-id="{{ current_user.id }}">
 
 <aside class="sidebar">
     <div class="menu-label">MENU</div>
     <nav>
-<a href="javascript:void(0)" class="nav-link active" onclick="showSection('overview', this)"><span class="icon">📊</span> Overview</a>
+<a href="javascript:void(0)" class="nav-link active" data-section="overview"><span class="icon">📊</span> Overview</a>
 <a href="javascript:void(0)" class="nav-link" onclick="showSection('users', this)"><span class="icon">👥</span> All Users</a>
 <a href="javascript:void(0)" class="nav-link" onclick="showSection('questions', this)"><span class="icon">❓</span> All Questions</a>
 <a href="javascript:void(0)" class="nav-link" onclick="showSection('pending', this)"><span class="icon">🔍</span> Pending Review</a>
+<a href="javascript:void(0)" class="nav-link" onclick="showSection('articles', this)"><span class="icon">📝</span> Pending Articles</a>
+<a href="javascript:void(0)" class="nav-link" data-section="approved_articles"><span class="icon">📃</span> Articles</a>
 <a href="javascript:void(0)" class="nav-link" onclick="showSection('announcements', this)"><span class="icon">📢</span> Announcements</a>
+<a href="javascript:void(0)" class="nav-link" data-section="communityposts"><span class="icon">🌱</span> Community Posts</a>
 <a href="javascript:void(0)" class="nav-link" onclick="showSection('rankings', this)"><span class="icon">🏆</span> Expert Rankings</a>
 <a href="javascript:void(0)" class="nav-link" onclick="showSection('publicqa', this)"><span class="icon">🌐</span> Public Q&A</a>
 <a href="javascript:void(0)" class="nav-link" onclick="showSection('businesses', this)"><span class="icon">🏢</span> Businesses</a>
+<a href="javascript:void(0)" class="nav-link" data-section="businessposts"><span class="icon">🏪</span> Business Posts</a>
     </nav>
 </aside>
 
@@ -191,42 +195,62 @@ textarea { min-height:100px; }
         </div>
 
         <!-- ALL QUESTIONS -->
-        <div class="page-section" id="section-questions">
-            <h1>All Questions</h1>
-            <p class="subtitle">Every question submitted across the platform.</p>
-            {% if all_questions %}
-                {% for q in all_questions %}
-                <div class="list-card">
-                    <div class="meta">
-                        <span class="status-badge status-{{ q.status }}">{{ q.status.upper() }}</span>
-                        <span class="tag">{{ q.category }}</span>
-                        <span>Farmer: {{ q.farmer_name }}</span>
-                        {% if q.assigned_expert %}<span>Expert: {{ q.assigned_expert }}</span>{% endif %}
-                    </div>
-                    <p>{{ q.question }}</p>
-                    {% if q.answer %}
-                    <div class="answer-box">
-                        <div class="label">Answer</div>
-                        {{ q.answer }}
-                    </div>
-                    {% endif %}
-                    {% if q.status == 'pending' %}
-                    <div style="margin-top:10px;">
-                        <select id="expert-select-{{ q.id }}" style="display:inline-block; width:auto; margin-right:8px;">
-                            {% for e in experts %}
-                            <option value="{{ e.id }}">{{ e.fullname }}</option>
-                            {% endfor %}
-                        </select>
-                        <button class="btn-sm btn-green" onclick="assignExpert('q.id')">Assign</button>
-                    </div>
-                    {% endif %}
-                </div>
-                {% endfor %}
-            {% else %}
-                <div class="empty-state">No questions yet.</div>
-            {% endif %}
-        </div>
+<div class="page-section" id="section-questions">
+    <h1>All Questions</h1>
+    <p class="subtitle">Every question submitted across the platform.</p>
 
+    {% if all_questions %}
+        {% for q in all_questions %}
+        <div class="list-card">
+
+            <div class="meta">
+                <span class="status-badge status-{{ q.status }}">
+                    {{ q.status.upper() }}
+                </span>
+
+                <span class="tag">{{ q.category }}</span>
+
+                <span>Farmer: {{ q.farmer_name }}</span>
+
+                {% if q.assigned_expert %}
+                <span>Expert: {{ q.assigned_expert }}</span>
+                {% endif %}
+            </div>
+
+            <p>{{ q.question }}</p>
+
+            {% if q.answer %}
+            <div class="answer-box">
+                <div class="label">Answer</div>
+                {{ q.answer }}
+            </div>
+            {% endif %}
+
+            {% if q.status == 'pending' %}
+            <div style="margin-top:10px; display:flex; gap:10px; align-items:center;">
+
+                <select id="expert-select-{{ q.id }}">
+                    <option value="">Select Expert</option>
+
+                    {% for e in experts %}
+                    <option value="{{ e.id }}">
+                        {{ e.fullname }}
+                    </option>
+                    {% endfor %}
+                </select>
+
+                    <button class="btn-sm btn-green" data-action="assign" data-qid="{{ q.id }}">Assign</button>
+               
+            </div>
+            {% endif %}
+
+        </div>
+        {% endfor %}
+
+    {% else %}
+        <div class="empty-state">No questions yet.</div>
+    {% endif %}
+</div>
         <!-- PENDING REVIEW -->
         <div class="page-section" id="section-pending">
             <h1>Pending Review</h1>
@@ -245,8 +269,8 @@ textarea { min-height:100px; }
                         {{ q.answer }}
                     </div>
                     <div style="margin-top:10px;">
-                        <button class="btn-sm btn-green" onclick="approveAnswer(q.id)">Approve &amp; Publish</button>
-                        <button class="btn-sm btn-danger" onclick="rejectAnswer(q.id)">Reject</button>
+                        <button class="btn-sm btn-green" data-action="approve" data-qid="{{ q.id }}">Approve &amp; Publish</button>
+                        <button class="btn-sm btn-danger" data-action="reject" data-qid="{{ q.id }}">Reject</button>
                     </div>
                 </div>
                 {% endfor %}
@@ -254,6 +278,57 @@ textarea { min-height:100px; }
                 <div class="empty-state">Nothing pending review.</div>
             {% endif %}
         </div>
+
+        <!-- PENDING ARTICLES -->
+<div class="page-section" id="section-pending-articles">
+    <h1>Pending Articles</h1>
+    <p class="subtitle">Expert articles awaiting approval before publishing.</p>
+    {% if pending_articles %}
+        {% for a in pending_articles %}
+        <div class="list-card">
+            <div class="meta">
+                <span>By: {{ a.expert_name }}</span>
+                <span>{{ a.created_at.strftime('%d %b %Y') }}</span>
+            </div>
+            <h4>{{ a.title }}</h4>
+            <p>{{ a.content[:300] }}{% if a.content|length > 300 %}...{% endif %}</p>
+            {% if a.photos %}
+            <div class="media-grid" style="margin-top:10px;">
+                {% for photo in a.photos %}<img src="{{ photo.url }}" alt="{{ a.title }}">{% endfor %}
+            </div>
+            {% endif %}
+            <div style="margin-top:10px;">
+                <button class="btn-sm btn-green" data-action="approve-article" data-aid="{{ a.id }}">Approve</button>
+                <button class="btn-sm btn-danger" data-action="reject-article" data-aid="{{ a.id }}">Reject</button>
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <div class="empty-state">No articles pending review.</div>
+    {% endif %}
+</div>
+
+<div class="page-section" id="section-approved-articles">
+    <h1>Approved Expert Articles</h1>
+
+    {% if approved_articles %}
+        {% for article in approved_articles %}
+        <div class="list-card">
+            <div class="meta">
+                👨‍🌾 {{ article.expert_name }}
+                · {{ article.created_at.strftime('%d %b %Y') }}
+            </div>
+
+            <h4>{{ article.title }}</h4>
+            <p>{{ article.content }}</p>
+        </div>
+        {% endfor %}
+    {% else %}
+        <div class="empty-state">
+            No approved articles available.
+        </div>
+    {% endif %}
+</div>
 
         <!-- ANNOUNCEMENTS -->
         <div class="page-section" id="section-announcements">
@@ -275,7 +350,7 @@ textarea { min-height:100px; }
                 </select>
                 <label for="ann-body">Message</label>
                 <textarea id="ann-body" placeholder="Write your announcement here..."></textarea>
-                <button class="btn-primary" onclick="postAnnouncement()">Post Announcement</button>
+                <button class="btn-primary" data-action="post-announcement">Post Announcement</button>
             </div>
 
             <div id="announcementsList">
@@ -296,6 +371,27 @@ textarea { min-height:100px; }
                 {% endif %}
             </div>
         </div>
+
+        <!-- COMMUNITY POSTS -->
+<div class="page-section" id="section-communityposts">
+    <h1>Community Posts</h1>
+    <p class="subtitle">Posts shared by farmers with the community.</p>
+    {% if community_posts %}
+        {% for post in community_posts %}
+        <div class="list-card">
+            <div class="meta">🌱 {{ post.farmer_name }} · 🕒 {{ post.created_at.strftime('%d %b %Y, %H:%M') }}</div>
+            <p>{{ post.text }}</p>
+            {% if post.photos %}
+            <div class="media-grid" style="margin-top:10px;">
+                {% for photo in post.photos %}<img src="{{ photo.url }}" alt="Post photo">{% endfor %}
+            </div>
+            {% endif %}
+        </div>
+        {% endfor %}
+    {% else %}
+        <div class="empty-state">No community posts yet.</div>
+    {% endif %}
+</div>
 
         <!-- EXPERT RANKINGS -->
         <div class="page-section" id="section-rankings">
@@ -356,16 +452,16 @@ textarea { min-height:100px; }
                     <p>{{ b.services }}</p>
                     <p style="color:#999;">{{ b.location or '' }}</p>
                     <div style="margin-top:10px;">
-                        {% if b.status == 'pending' %}
-                        <button class="btn-sm btn-green" onclick="businessAction( 'b.id', 'approve')">Approve</button>
-                        <button class="btn-sm btn-danger" onclick="businessAction('b.id', 'reject')">Reject</button>
-                        {% endif %}
-                        {% if not b.blue_tick %}
-                        <button class="btn-sm" onclick="verifyBusiness(b.id)">Grant Blue Tick</button>
-                        {% endif %}
-                        {% if b.payment_status != 'paid' %}
-                        <button class="btn-sm" onclick="confirmPayment(b.id)">Confirm Payment</button>
-                        {% endif %}
+                     {% if b.status == 'pending' %}
+                    <button class="btn-sm btn-green" data-action="biz-approve" data-bid="{{ b.id }}">Approve</button>
+                    <button class="btn-sm btn-danger" data-action="biz-reject" data-bid="{{ b.id }}">Reject</button>
+                    {% endif %}
+                    {% if not b.blue_tick %}
+                    <button class="btn-sm" data-action="verify-biz" data-bid="{{ b.id }}">Grant Blue Tick</button>
+                    {% endif %}
+                    {% if b.payment_status != 'paid' %}
+                    <button class="btn-sm" data-action="confirm-payment" data-bid="{{ b.id }}">Confirm Payment</button>
+                    {% endif %}   
                     </div>
                 </div>
                 {% endfor %}
@@ -374,81 +470,36 @@ textarea { min-height:100px; }
             {% endif %}
         </div>
 
+        <!-- BUSINESS POSTS -->
+<div class="page-section" id="section-businessposts">
+    <h1>Business Posts</h1>
+    <p class="subtitle">Products and services shared by registered businesses.</p>
+    {% if business_posts %}
+        {% for post in business_posts %}
+        <div class="list-card">
+            <div class="meta">🏢 {{ post.business_name }} · 🕒 {{ post.created_at.strftime('%d %b %Y, %H:%M') }}</div>
+            <h4>{{ post.title }}</h4>
+            <p>{{ post.description }}</p>
+            {% if post.media %}
+            <div class="media-grid" style="margin-top:10px;">
+                {% for item in post.media %}
+                    {% if item.type == 'video' %}<video src="{{ item.url }}" controls></video>
+                    {% else %}<img src="{{ item.url }}" alt="{{ post.title }}">{% endif %}
+                {% endfor %}
+            </div>
+            {% endif %}
+            <div class="meta" style="margin-top:8px;">👍 {{ post.likes_count }} likes &nbsp; 👁️ {{ post.views_count }} views</div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <div class="empty-state">No business posts yet.</div>
+    {% endif %}
+</div>
+
     </div>
 </div>
 
-<script>
-
-function showSection(id, btn) {
-    document.querySelectorAll('.page-section').forEach(s => s.classList.remove('active'));
-    document.querySelectorAll('.sidebar nav a').forEach(a => a.classList.remove('active'));
-    const sec = document.getElementById('section-' + id);
-    if (sec) sec.classList.add('active');
-    if (btn) btn.classList.add('active');
-}
-
-function previewMedia(event, targetId, type) {
-    const preview = document.getElementById(targetId);
-    preview.innerHTML = '';
-    const files = event.target.files;
-    for (let i = 0; i < files.length; i++) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            const el = document.createElement(type === 'video' ? 'video' : 'img');
-            el.src = e.target.result;
-            if (type === 'video') el.muted = true;
-            preview.appendChild(el);
-        };
-        reader.readAsDataURL(files[i]);
-    }
-}
-
-async function postJSON(url, data) {
-    const res = await fetch(url, {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify(data)
-    });
-    return res.json();
-}
-
-
-function postAnnouncement() {
-    const title = document.getElementById('ann-title').value.trim();
-    const category = document.getElementById('ann-category').value;
-    const body = document.getElementById('ann-body').value.trim();
-    if (!title || !body) { alert('Title and message are required.'); return; }
-    postJSON('/admin/announcements', { admin_id: current_user.id, title, category, body }).then(() => location.reload());
-}
-
-function assignExpert(qid) {
-    const select = document.getElementById('expert-select-' + qid);
-    const expert_id = select.value;
-    postJSON(`/admin/questions/${qid}/assign`, { expert_id }).then(() => location.reload());
-}
-
-function approveAnswer(qid) {
-    postJSON(`/admin/questions/${qid}/approve`, {}).then(() => location.reload());
-}
-
-function rejectAnswer(qid) {
-    const note = prompt('Note for the expert (optional):', 'Please revise your answer.');
-    postJSON(`/admin/questions/${qid}/reject`, { note: note || '' }).then(() => location.reload());
-}
-
-function businessAction(bid, action) {
-    fetch(`/admin/business/${bid}/${action}`, { method: 'POST' }).then(() => location.reload());
-}
-
-function verifyBusiness(bid) {
-    fetch(`/admin/verify-business/${bid}`, { method: 'POST' }).then(() => location.reload());
-}
-
-function confirmPayment(bid) {
-    fetch(`/admin/business/${bid}/confirm-payment`, { method: 'POST' }).then(() => location.reload());
-}
-
-</script>
+<script src="{{ url_for('static', filename='js/script.js') }}"></script>
 
 </body>
 </html>

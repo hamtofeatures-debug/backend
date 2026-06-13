@@ -68,21 +68,33 @@ def post_question():
     db.session.commit()
     return jsonify({"message": "Question posted!", "id": q.id}), 201
 
-@admin_bp.route('/questions/<int:qid>/assign', methods=['POST'])
-def assign_question(qid):
+@admin_bp.route('/questions/<int:question_id>/assign', methods=['POST'])
+def assign_question(question_id):
+
     data = request.get_json()
     expert_id = data.get('expert_id')
-    expert = User.query.filter_by(id=expert_id, role='expert').first()
+
+    question = Question.query.get(question_id)
+
+    if not question:
+        return jsonify({"error": "Question not found"}), 404
+
+    expert = User.query.filter_by(
+        id=expert_id,
+        role='expert'
+    ).first()
+
     if not expert:
         return jsonify({"error": "Expert not found"}), 404
-    q = Question.query.get(qid)
-    if not q:
-        return jsonify({"error": "Question not found"}), 404
-    q.assigned_expert_id = expert_id
-    q.status = 'assigned'
-    q.admin_note = None
+
+    question.assigned_expert_id = expert.id
+    question.status = "assigned"
+
     db.session.commit()
-    return jsonify({"message": f"Assigned to {expert.fullname}"}), 200
+
+    return jsonify({
+        "message": f"Assigned to {expert.fullname}"
+    })
 
 @admin_bp.route('/questions/<int:qid>/approve', methods=['POST'])
 def approve_answer(qid):
@@ -243,12 +255,24 @@ def get_pending_articles():
     pending = Articles.query.filter_by(is_approved=False).all()
     return jsonify([{'id': a.id, 'title': a.title, 'expert_id': a.expert_id} for a in pending])
 
-@admin_bp.route('/articles/<int:id>/approve', methods=['POST'])
-def approve_article(id):
-    article = Articles.query.get_or_404(id)
+@admin_bp.route('/articles/<int:aid>/approve', methods=['POST'])
+def approve_article(aid):
+    article = Articles.query.get(aid)
+    if not article:
+        return jsonify({"error": "Article not found"}), 404
     article.is_approved = True
     db.session.commit()
-    return jsonify({'message': 'Article approved and now visible to farmers!'}), 200
+    return jsonify({"message": "Article approved"}), 200
+
+
+@admin_bp.route('/articles/<int:aid>/reject', methods=['POST'])
+def reject_article(aid):
+    article = Articles.query.get(aid)
+    if not article:
+        return jsonify({"error": "Article not found"}), 404
+    db.session.delete(article)
+    db.session.commit()
+    return jsonify({"message": "Article rejected"}), 200
 
 # ==================================================
 # BUSINESS MANAGEMENT
@@ -340,3 +364,24 @@ def reports():
     }
 
     return jsonify(stats)
+
+@admin_bp.route('/assign-expert/<int:question_id>', methods=['POST'])
+def assign_expert(question_id):
+
+    data = request.get_json()
+
+    expert_id = data.get('expert_id')
+
+    q = Question.query.get(question_id)
+
+    if not q:
+        return jsonify({'error': 'Question not found'}), 404
+
+    q.assigned_expert_id = expert_id
+    q.status = 'assigned'
+
+    db.session.commit()
+
+    return jsonify({
+        'message': 'Expert assigned successfully'
+    }), 200

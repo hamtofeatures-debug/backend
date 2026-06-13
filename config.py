@@ -4,7 +4,7 @@ BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 
 
 class Config:
-    SECRET_KEY = os.environ.get('SECRET_KEY') or 'supersecretkey'
+    SECRET_KEY = os.environ.get('SECRET_KEY', 'dev-secret-key-change-me') or 'supersecretkey'
 
     # Explicit absolute path - avoids Flask resolving 'sqlite:///agrosphere.db'
     # to a different location (e.g. backend/instance/) depending on context.
