@@ -1,4 +1,5 @@
 from flask import Blueprint, request, jsonify, session
+from flask_login import login_user
 from extensions import db
 from models import User, Farmer, Expert, Business
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -26,9 +27,11 @@ def login():
 
     if user and check_password_hash(user.password, password):
         # Store session for dashboard access
+        login_user(user)
+
+        # Required by session-based dashboard routes (app.py uses session['role'] / session['user_id'])
         session['user_id'] = user.id
         session['role'] = user.role
-        session['fullname'] = user.fullname
 
         if user.role == 'admin':
             redirect_url = '/admin/dashboard'

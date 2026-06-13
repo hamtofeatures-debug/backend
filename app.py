@@ -48,10 +48,6 @@ def register_page():
     return render_template('register.html')
 
 
-# =====================================================================
-# DASHBOARD VIEW ROUTES (one per role, separate templates)
-# =====================================================================
-
 @app.route('/admin/dashboard')
 def admin_dashboard_page():
     if session.get('role') != 'admin':
@@ -86,15 +82,12 @@ def admin_dashboard_page():
     all_users = User.query.all()
 
     all_questions = [
-        fmt_q(q)
-        for q in Question.query.order_by(Question.id.desc()).all()
+        fmt_q(q) for q in Question.query.order_by(Question.id.desc()).all()
     ]
 
     pending_review = [
-        fmt_q(q)
-        for q in Question.query.filter_by(
-            status='pending_review'
-        ).order_by(Question.id.desc()).all()
+        fmt_q(q) for q in Question.query.filter_by(status='pending_review')
+        .order_by(Question.id.desc()).all()
     ]
 
     experts = User.query.filter_by(role='expert').all()
@@ -103,7 +96,9 @@ def admin_dashboard_page():
         Announcement.id.desc()
     ).all()
 
-    # Expert rankings
+    # =========================
+    # EXPERT RANKINGS
+    # =========================
     expert_rankings = []
 
     for e in experts:
@@ -113,9 +108,7 @@ def admin_dashboard_page():
             answer_verified=True
         ).count()
 
-        ratings = ExpertRating.query.filter_by(
-            expert_id=e.id
-        ).all()
+        ratings = ExpertRating.query.filter_by(expert_id=e.id).all()
 
         avg_rating = (
             round(sum(r.stars for r in ratings) / len(ratings), 1)
@@ -130,10 +123,7 @@ def admin_dashboard_page():
             "score": (answered * 10) + (avg_rating * 20)
         })
 
-    expert_rankings.sort(
-        key=lambda x: x['score'],
-        reverse=True
-    )
+    expert_rankings.sort(key=lambda x: x['score'], reverse=True)
 
     for i, e in enumerate(expert_rankings):
         e['rank'] = i + 1
@@ -150,10 +140,9 @@ def admin_dashboard_page():
         Business.id.desc()
     ).all()
 
-    # =====================================================
+    # =========================
     # EXPERT ARTICLES
-    # =====================================================
-
+    # =========================
     pending_articles = Articles.query.filter_by(
         is_approved=False
     ).order_by(
@@ -166,40 +155,31 @@ def admin_dashboard_page():
         Articles.id.desc()
     ).all()
 
-    # Attach expert names
     for article in pending_articles + approved_articles:
         expert = User.query.get(article.expert_id)
-        article.expert_name = (
-            expert.fullname if expert else "Unknown"
-        )
+        article.expert_name = expert.fullname if expert else "Unknown"
 
-    # =====================================================
+    # =========================
     # BUSINESS POSTS
-    # =====================================================
-
+    # =========================
     business_posts = BusinessPost.query.order_by(
         BusinessPost.id.desc()
     ).all()
 
     for p in business_posts:
         biz_user = User.query.get(p.business_id)
-        p.business_name = (
-            biz_user.fullname if biz_user else "Unknown"
-        )
+        p.business_name = biz_user.fullname if biz_user else "Unknown"
 
-    # =====================================================
+    # =========================
     # COMMUNITY POSTS
-    # =====================================================
-
+    # =========================
     community_posts = Post.query.order_by(
         Post.id.desc()
     ).all()
 
     for p in community_posts:
         farmer = User.query.get(p.farmer_id)
-        p.farmer_name = (
-            farmer.fullname if farmer else "Unknown"
-        )
+        p.farmer_name = farmer.fullname if farmer else "Unknown"
 
     return render_template(
         'admin_dashboard.html',
@@ -467,6 +447,7 @@ def expert_dashboard_page():
         expert_rankings=expert_rankings,
         public_qa=public_qa
     )
+
 
 @app.route('/business/dashboard')
 def business_dashboard_page():

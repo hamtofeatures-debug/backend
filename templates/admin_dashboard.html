@@ -121,8 +121,8 @@ textarea { min-height:100px; }
 <a href="javascript:void(0)" class="nav-link" onclick="showSection('users', this)"><span class="icon">👥</span> All Users</a>
 <a href="javascript:void(0)" class="nav-link" onclick="showSection('questions', this)"><span class="icon">❓</span> All Questions</a>
 <a href="javascript:void(0)" class="nav-link" onclick="showSection('pending', this)"><span class="icon">🔍</span> Pending Review</a>
-<a href="javascript:void(0)" class="nav-link" onclick="showSection('articles', this)"><span class="icon">📝</span> Pending Articles</a>
-<a href="javascript:void(0)" class="nav-link" data-section="approved_articles"><span class="icon">📃</span> Articles</a>
+<a href="javascript:void(0)" class="nav-link" data-section="pending-articles"><span class="icon">📝</span> Pending Articles</a>
+<a href="javascript:void(0)" class="nav-link" data-section="approved-articles"><span class="icon">📃</span> Articles</a>
 <a href="javascript:void(0)" class="nav-link" onclick="showSection('announcements', this)"><span class="icon">📢</span> Announcements</a>
 <a href="javascript:void(0)" class="nav-link" data-section="communityposts"><span class="icon">🌱</span> Community Posts</a>
 <a href="javascript:void(0)" class="nav-link" onclick="showSection('rankings', this)"><span class="icon">🏆</span> Expert Rankings</a>
@@ -283,24 +283,36 @@ textarea { min-height:100px; }
 <div class="page-section" id="section-pending-articles">
     <h1>Pending Articles</h1>
     <p class="subtitle">Expert articles awaiting approval before publishing.</p>
-    {% if pending_articles %}
+
+    {% if pending_articles and pending_articles|length > 0 %}
         {% for a in pending_articles %}
         <div class="list-card">
+
             <div class="meta">
-                <span>By: {{ a.expert_name }}</span>
-                <span>{{ a.created_at.strftime('%d %b %Y') }}</span>
+                <span>By: {{ a.expert.fullname if a.expert else "Unknown" }}</span>
+                <span>{{ a.created_at_display or 'Unknown date' }}</span>
             </div>
+
             <h4>{{ a.title }}</h4>
             <p>{{ a.content[:300] }}{% if a.content|length > 300 %}...{% endif %}</p>
+
             {% if a.photos %}
             <div class="media-grid" style="margin-top:10px;">
-                {% for photo in a.photos %}<img src="{{ photo.url }}" alt="{{ a.title }}">{% endfor %}
+                {% for photo in a.photos %}
+                    <img src="{{ photo.url }}" alt="Article image">
+                {% endfor %}
             </div>
             {% endif %}
+
             <div style="margin-top:10px;">
-                <button class="btn-sm btn-green" data-action="approve-article" data-aid="{{ a.id }}">Approve</button>
-                <button class="btn-sm btn-danger" data-action="reject-article" data-aid="{{ a.id }}">Reject</button>
+                <button class="btn-sm btn-green" data-action="approve-article" data-aid="{{ a.id }}">
+                    Approve
+                </button>
+                <button class="btn-sm btn-danger" data-action="reject-article" data-aid="{{ a.id }}">
+                    Reject
+                </button>
             </div>
+
         </div>
         {% endfor %}
     {% else %}
@@ -312,22 +324,22 @@ textarea { min-height:100px; }
     <h1>Approved Expert Articles</h1>
 
     {% if approved_articles %}
-        {% for article in approved_articles %}
+    {% for article in approved_articles %}
         <div class="list-card">
             <div class="meta">
                 👨‍🌾 {{ article.expert_name }}
-                · {{ article.created_at.strftime('%d %b %Y') }}
+                · {{ article.created_at.strftime('%d %b %Y') if article.created_at }}
             </div>
 
             <h4>{{ article.title }}</h4>
             <p>{{ article.content }}</p>
         </div>
-        {% endfor %}
-    {% else %}
-        <div class="empty-state">
-            No approved articles available.
-        </div>
-    {% endif %}
+    {% endfor %}
+{% else %}
+    <div class="empty-state">
+        No approved articles available.
+    </div>
+{% endif %}
 </div>
 
         <!-- ANNOUNCEMENTS -->

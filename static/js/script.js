@@ -318,3 +318,124 @@ document.addEventListener('submit', (e) => {
 // accepts title, description, photos[], videos[] via request.files
 // and request.form, and returns JSON like {"success": true}.)
 
+document.addEventListener("click", function (e) {
+    const btn = e.target.closest("[data-action='assign']");
+    if (!btn) return;
+
+    const qid = btn.getAttribute("data-qid");
+    const select = document.getElementById("expert-select-" + qid);
+    const expertId = select ? select.value : null;
+
+    if (!expertId) {
+        alert("Please select an expert first");
+        return;
+    }
+
+    fetch("/admin/assign-question", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            question_id: qid,
+            expert_id: expertId
+        })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.message) {
+            alert("Assigned successfully");
+
+            // optional UI update
+            location.reload();
+        } else {
+            alert(data.error || "Assignment failed");
+        }
+    })
+    .catch(err => {
+        console.error(err);
+        alert("Server error");
+    });
+});
+
+document.addEventListener("click", async (e) => {
+    const btn = e.target;
+
+    if (btn.dataset.action === "assign") {
+        const qid = btn.dataset.qid;
+        const select = document.getElementById(`expert-select-${qid}`);
+        const expert_id = select.value;
+
+        if (!expert_id) {
+            alert("Select an expert first");
+            return;
+        }
+
+        const res = await fetch("/admin/assign-question", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                question_id: qid,
+                expert_id: expert_id
+            })
+        });
+
+        const data = await res.json();
+
+        if (res.ok) {
+            alert("Assigned successfully");
+            location.reload(); // simplest fix
+        } else {
+            alert(data.error || "Assignment failed");
+        }
+    }
+});
+
+document.addEventListener("click", async (e) => {
+    const btn = e.target.closest("[data-action]");
+    if (!btn) return;
+
+    if (btn.dataset.action === "approve-article") {
+        const article_id = btn.dataset.aid;
+
+        const res = await fetch("/admin/approve-article", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ article_id })
+        });
+
+        const data = await res.json();
+
+        if (res.ok) {
+            alert("Article approved");
+            location.reload();
+        } else {
+            alert(data.error || "Failed");
+        }
+    }
+
+    if (btn.dataset.action === "reject-article") {
+        const article_id = btn.dataset.aid;
+
+        const res = await fetch("/admin/reject-article", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ article_id })
+        });
+
+        const data = await res.json();
+
+        if (res.ok) {
+            alert("Article rejected");
+            location.reload();
+        } else {
+            alert(data.error || "Failed");
+        }
+    }
+});
