@@ -1,4 +1,5 @@
 import os
+SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL', 'sqlite:///agrosphere.db')
 
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 
