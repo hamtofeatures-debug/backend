@@ -439,3 +439,27 @@ document.addEventListener("click", async (e) => {
         }
     }
 });
+
+async function loadWeatherWidget() {
+    const widget = document.getElementById('weather-widget');
+    if (!widget) return; // skip if this page doesn't have the widget
+
+    try {
+        const res = await fetch('/api/weather');
+        const data = await res.json();
+        const current = data.current_weather;
+        const today = data.daily;
+
+        widget.innerHTML = `
+            <span style="font-weight:700;">${Math.round(current.temperature)}°C</span>
+            <span style="color:#888; font-size:0.85rem;">
+                H: ${Math.round(today.temperature_2m_max[0])}° L: ${Math.round(today.temperature_2m_min[0])}°
+                · ${today.precipitation_probability_max[0]}% rain
+            </span>
+        `;
+    } catch (err) {
+        widget.innerHTML = '<span style="color:#999;">Weather unavailable</span>';
+    }
+}
+
+document.addEventListener('DOMContentLoaded', loadWeatherWidget);

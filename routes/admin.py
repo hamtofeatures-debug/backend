@@ -1,6 +1,6 @@
-from flask import Blueprint, request, jsonify, render_template
+from flask import Blueprint, request, jsonify, render_template, session
 from extensions import db
-from models import User, Question, Announcement, AnnouncementReaction, ExpertRating, Articles, Business
+from models import User, Question, Announcement, AnnouncementReaction, ExpertRating, Articles, Business, BusinessPost
 
 admin_bp = Blueprint('admin', __name__)
 
@@ -385,3 +385,38 @@ def assign_expert(question_id):
     return jsonify({
         'message': 'Expert assigned successfully'
     }), 200
+
+
+# Assuming your blueprint is named admin_bp
+@admin_bp.route('/business/delete/<int:user_id>', methods=['POST'])
+def delete_business_user(user_id):
+    # 1. Ensure only an active admin can execute this action
+    if session.get('role') != 'admin':
+        return jsonify({"error": "Unauthorized access"}), 403
+
+    # 2. Find the target user
+    user = User.query.get(user_id)
+    if not user or user.role != 'business':
+        return jsonify({"error": "Business user not found"}), 404
+
+    try:
+        # 3. Clean up child records to prevent foreign key errors
+        # Delete posts created by this business
+        BusinessPost.query.filter_by(business_id=user_id).delete()
+        
+        # Delete the profile entry from the business table
+        business_profile = Business.query.filter_by(user_id=user_id).first()
+        if business_profile:
+            db.session.delete(business_profile)
+
+        # 4. Delete the main User account record
+        db.session.delete(user)
+        
+        # 5. Commit all changes cleanly
+        db.session.commit()
+        from flask import redirect, url_for
+        return redirect('/admin/dashboard')
+
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": f"An error occurred during deletion: {str(e)}"}), 500

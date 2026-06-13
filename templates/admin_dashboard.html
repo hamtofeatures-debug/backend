@@ -112,6 +112,7 @@ textarea { min-height:100px; }
 
 </style>
 </head>
+</div>
 <body data-user-id="{{ current_user.id }}">
 
 <aside class="sidebar">
@@ -136,6 +137,9 @@ textarea { min-height:100px; }
     <header class="topbar">
         <div class="brand"><span class="dot">●</span> AGROSPHERE</div>
         <div class="right">
+            <div id="weather-widget" style="display:flex; align-items:center; gap:8px; font-size:0.9rem;">
+    <span style="color:#999;">Loading weather...</span>
+</div>
             <span class="username">{{ current_user.fullname.upper() }}</span>
             <span class="badge badge-admin">ADMIN</span>
             <form action="{{ url_for('auth.logout') }}" method="POST" style="margin:0;">
@@ -448,39 +452,47 @@ textarea { min-height:100px; }
             {% endif %}
         </div>
 
-        <!-- BUSINESSES -->
-        <div class="page-section" id="section-businesses">
-            <h1>Businesses</h1>
-            <p class="subtitle">Review, approve and verify business accounts.</p>
-            {% if businesses %}
-                {% for b in businesses %}
-                <div class="list-card" id="biz-card-{{ b.id }}">
-                    <div class="meta">
-                        <span class="title">{{ b.business_name }}</span>
-                        {% if b.blue_tick %}<span class="tag" style="color:#1a4fbf;border-color:#1a4fbf;">✔ Verified</span>{% endif %}
-                        <span class="status-badge status-{{ b.status }}" style="background:#eee;color:#444;">{{ b.status.upper() }}</span>
-                        <span>Payment: {{ b.payment_status }}</span>
-                    </div>
-                    <p>{{ b.services }}</p>
-                    <p style="color:#999;">{{ b.location or '' }}</p>
-                    <div style="margin-top:10px;">
-                     {% if b.status == 'pending' %}
-                    <button class="btn-sm btn-green" data-action="biz-approve" data-bid="{{ b.id }}">Approve</button>
-                    <button class="btn-sm btn-danger" data-action="biz-reject" data-bid="{{ b.id }}">Reject</button>
-                    {% endif %}
-                    {% if not b.blue_tick %}
-                    <button class="btn-sm" data-action="verify-biz" data-bid="{{ b.id }}">Grant Blue Tick</button>
-                    {% endif %}
-                    {% if b.payment_status != 'paid' %}
-                    <button class="btn-sm" data-action="confirm-payment" data-bid="{{ b.id }}">Confirm Payment</button>
-                    {% endif %}   
-                    </div>
-                </div>
-                {% endfor %}
-            {% else %}
-                <div class="empty-state">No businesses registered yet.</div>
-            {% endif %}
+       <div class="page-section" id="section-businesses">
+    <h1>Businesses</h1>
+    <p class="subtitle">Review, approve and verify business accounts.</p>
+    {% if businesses %}
+        {% for b in businesses %}
+        <div class="list-card" id="biz-card-{{ b.id }}">
+            <div class="meta">
+                <span class="title">{{ b.business_name }}</span>
+                {% if b.blue_tick %}<span class="tag" style="color:#1a4fbf;border-color:#1a4fbf;">✔ Verified</span>{% endif %}
+                <span class="status-badge status-{{ b.status }}" style="background:#eee;color:#444;">{{ b.status.upper() }}</span>
+                <span>Payment: {{ b.payment_status }}</span>
+            </div>
+            <p>{{ b.services }}</p>
+            <p style="color:#999;">{{ b.location or '' }}</p>
+            
+            <div style="margin-top:10px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                {% if b.status == 'pending' %}
+                <button class="btn-sm btn-green" data-action="biz-approve" data-bid="{{ b.id }}">Approve</button>
+                <button class="btn-sm btn-danger" data-action="biz-reject" data-bid="{{ b.id }}">Reject</button>
+                {% endif %}
+                
+                {% if not b.blue_tick %}
+                <button class="btn-sm" data-action="verify-biz" data-bid="{{ b.id }}">Grant Blue Tick</button>
+                {% endif %}
+                
+                {% if b.payment_status != 'paid' %}
+                <button class="btn-sm" data-action="confirm-payment" data-bid="{{ b.id }}">Confirm Payment</button>
+                {% endif %}   
+
+                <form action="/admin/business/delete/{{ b.user_id }}" method="POST" onsubmit="return confirm('Are you sure you want to completely delete this business user? This action cannot be undone.');" style="margin:0; display:inline;">
+                    <button type="submit" class="btn-sm btn-danger" style="background-color: #dc2626; color: white; border: none;">
+                        Delete Account
+                    </button>
+                </form>
+            </div>
         </div>
+        {% endfor %}
+    {% else %}
+        <div class="empty-state">No businesses registered yet.</div>
+    {% endif %}
+</div>
 
         <!-- BUSINESS POSTS -->
 <div class="page-section" id="section-businessposts">

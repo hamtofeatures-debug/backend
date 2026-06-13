@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify, session
+from flask import Blueprint, request, jsonify, session, render_template, url_for, flash, redirect
 from flask_login import login_user
 from extensions import db
 from models import User, Farmer, Expert, Business
@@ -6,33 +6,77 @@ from werkzeug.security import generate_password_hash, check_password_hash
 
 auth_bp = Blueprint('auth', __name__)
 
+@auth_bp.route('/register', methods=['GET', 'POST'])
+def register():
+    if request.method == 'POST':
+        # Safely capture variables whether frontend sends JSON or Form Data
+        if request.is_json:
+            data = request.get_json() or {}
+            fullname = data.get('fullname')
+            email = data.get('email')
+            password = data.get('password')
+            role = data.get('role', 'farmer')
+        else:
+            fullname = request.form.get('fullname')
+            email = request.form.get('email')
+            password = request.form.get('password')
+            role = request.form.get('role', 'farmer')
 
-# ==========================================
-# LOGIN ROUTE
-# ==========================================
+        # Prevent crashes if password or email is completely missing
+        if not email or not password:
+            if request.is_json:
+                return jsonify({"error": "Email and password are required"}), 400
+            flash("Email and password are required")
+            return render_template('register.html')
+
+        role = role.lower()
+
+        # Admin safeguarding downgrade restriction
+        if role == 'admin' and email != 'admin@agrosphere.com':
+            role = 'farmer'
+
+        # Safely hash the confirmed password string
+        password_hash = generate_password_hash(password)
+        
+        new_user = User(
+            fullname=fullname,
+            email=email,
+            password=password_hash,
+            role=role
+        )
+        
+        db.session.add(new_user)
+        db.session.commit()
+        
+        if request.is_json:
+            return jsonify({"message": "Registration successful", "redirect_to": "/login"}), 201
+            
+        return redirect(url_for('login_page'))
+
+    return render_template('register.html')
+
+
 @auth_bp.route('/login', methods=['POST'])
 def login():
-    data = request.get_json()
-    if not data:
-        return jsonify({"error": "Missing JSON request body"}), 400
-
-    email = data.get('email')
-    password = data.get('password')
+    # Safely capture login data from either JSON or Form submissions
+    if request.is_json:
+        data = request.get_json() or {}
+        email = data.get('email')
+        password = data.get('password')
+    else:
+        email = request.form.get('email')
+        password = request.form.get('password')
 
     if not email or not password:
         return jsonify({"error": "Email and password are required"}), 400
 
-    # Phone is not needed for login — removed the erroneous check
     user = User.query.filter_by(email=email).first()
 
     if user and check_password_hash(user.password, password):
-        # Store session for dashboard access
-        login_user(user)
-
-        # Required by session-based dashboard routes (app.py uses session['role'] / session['user_id'])
         session['user_id'] = user.id
         session['role'] = user.role
 
+        # Determine dashboard routing destinations
         if user.role == 'admin':
             redirect_url = '/admin/dashboard'
         elif user.role == 'expert':
@@ -58,44 +102,6 @@ def login():
         return jsonify({"error": "Invalid email or password"}), 401
 
 
-@auth_bp.route('/logout', methods=['POST'])
-def logout():
-    session.clear()
-    return jsonify({"message": "Logged out"}), 200
-
-
-# ==========================================
-# REGISTRATION (User Account)
-# ==========================================
-@auth_bp.route('/register', methods=['POST'])
-def register():
-    data = request.get_json()
-
-    fullname = data.get('fullname')
-    email = data.get('email')
-    phone = data.get('phone')          # now allowed to be None (nullable=True)
-    password = data.get('password')
-    role = data.get('role')
-
-    if not fullname or not email or not password or not role:
-        return jsonify({"error": "All required fields must be provided"}), 400
-
-    existing = User.query.filter_by(email=email).first()
-    if existing:
-        return jsonify({"error": "Email already exists"}), 400
-
-    user = User(
-        fullname=fullname,
-        email=email,
-        phone=phone,
-        password=generate_password_hash(password),
-        role=role
-    )
-
-    db.session.add(user)
-    db.session.commit()
-
-    return jsonify({"message": "Account created successfully"}), 201
 
 
 # ==========================================
@@ -145,3 +151,13 @@ def register_business():
         "message": "Business submitted successfully",
         "status": "pending_admin_approval"
     }), 201
+
+@auth_bp.route('/logout', methods=['POST'])
+def logout():
+    session.clear()
+    
+    # Check if request came from a frontend API or a standard HTML form submission
+    if request.is_json:
+        return jsonify({"message": "Logged out successfully"}), 200
+        
+    return redirect(url_for('login_page'))

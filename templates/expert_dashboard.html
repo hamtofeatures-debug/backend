@@ -112,6 +112,7 @@ textarea { min-height:100px; }
 
 </style>
 </head>
+</div>
 <body data-user-id="{{ current_user.id }}">
 
 <aside class="sidebar">
@@ -131,6 +132,9 @@ textarea { min-height:100px; }
     <header class="topbar">
         <div class="brand"><span class="dot">●</span> AGROSPHERE</div>
         <div class="right">
+            <div id="weather-widget" style="display:flex; align-items:center; gap:8px; font-size:0.9rem;">
+    <span style="color:#999;">Loading weather...</span>
+</div>
             <span class="username">{{ current_user.fullname.upper() }}</span>
             <span class="badge badge-expert">EXPERT</span>
             <form action="{{ url_for('auth.logout') }}" method="POST" style="margin:0;">

@@ -5,7 +5,7 @@ from models import User, Question, ExpertRating, Announcement, AnnouncementReact
 from sqlalchemy import func
 import os
 from flask_login import LoginManager
-
+import requests
 
 # Explicitly import the blueprints directly from their route files
 from routes.auth import auth_bp
@@ -50,10 +50,15 @@ def register_page():
 
 @app.route('/admin/dashboard')
 def admin_dashboard_page():
-    if session.get('role') != 'admin':
-        return redirect(url_for('index'))
+    if session.get('role') != 'admin'or not session.get('user_id'):
+        return redirect(url_for('login_page'))
 
     user = User.query.get(session['user_id'])
+    
+    # SAFETY SHEILD: If the session ID doesnt match an actual user record anymore, clear session and redirrect
+    if not user:
+        session.clear()
+        return redirect(url_for('login_page'))
 
     stats = {
         'users': User.query.count(),
@@ -623,6 +628,29 @@ def get_expert_leaderboard():
 @app.route('/register-business')
 def register_business_page():
     return render_template('register_business.html')
+
+
+@app.route('/api/weather')
+def get_weather():
+    lat = request.args.get('lat', 2.7724, type=float)   # default: Gulu, Uganda
+    lon = request.args.get('lon', 32.2881, type=float)
+
+    try:
+        resp = requests.get(
+            "https://api.open-meteo.com/v1/forecast",
+            params={
+                "latitude": lat,
+                "longitude": lon,
+                "current_weather": True,
+                "daily": "temperature_2m_max,temperature_2m_min,precipitation_probability_max,weathercode",
+                "timezone": "auto"
+            },
+            timeout=5
+        )
+        data = resp.json()
+        return jsonify(data), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 
 if __name__ == '__main__':
