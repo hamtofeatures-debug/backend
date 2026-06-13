@@ -7,6 +7,7 @@ import os
 from flask_login import LoginManager
 import requests
 
+
 # Explicitly import the blueprints directly from their route files
 from routes.auth import auth_bp
 from routes.admin import admin_bp
@@ -50,12 +51,12 @@ def register_page():
 
 @app.route('/admin/dashboard')
 def admin_dashboard_page():
-    if session.get('role') != 'admin'or not session.get('user_id'):
+    if session.get('role') != 'admin' or not session.get('user_id'):
         return redirect(url_for('login_page'))
 
     user = User.query.get(session['user_id'])
-    
-    # SAFETY SHEILD: If the session ID doesnt match an actual user record anymore, clear session and redirrect
+
+    # SAFETY SHIELD: If the session ID doesn't match an actual user record anymore, clear session and redirect
     if not user:
         session.clear()
         return redirect(url_for('login_page'))
@@ -653,9 +654,11 @@ def get_weather():
         return jsonify({"error": str(e)}), 500
 
 
+# Create tables on startup (works for both `python app.py` and gunicorn)
+with app.app_context():
+    db.create_all()
+
+
 if __name__ == '__main__':
-    with app.app_context():
-        db.create_all()
-        print("Database created!")
     port = int(os.environ.get("PORT", 5000))
     app.run(host='0.0.0.0', port=port, debug=True)
