@@ -441,25 +441,236 @@ document.addEventListener("click", async (e) => {
 });
 
 async function loadWeatherWidget() {
-    const widget = document.getElementById('weather-widget');
-    if (!widget) return; // skip if this page doesn't have the widget
+    const select = document.getElementById('district-select');
+    const display = document.getElementById('weather-display');
+    if (!select || !display) return;
 
+    // Load district list
     try {
-        const res = await fetch('/api/weather');
-        const data = await res.json();
-        const current = data.current_weather;
-        const today = data.daily;
+        const res = await fetch('/api/districts');
+        const districts = await res.json();
 
-        widget.innerHTML = `
-            <span style="font-weight:700;">${Math.round(current.temperature)}°C</span>
-            <span style="color:#888; font-size:0.85rem;">
-                H: ${Math.round(today.temperature_2m_max[0])}° L: ${Math.round(today.temperature_2m_min[0])}°
-                · ${today.precipitation_probability_max[0]}% rain
-            </span>
-        `;
+        select.innerHTML = '';
+        districts.forEach(d => {
+            const opt = document.createElement('option');
+            opt.value = d;
+            opt.textContent = d;
+            select.appendChild(opt);
+        });
+
+        // Default to saved choice or first district
+        const saved = localStorage.getItem('weatherDistrict');
+        if (saved && districts.includes(saved)) {
+            select.value = saved;
+        }
     } catch (err) {
-        widget.innerHTML = '<span style="color:#999;">Weather unavailable</span>';
+        select.innerHTML = '<option value="">Unavailable</option>';
+        return;
+    }
+
+    // Fetch weather for selected district
+    async function fetchWeather(district) {
+        display.textContent = 'Loading weather...';
+        try {
+            const res = await fetch(`/api/weather?district=${encodeURIComponent(district)}`);
+            const data = await res.json();
+            const current = data.current_weather;
+            const today = data.daily;
+
+            display.innerHTML = `
+                <strong>${Math.round(current.temperature)}°C</strong>
+                <span style="color:#888;">H:${Math.round(today.temperature_2m_max[0])}° L:${Math.round(today.temperature_2m_min[0])}° · ${today.precipitation_probability_max[0]}% rain</span>
+            `;
+        } catch (err) {
+            display.textContent = 'Weather unavailable';
+        }
+    }
+
+    select.addEventListener('change', () => {
+        localStorage.setItem('weatherDistrict', select.value);
+        fetchWeather(select.value);
+    });
+
+    fetchWeather(select.value);
+}
+
+document.addEventListener('click', (e) => {
+    const btn = e.target.closest('[data-action]');
+    if (!btn) return;
+
+    const action = btn.dataset.action;
+    const qid = btn.dataset.qid;
+    const bid = btn.dataset.bid;
+    const aid = btn.dataset.aid;
+    const uid = btn.dataset.uid;
+
+    switch (action) {
+        case 'assign':
+            assignExpert(qid);
+            break;
+        case 'approve':
+            approveAnswer(qid);
+            break;
+        case 'reject':
+            rejectAnswer(qid);
+            break;
+        case 'submit-answer':
+            submitAnswer(qid);
+            break;
+        case 'post-announcement':
+            postAnnouncement();
+            break;
+        case 'biz-approve':
+            businessAction(bid, 'approve');
+            break;
+        case 'biz-reject':
+            businessAction(bid, 'reject');
+            break;
+        case 'verify-biz':
+            verifyBusiness(bid);
+            break;
+        case 'confirm-payment':
+            confirmPayment(bid);
+            break;
+        case 'approve-article':
+            postEmpty(`/admin/articles/${aid}/approve`).then(() => location.reload());
+            break;
+        case 'reject-article':
+            postEmpty(`/admin/articles/${aid}/reject`).then(() => location.reload());
+            break;
+        case 'suspend-user':
+            postEmpty(`/admin/user/${uid}/suspend`).then(() => location.reload());
+            break;
+        case 'delete-user':
+            if (!confirm('Are you sure you want to permanently delete this user? This cannot be undone.')) return;
+            postEmpty(`/admin/user/${uid}/delete`).then(() => {
+                const card = document.getElementById(`user-card-${uid}`);
+                if (card) card.remove();
+            });
+            break;
+        default:
+            console.warn('Unknown data-action:', action);
+    }
+});
+
+// ===========================================================
+// FARMER: Ask an Expert / Create Post forms (with file uploads)
+// ===========================================================
+document.addEventListener('submit', (e) => {
+    const form = e.target;
+    if (!form.matches('[data-ajax-form]')) return;
+
+    e.preventDefault();
+    const url = form.getAttribute('action');
+
+    postForm(url, form).then((resp) => {
+        if (resp && resp.redirect) {
+            window.location.href = resp.redirect;
+        } else {
+            location.reload();
+        }
+    });
+});
+
+// ===========================================================
+// ASSIGN EXPERT TO QUESTION
+// ===========================================================
+function assignExpert(qid) {
+    const select = document.getElementById('expert-select-' + qid);
+    const expertId = select ? select.value : null;
+
+    if (!expertId) {
+        alert('Please select an expert first');
+        return;
+    }
+
+    postJSON('/admin/assign-question', {
+        question_id: qid,
+        expert_id: expertId
+    }).then(() => location.reload());
+}
+
+// ===========================================================
+// WEATHER WIDGET (district picker)
+// ===========================================================
+async function loadWeatherWidget() {
+    try {
+        const select = document.getElementById('district-select');
+        const display = document.getElementById('weather-display');
+        if (!select || !display) return;
+
+        const res = await fetch('/api/districts');
+        const districts = await res.json();
+
+        select.innerHTML = '';
+        districts.forEach(d => {
+            const opt = document.createElement('option');
+            opt.value = d;
+            opt.textContent = d;
+            select.appendChild(opt);
+        });
+
+        const saved = localStorage.getItem('weatherDistrict');
+        if (saved && districts.includes(saved)) {
+            select.value = saved;
+        }
+
+        async function fetchWeather(district) {
+            display.textContent = 'Loading weather...';
+            try {
+                const res = await fetch(`/api/weather?district=${encodeURIComponent(district)}`);
+                const data = await res.json();
+                const current = data.current_weather;
+                const today = data.daily;
+
+                display.innerHTML = `
+                    <strong>${Math.round(current.temperature)}°C</strong>
+                    <span style="color:#888;">H:${Math.round(today.temperature_2m_max[0])}° L:${Math.round(today.temperature_2m_min[0])}° · ${today.precipitation_probability_max[0]}% rain</span>
+                `;
+            } catch (err) {
+                display.textContent = 'Weather unavailable';
+            }
+        }
+
+        select.addEventListener('change', () => {
+            localStorage.setItem('weatherDistrict', select.value);
+            fetchWeather(select.value);
+        });
+
+        fetchWeather(select.value);
+    } catch (err) {
+        console.error('Weather widget error:', err);
     }
 }
 
 document.addEventListener('DOMContentLoaded', loadWeatherWidget);
+
+// ===========================================================
+// USER SEARCH (All Users section)
+// ===========================================================
+document.addEventListener('DOMContentLoaded', () => {
+    const userSearch = document.getElementById('user-search');
+    if (userSearch) {
+        userSearch.addEventListener('input', () => {
+            const term = userSearch.value.toLowerCase().trim();
+            document.querySelectorAll('.user-card').forEach(card => {
+                const name = card.dataset.name;
+                const email = card.dataset.email;
+                const role = card.dataset.role;
+                const match = name.includes(term) || email.includes(term) || role.includes(term);
+                card.style.display = match ? '' : 'none';
+            });
+        });
+    }
+});
+
+const payload = {
+    fullname: document.getElementById('fullname').value.trim(),
+    email: document.getElementById('email').value.trim(),
+    phone: document.getElementById('phone').value.trim(),
+    password: document.getElementById('password').value,
+    role: document.getElementById('role').value,
+    specialization: document.getElementById('role').value === 'expert'
+        ? document.getElementById('specialization').value
+        : null
+};

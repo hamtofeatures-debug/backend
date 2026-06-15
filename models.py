@@ -12,7 +12,8 @@ class User(db.Model, UserMixin):
     role = db.Column(db.String(20), nullable=False)
     language = db.Column(db.String(20), default='English')
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
-
+    is_suspended = db.Column(db.Boolean, default=False)
+    specialization = db.Column(db.String(50), nullable=True)
 
 class Farmer(db.Model):
     id = db.Column(db.Integer, primary_key=True)

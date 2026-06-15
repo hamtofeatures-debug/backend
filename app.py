@@ -1,12 +1,38 @@
 from flask import Flask, render_template, jsonify, request, redirect, url_for, session
 from config import Config
-from extensions import db
+from extensions import db, limiter
 from models import User, Question, ExpertRating, Announcement, AnnouncementReaction, Business, Articles, BusinessPost, Post
 from sqlalchemy import func
 import os
 from flask_login import LoginManager
 import requests
+from flask_talisman import Talisman
+from flask_limiter import Limiter           
+from flask_limiter.util import get_remote_address
 
+
+UGANDA_DISTRICTS = {
+    "Gulu": (2.7724, 32.2881),
+    "Kampala": (0.3476, 32.5825),
+    "Mbarara": (-0.6072, 30.6545),
+    "Jinja": (0.4244, 33.2042),
+    "Mbale": (1.0827, 34.1751),
+    "Arua": (3.0201, 30.9111),
+    "Lira": (2.2350, 32.9100),
+    "Masaka": (-0.3308, 31.7341),
+    "Fort Portal": (0.6710, 30.2747),
+    "Soroti": (1.7146, 33.6113),
+    "Kabale": (-1.2486, 29.9897),
+    "Hoima": (1.4357, 31.3528),
+    "Mbarara City": (-0.6072, 30.6545),
+    "Entebbe": (0.0512, 32.4637),
+    "Tororo": (0.6928, 34.1808),
+    "Moroto": (2.5346, 34.6647),
+    "Kasese": (0.1833, 30.0833),
+    "Kitgum": (3.2783, 32.8867),
+    "Mubende": (0.5891, 31.3942),
+    "Iganga": (0.6075, 33.4686),
+}
 
 # Explicitly import the blueprints directly from their route files
 from routes.auth import auth_bp
@@ -18,6 +44,22 @@ from routes.business import business_bp
 app = Flask(__name__)
 app.config.from_object(Config)
 db.init_app(app)
+
+# Security headers
+csp = {
+    'default-src': "'self'",
+    'style-src': ["'self'", "'unsafe-inline'"],
+    'script-src': ["'self'", "'unsafe-inline'"],
+    'img-src': ["'self'", "data:", "https:"],
+}
+Talisman(app, force_https=False, content_security_policy=csp)
+
+# Rate limiting
+limiter = Limiter(
+    get_remote_address,
+    app=app,
+    default_limits=["200 per day", "50 per hour"]
+)
 
 login_manager = LoginManager()
 login_manager.init_app(app)
@@ -630,11 +672,19 @@ def get_expert_leaderboard():
 def register_business_page():
     return render_template('register_business.html')
 
+@app.route('/api/districts')
+def get_districts():
+    return jsonify(sorted(UGANDA_DISTRICTS.keys()))
 
 @app.route('/api/weather')
 def get_weather():
-    lat = request.args.get('lat', 2.7724, type=float)   # default: Gulu, Uganda
-    lon = request.args.get('lon', 32.2881, type=float)
+    district = request.args.get('district')
+
+    if district and district in UGANDA_DISTRICTS:
+        lat, lon = UGANDA_DISTRICTS[district]
+    else:
+        lat = request.args.get('lat', 2.7724, type=float)
+        lon = request.args.get('lon', 32.2881, type=float)
 
     try:
         resp = requests.get(
@@ -652,6 +702,10 @@ def get_weather():
         return jsonify(data), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+    
+@app.errorhandler(429)
+def ratelimit_handler(e):
+    return jsonify({"error": "Too many requests. Please try again later."}), 429    
 
 
 # Create tables on startup (works for both `python app.py` and gunicorn)

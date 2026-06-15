@@ -132,8 +132,11 @@ textarea { min-height:100px; }
     <header class="topbar">
         <div class="brand"><span class="dot">●</span> AGROSPHERE</div>
         <div class="right">
-            <div id="weather-widget" style="display:flex; align-items:center; gap:8px; font-size:0.9rem;">
-    <span style="color:#999;">Loading weather...</span>
+        <div id="weather-widget" style="display:flex; align-items:center; gap:8px; font-size:0.9rem;">
+    <select id="district-select" style="border:1px solid #ddd; border-radius:6px; padding:4px 8px; font-size:0.8rem; background:#fff;">
+        <option value="">Loading...</option>
+    </select>
+    <span id="weather-display" style="color:#999;">Loading weather...</span>
 </div>
             <span class="username">{{ current_user.fullname.upper() }}</span>
             <span class="badge badge-expert">EXPERT</span>

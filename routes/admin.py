@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify, render_template, session
 from extensions import db
-from models import User, Question, Announcement, AnnouncementReaction, ExpertRating, Articles, Business, BusinessPost
+from models import User, Question, Announcement, AnnouncementReaction, ExpertRating, Articles, Business, BusinessPost, Post
 
 admin_bp = Blueprint('admin', __name__)
 
@@ -420,3 +420,31 @@ def delete_business_user(user_id):
     except Exception as e:
         db.session.rollback()
         return jsonify({"error": f"An error occurred during deletion: {str(e)}"}), 500
+    
+@admin_bp.route('/user/<int:user_id>/suspend', methods=['POST'])
+def suspend_user(user_id):
+    user = User.query.get_or_404(user_id)
+    user.is_suspended = not user.is_suspended  # toggle suspend/unsuspend
+    db.session.commit()
+    status = "suspended" if user.is_suspended else "unsuspended"
+    return jsonify({"message": f"User {status} successfully", "is_suspended": user.is_suspended}), 200
+
+
+@admin_bp.route('/user/<int:user_id>/delete', methods=['POST'])
+def delete_user(user_id):
+    user = User.query.get_or_404(user_id)
+
+    # Clean up related records to avoid foreign key issues
+    Question.query.filter_by(farmer_id=user.id).delete()
+    Question.query.filter_by(assigned_expert_id=user.id).update({"assigned_expert_id": None})
+    Articles.query.filter_by(expert_id=user.id).delete()
+    BusinessPost.query.filter_by(business_id=user.id).delete()
+    Business.query.filter_by(user_id=user.id).delete()
+    AnnouncementReaction.query.filter_by(user_id=user.id).delete()
+    ExpertRating.query.filter_by(rater_id=user.id).delete()
+    ExpertRating.query.filter_by(expert_id=user.id).delete()
+    Post.query.filter_by(farmer_id=user.id).delete()
+
+    db.session.delete(user)
+    db.session.commit()
+    return jsonify({"message": "User deleted successfully"}), 200

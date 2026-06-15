@@ -138,7 +138,10 @@ textarea { min-height:100px; }
         <div class="brand"><span class="dot">●</span> AGROSPHERE</div>
         <div class="right">
             <div id="weather-widget" style="display:flex; align-items:center; gap:8px; font-size:0.9rem;">
-    <span style="color:#999;">Loading weather...</span>
+    <select id="district-select" style="border:1px solid #ddd; border-radius:6px; padding:4px 8px; font-size:0.8rem; background:#fff;">
+        <option value="">Loading...</option>
+    </select>
+    <span id="weather-display" style="color:#999;">Loading weather...</span>
 </div>
             <span class="username">{{ current_user.fullname.upper() }}</span>
             <span class="badge badge-admin">ADMIN</span>
@@ -181,22 +184,40 @@ textarea { min-height:100px; }
 
         <!-- ALL USERS -->
         <div class="page-section" id="section-users">
-            <h1>All Users</h1>
-            <p class="subtitle">Every account registered on AGROSPHERE.</p>
-            {% if all_users %}
-                {% for u in all_users %}
-                <div class="list-card">
-                    <div class="meta">
-                        <span class="title">{{ u.fullname }}</span>
-                        <span>{{ u.email }}</span>
-                        <span class="status-badge status-{{ u.role }}" style="background:#eee;color:#444;">{{ u.role.upper() }}</span>
-                    </div>
+    <h1>All Users</h1>
+    <p class="subtitle">Every account registered on AGROSPHERE.</p>
+
+    <input type="text" id="user-search" placeholder="Search by name, email, or role..." style="margin-bottom:16px;">
+
+    <div id="users-list">
+        {% if all_users %}
+            {% for u in all_users %}
+            <div class="list-card user-card" id="user-card-{{ u.id }}"
+                 data-name="{{ u.fullname.lower() }}" data-email="{{ u.email.lower() }}" data-role="{{ u.role.lower() }}">
+                <div class="meta">
+                    <span class="title">{{ u.fullname }}</span>
+                    <span>{{ u.email }}</span>
+                    <span class="status-badge status-{{ u.role }}" style="background:#eee;color:#444;">{{ u.role.upper() }}</span>
+                    {% if u.is_suspended %}
+                    <span class="tag" style="color:#c0392b;border-color:#c0392b;">SUSPENDED</span>
+                    {% endif %}
                 </div>
-                {% endfor %}
-            {% else %}
-                <div class="empty-state">No users found.</div>
-            {% endif %}
-        </div>
+                {% if u.role != 'admin' %}
+                <div style="margin-top:10px; display:flex; gap:8px;">
+                    <button class="btn-sm {% if u.is_suspended %}btn-green{% endif %}" data-action="suspend-user" data-uid="{{ u.id }}">
+                        {{ 'Unsuspend' if u.is_suspended else 'Suspend' }}
+                    </button>
+                    <button class="btn-sm btn-danger" data-action="delete-user" data-uid="{{ u.id }}">Delete Account</button>
+                </div>
+                {% endif %}
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="empty-state">No users found.</div>
+        {% endif %}
+    </div>
+</div>
+         
 
         <!-- ALL QUESTIONS -->
 <div class="page-section" id="section-questions">

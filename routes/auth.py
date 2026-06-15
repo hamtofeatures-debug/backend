@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify, session, render_template, url_for, flash, redirect
 from flask_login import login_user
-from extensions import db
+from extensions import db, limiter
 from models import User, Farmer, Expert, Business
 from werkzeug.security import generate_password_hash, check_password_hash
 
@@ -16,11 +16,13 @@ def register():
             email = data.get('email')
             password = data.get('password')
             role = data.get('role', 'farmer')
+            specialization = data.get('specialization')
         else:
             fullname = request.form.get('fullname')
             email = request.form.get('email')
             password = request.form.get('password')
             role = request.form.get('role', 'farmer')
+            specialization = request.form.get('specialization')
 
         # Prevent crashes if password or email is completely missing
         if not email or not password:
@@ -37,28 +39,28 @@ def register():
 
         # Safely hash the confirmed password string
         password_hash = generate_password_hash(password)
-        
+
         new_user = User(
             fullname=fullname,
             email=email,
             password=password_hash,
-            role=role
+            role=role,
+            specialization=specialization if role == 'expert' else None
         )
-        
+
         db.session.add(new_user)
         db.session.commit()
-        
+
         if request.is_json:
             return jsonify({"message": "Registration successful", "redirect_to": "/login"}), 201
-            
+
         return redirect(url_for('login_page'))
 
     return render_template('register.html')
 
-
 @auth_bp.route('/login', methods=['POST'])
+@limiter.limit("5 per minute")
 def login():
-    # Safely capture login data from either JSON or Form submissions
     if request.is_json:
         data = request.get_json() or {}
         email = data.get('email')
@@ -73,10 +75,13 @@ def login():
     user = User.query.filter_by(email=email).first()
 
     if user and check_password_hash(user.password, password):
+
+        if user.is_suspended:
+            return jsonify({"error": "This account has been suspended. Contact support."}), 403
+
         session['user_id'] = user.id
         session['role'] = user.role
 
-        # Determine dashboard routing destinations
         if user.role == 'admin':
             redirect_url = '/admin/dashboard'
         elif user.role == 'expert':
@@ -100,9 +105,6 @@ def login():
         }), 200
     else:
         return jsonify({"error": "Invalid email or password"}), 401
-
-
-
 
 # ==========================================
 # BUSINESS REGISTRATION (separate step)
@@ -161,3 +163,4 @@ def logout():
         return jsonify({"message": "Logged out successfully"}), 200
         
     return redirect(url_for('login_page'))
+

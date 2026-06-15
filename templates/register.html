@@ -143,6 +143,23 @@
             <option value="admin">⚙️ Admin</option>
         </select>
 
+      <div class="role-note" id="businessNote">
+    🏢 After creating your account, you'll be taken to a short form to register your business details (name, services, location) for admin approval.
+</div>
+
+<!-- NEW: Expert specialization field -->
+<div id="specializationField" style="display:none;">
+    <label for="specialization">Your Field of Expertise</label>
+    <select id="specialization" name="specialization">
+        <option value="Crop Disease">Crop Disease</option>
+        <option value="Livestock">Livestock</option>
+        <option value="Soil & Fertility">Soil &amp; Fertility</option>
+        <option value="Pests">Pests</option>
+        <option value="Irrigation">Irrigation</option>
+        <option value="Other">Other</option>
+    </select>
+</div>  
+
         <div class="role-note" id="businessNote">
             🏢 After creating your account, you'll be taken to a short form to register your business details (name, services, location) for admin approval.
         </div>
@@ -159,9 +176,11 @@
 <script>
 const roleSelect = document.getElementById('role');
 const businessNote = document.getElementById('businessNote');
+const specializationField = document.getElementById('specializationField');
 
 roleSelect.addEventListener('change', function () {
     businessNote.classList.toggle('show', this.value === 'business');
+    specializationField.style.display = (this.value === 'expert') ? 'block' : 'none';
 });
 
 document.getElementById('registerForm').addEventListener('submit', async function (e) {
