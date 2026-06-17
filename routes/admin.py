@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify, render_template, session
 from extensions import db
-from models import User, Question, Announcement, AnnouncementReaction, ExpertRating, Articles, Business, BusinessPost, Post
+from models import User, Question, Announcement, AnnouncementReaction, ExpertRating, Articles, Business, BusinessPost, Post, SupportMessage
 
 admin_bp = Blueprint('admin', __name__)
 
@@ -448,3 +448,25 @@ def delete_user(user_id):
     db.session.delete(user)
     db.session.commit()
     return jsonify({"message": "User deleted successfully"}), 200
+
+@admin_bp.route('/user/<int:user_id>/verify', methods=['POST'])
+def verify_user(user_id):
+    user = User.query.get_or_404(user_id)
+    user.blue_tick = not user.blue_tick  # toggle
+    db.session.commit()
+    status = "verified" if user.blue_tick else "unverified"
+    return jsonify({"message": f"User {status} successfully", "blue_tick": user.blue_tick}), 200 
+
+@admin_bp.route('/admin/dashboard')
+def admin_dashboard():
+
+    support_messages = SupportMessage.query.order_by(
+        SupportMessage.created_at.desc()
+    ).all()
+
+    return render_template(
+    'admin_dashboard.html',
+    support_messages=support_messages,
+    all_users=all_users,
+    all_questions=all_questions
+)

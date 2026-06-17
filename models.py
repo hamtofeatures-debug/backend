@@ -1,6 +1,7 @@
 from extensions import db
 from datetime import datetime
 from flask_login import UserMixin
+from datetime import datetime
 
 
 class User(db.Model, UserMixin):
@@ -14,6 +15,8 @@ class User(db.Model, UserMixin):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     is_suspended = db.Column(db.Boolean, default=False)
     specialization = db.Column(db.String(50), nullable=True)
+    blue_tick = db.Column(db.Boolean, default=False)
+    verification_expires_at = db.Column(db.DateTime)
 
 class Farmer(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -173,3 +176,56 @@ class BusinessPostMedia(db.Model):
     post_id = db.Column(db.Integer, db.ForeignKey('business_post.id'), nullable=False)
     url = db.Column(db.String(300), nullable=False)
     type = db.Column(db.String(10), default='image')  # 'image' or 'video'
+
+class Message(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    sender_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    receiver_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    content = db.Column(db.Text, nullable=False)
+    is_read = db.Column(db.Boolean, default=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+class ChatMessage(db.Model):
+    __tablename__ = 'chat_messages'
+    id          = db.Column(db.Integer, primary_key=True)
+    sender_id   = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    receiver_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    content     = db.Column(db.Text, nullable=False)
+    is_read     = db.Column(db.Boolean, default=False)
+    created_at  = db.Column(db.DateTime, default=datetime.utcnow)
+
+    sender   = db.relationship('User', foreign_keys=[sender_id])
+    receiver = db.relationship('User', foreign_keys=[receiver_id])
+
+class SupportMessage(db.Model):
+    __tablename__ = 'support_messages'
+    id         = db.Column(db.Integer, primary_key=True)
+    user_id    = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    message    = db.Column(db.Text, nullable=False)
+    status     = db.Column(db.String(20), default='Unread')
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    user = db.relationship('User', backref='support_messages')
+
+
+
+class Payment(db.Model):
+     id = db.Column(db.Integer, primary_key=True)
+
+user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+
+amount = db.Column(db.Float, nullable=False)
+product_type = db.Column(db.String(30), nullable=False)
+
+provider = db.Column(db.String(20), nullable=False)
+    # mtn / airtel
+
+reference = db.Column(db.String(100), unique=True, nullable=False)
+
+external_transaction_id = db.Column(db.String(100), nullable=True)
+
+status = db.Column(db.String(20), default='pending')
+    # pending / processing / paid / failed
+
+created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+expires_at = db.Column(db.DateTime)

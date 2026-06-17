@@ -1,15 +1,18 @@
-from flask import Flask, render_template, jsonify, request, redirect, url_for, session
+from flask import Flask, g, render_template, jsonify, request, redirect, url_for, session, abort, flash
 from config import Config
 from extensions import db, limiter
-from models import User, Question, ExpertRating, Announcement, AnnouncementReaction, Business, Articles, BusinessPost, Post
+from models import User, Question, ExpertRating, Announcement, AnnouncementReaction, Business, Articles, BusinessPost, Post, Message, Payment, SupportMessage
 from sqlalchemy import func
 import os
-from flask_login import LoginManager
+from flask_login import LoginManager, current_user, login_required, login_user
 import requests
 from flask_talisman import Talisman
 from flask_limiter import Limiter           
 from flask_limiter.util import get_remote_address
-
+import uuid
+from datetime import datetime, timedelta
+from werkzeug.utils import secure_filename
+from chats_routes import chat_bp
 
 UGANDA_DISTRICTS = {
     "Gulu": (2.7724, 32.2881),
@@ -40,6 +43,7 @@ from routes.admin import admin_bp
 from routes.expert import expert_bp
 from routes.farmer import farmer_bp
 from routes.business import business_bp
+from routes.support import support_bp
 
 app = Flask(__name__)
 app.config.from_object(Config)
@@ -74,6 +78,8 @@ app.register_blueprint(admin_bp, url_prefix='/admin')
 app.register_blueprint(expert_bp, url_prefix='/expert')
 app.register_blueprint(farmer_bp, url_prefix='/farmer')
 app.register_blueprint(business_bp, url_prefix='/business')
+app.register_blueprint(support_bp)
+app.register_blueprint(chat_bp)
 
 
 @app.route('/')
@@ -139,6 +145,9 @@ def admin_dashboard_page():
     ]
 
     experts = User.query.filter_by(role='expert').all()
+
+    # Make sure it uses an underscore (_) and NOT a single word
+    support_messages = SupportMessage.query.order_by(SupportMessage.created_at.desc()).all()
 
     announcements = Announcement.query.order_by(
         Announcement.id.desc()
@@ -712,6 +721,390 @@ def ratelimit_handler(e):
 with app.app_context():
     db.create_all()
 
+@app.route('/chat')
+def chat_page():
+    if not session.get('user_id'):
+        return redirect(url_for('login_page'))
+
+    user = User.query.get(session['user_id'])
+    if not user:
+        session.clear()
+        return redirect(url_for('login_page'))
+
+    # Admins don't use chat
+    if user.role == 'admin':
+        return redirect(url_for('admin_dashboard_page'))
+
+    # Must be verified (blue tick) to access chat
+    if not user.blue_tick:
+        dashboard_map = {
+            'farmer': 'farmer_dashboard_page',
+            'expert': 'expert_dashboard_page',
+            'business': 'business_dashboard_page',
+        }
+        return redirect(url_for(dashboard_map.get(user.role, 'index')))
+
+    # Load verified non-admin users to chat with (excluding self and admins)
+    verified_users = User.query.filter(
+        User.blue_tick == True,
+        User.role != 'admin',
+        User.id != user.id,
+        User.is_suspended == False
+    ).all()
+
+    return render_template('chats.html', current_user=user, verified_users=verified_users)
+
+@app.route('/api/messages/send', methods=['POST'])
+def send_message():
+    if not session.get('user_id'):
+        return jsonify({"error": "Unauthorized"}), 401
+
+    data = request.get_json()
+    receiver_id = data.get('receiver_id')
+    content = data.get('content', '').strip()
+
+    if not receiver_id or not content:
+        return jsonify({"error": "Missing receiver or content"}), 400
+
+    sender = User.query.get(session['user_id'])
+    receiver = User.query.get(receiver_id)
+
+    # Security checks
+    if not sender or not receiver:
+        return jsonify({"error": "User not found"}), 404
+    if not sender.blue_tick or not receiver.blue_tick:
+        return jsonify({"error": "Both users must be verified"}), 403
+    if receiver.role == 'admin' or sender.role == 'admin':
+        return jsonify({"error": "Admins cannot participate in chat"}), 403
+    if sender.is_suspended or receiver.is_suspended:
+        return jsonify({"error": "Suspended users cannot chat"}), 403
+
+    msg = Message(
+        sender_id=sender.id,
+        receiver_id=receiver_id,
+        content=content
+    )
+    db.session.add(msg)
+    db.session.commit()
+
+    return jsonify({
+        "id": msg.id,
+        "sender_id": msg.sender_id,
+        "receiver_id": msg.receiver_id,
+        "content": msg.content,
+        "created_at": msg.created_at.strftime("%H:%M"),
+        "is_read": msg.is_read
+    }), 201
+
+
+@app.before_request
+def enforce_unverified_limits():
+    """
+    Runs before every request.
+    Blocks unverified users from submitting more than 1 action per 6 hours.
+    """
+
+    # Only intercept POST requests to these specific endpoints
+    restricted_endpoints = {
+        'farmer.ask_question': ('question', Question, 'farmer_id'),
+        'farmer.create_post':  ('post',     Post,     'farmer_id'),
+        'expert.publish_article': ('article', Articles, 'expert_id'),
+    }
+
+    if request.method != 'POST':
+        return  # only block POST submissions, never GET
+
+    endpoint = request.endpoint
+    if endpoint not in restricted_endpoints:
+        return  # not a restricted route, carry on
+
+    user_id = session.get('user_id')
+    if not user_id:
+        return  # not logged in, let the route handle it
+
+    user = User.query.get(user_id)
+    if not user or user.blue_tick:
+        return  # verified users — no restriction
+
+    # ── User is unverified — check their recent activity ──
+    action_label, Model, owner_field = restricted_endpoints[endpoint]
+    six_hours_ago = datetime.utcnow() - timedelta(hours=6)
+
+    recent = Model.query.filter(
+        getattr(Model, owner_field) == user_id,
+        Model.created_at >= six_hours_ago
+    ).order_by(Model.created_at.desc()).first()
+
+    if recent:
+        next_allowed = recent.created_at + timedelta(hours=6)
+        wait         = next_allowed - datetime.utcnow()
+        total_mins   = max(1, int(wait.total_seconds() / 60))
+        hours        = total_mins // 60
+        mins         = total_mins % 60
+        wait_str     = f"{hours}h {mins}m" if hours else f"{mins}m"
+
+        session['limit_error'] = (
+            f"You can only submit 1 {action_label} every 6 hours. "
+            f"Try again in {wait_str}. "
+            f"Get verified for unlimited access."
+        )
+
+        # Redirect back to whichever dashboard they came from
+        role = user.role  # 'farmer', 'expert', etc.
+        return redirect(f'/{role}/dashboard')
+
+@app.route('/api/messages/<int:other_user_id>', methods=['GET'])
+def get_messages(other_user_id):
+    if not session.get('user_id'):
+        return jsonify({"error": "Unauthorized"}), 401
+
+    current_id = session['user_id']
+    current = User.query.get(current_id)
+    other = User.query.get(other_user_id)
+
+    if not current or not other:
+        return jsonify({"error": "User not found"}), 404
+
+    # Only the two participants can see their messages
+    if not (current.blue_tick and other.blue_tick):
+        return jsonify({"error": "Both users must be verified"}), 403
+
+    messages = Message.query.filter(
+        db.or_(
+            db.and_(
+                Message.sender_id == current_id,
+                Message.receiver_id == other_user_id
+            ),
+            db.and_(
+                Message.sender_id == other_user_id,
+                Message.receiver_id == current_id
+            )
+        )
+    ).order_by(Message.created_at.asc()).all()
+
+    # Mark unread messages as read
+    Message.query.filter_by(
+        sender_id=other_user_id,
+        receiver_id=current_id,
+        is_read=False
+    ).update({"is_read": True})
+    db.session.commit()
+
+    return jsonify([{
+        "id": m.id,
+        "sender_id": m.sender_id,
+        "content": m.content,
+        "created_at": m.created_at.strftime("%H:%M"),
+        "is_read": m.is_read
+    } for m in messages]), 200
+
+
+@app.route('/api/messages/unread-counts', methods=['GET'])
+def unread_counts():
+    if not session.get('user_id'):
+        return jsonify({}), 401
+
+    current_id = session['user_id']
+    results = db.session.query(
+        Message.sender_id,
+        db.func.count(Message.id).label('count')
+    ).filter_by(
+        receiver_id=current_id,
+        is_read=False
+    ).group_by(Message.sender_id).all()
+
+    return jsonify({str(r.sender_id): r.count for r in results}), 200
+
+def initiate_mtn(payment):
+    print("MTN called")
+
+def initiate_airtel(payment):
+    print("Airtel called")
+
+@app.route('/pay/verification/<provider>/<plan>', methods=['POST'])
+def start_payment(provider, plan):
+
+    prices = {
+        "farmer": 3000,
+        "expert": 5000,
+        "business": 10000
+    }
+
+    if plan not in prices:
+        return {"error": "Invalid plan"}, 400
+
+    if provider not in ["mtn", "airtel"]:
+        return {"error": "Invalid provider"}, 400
+
+    payment = Payment(
+        user_id=current_user.id,
+        amount=prices[plan],
+        product_type=plan,
+        provider=provider,
+        reference=str(uuid.uuid4()),
+        status="pending"
+    )
+
+    db.session.add(payment)
+    db.session.commit()
+
+    # CALL gateway
+    if provider == "mtn":
+        initiate_mtn(payment)
+    else:
+        initiate_airtel(payment)
+
+    payment.status = "processing"
+    db.session.commit()
+
+    return {
+        "reference": payment.reference,
+        "amount": payment.amount,
+        "provider": provider
+    }
+
+@app.route('/payment/webhook', methods=['POST'])
+def payment_webhook():
+
+    data = request.json
+
+    reference = data.get("reference")
+    status = data.get("status")
+
+    if not reference:
+        return {"error": "Missing reference"}, 400
+
+    payment = Payment.query.filter_by(reference=reference).first()
+
+    if not payment:
+        return {"error": "Invalid reference"}, 404
+
+    # Prevent double processing (idempotency)
+    if payment.status == "paid":
+        return {"message": "Already processed"}
+
+    if status not in ["successful", "SUCCESS", "SUCCESSFUL"]:
+        payment.status = "failed"
+        db.session.commit()
+        return {"message": "Payment failed"}
+
+    # mark paid
+    payment.status = "paid"
+
+    user = User.query.get(payment.user_id)
+
+    user.role = payment.product_type
+    user.verification_expires_at = datetime.utcnow() + timedelta(days=30)
+
+    if payment.product_type == "business":
+        user.blue_tick = True
+
+    db.session.commit()
+
+    return {"message": "User verified successfully"}
+@app.cli.command("expire-verifications")
+def expire_verifications():
+
+    users = User.query.filter(
+        User.verification_expires_at != None
+    ).all()
+
+    for user in users:
+
+        if user.verification_expires_at < datetime.utcnow():
+            user.role = "farmer"
+            user.blue_tick = False
+            user.verification_expires_at = None
+
+    db.session.commit()
+
+    print("Expired verifications cleaned")
+
+
+# Ensure you define an upload folder paths somewhere near your app config
+UPLOAD_FOLDER = 'static/uploads/verification_docs'
+ALLOWED_EXTENSIONS = {'pdf', 'png', 'jpg', 'jpeg'}
+
+@app.route('/settings', methods=['GET', 'POST'])
+def settings():
+    # 1. Fallback security check using your native login system
+    if 'user_id' not in session:
+        return redirect(url_for('login'))  # Update to your actual login route endpoint if different
+        
+    # Using modern Session.get() syntax to eliminate the legacy Query.get() console warnings
+    user = db.session.get(User, session['user_id'])
+    if not user:
+        return redirect(url_for('login'))
+
+    if request.method == 'POST':
+        setting_type = request.form.get('setting_type')
+        action = request.form.get('action')
+        
+        if setting_type == 'business' and action == 'initiate_subscription':
+            provider = request.form.get('payment_provider')
+            phone_number = request.form.get('momo_number')
+            
+            # Determine correct dynamic tier fees safely
+            user_role = user.role.lower().strip() if getattr(user, 'role', None) else "farmer"
+            
+            if user_role == 'farmer':
+                amount = 3000.0
+            elif user_role == 'expert':
+                amount = 5000.0
+            else:
+                amount = 10000.0
+                
+            if provider in ['mtn', 'airtel']:
+                formatted_phone = phone_number.strip() if phone_number else ""
+                unique_reference = f"AGRO-{uuid.uuid4().hex[:12].upper()}"
+                
+                # Write to your Payment model
+                new_payment = Payment(
+                    user_id=user.id,
+                    amount=amount,
+                    product_type=f"subscription_{user_role}",
+                    provider=provider,
+                    reference=unique_reference,
+                    status='pending',
+                    created_at=datetime.utcnow(),
+                    expires_at=datetime.utcnow() + timedelta(minutes=15)
+                )
+                
+                db.session.add(new_payment)
+                db.session.commit()
+                
+                # TODO: Trigger Mobile Money Payment Gateway (Yo! / Beyonic / Flutterwave)
+                
+                flash(f"An instant verification push has been sent to {formatted_phone}. Please enter your MoMo PIN to complete the payment of {amount:,.0f} UGX.", "success")
+            else:
+                flash("Card transactions are currently down for updates. Please use Mobile Money.", "danger")
+                
+            return redirect(url_for('settings'))
+            
+    # Pass 'current_user' as 'user' to maintain template field compatibility 
+    return render_template('settings.html', current_user=user)
+
+@app.route('/support/send', methods=['POST'])
+def send_support_message():
+    user_id = session.get('user_id')
+    if not user_id:
+        return jsonify({'error': 'Not logged in'}), 401
+
+    data    = request.get_json(silent=True) or {}
+    message = data.get('message', '').strip()
+
+    if not message:
+        return jsonify({'error': 'Message is empty'}), 400
+
+    msg = SupportMessage(
+        user_id = user_id,
+        message = message,
+        status  = 'Unread'
+    )
+    db.session.add(msg)
+    db.session.commit()
+
+    return jsonify({'message': 'Message sent!'}), 200
 
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))

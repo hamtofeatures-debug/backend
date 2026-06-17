@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chat - AGROSPHERE</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; font-family:'Segoe UI', Arial, sans-serif; }
+body { display:flex; min-height:100vh; background:#f7f5ef; }
+
+.sidebar { width:280px; background:#fff; border-right:1px solid #e5e0d5; display:flex; flex-direction:column; flex-shrink:0; }
+.sidebar-header { padding:18px 16px; border-bottom:1px solid #eee; background:#fff; }
+.sidebar-header h2 { font-size:1.05rem; color:#1c1c1c; font-weight:800; }
+.sidebar-header p { font-size:0.78rem; color:#999; margin-top:2px; }
+
+.user-search-box { padding:10px 14px; border-bottom:1px solid #eee; }
+.user-search-box input { width:100%; padding:8px 12px; border:1px solid #ddd; border-radius:6px; font-size:0.85rem; }
+
+.users-list { flex:1; overflow-y:auto; }
+.user-item { display:flex; align-items:center; gap:12px; padding:12px 14px; cursor:pointer; border-bottom:1px solid #f5f5f5; position:relative; }
+.user-item:hover { background:#f7f9f7; }
+.user-item.active { background:#dff5ec; }
+
+.user-avatar { width:38px; height:38px; border-radius:50%; color:#fff; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:0.95rem; flex-shrink:0; }
+.user-avatar.farmer { background:#1b5e20; }
+.user-avatar.expert { background:#a8651a; }
+.user-avatar.business { background:#1a4fbf; }
+
+.user-info .name { font-weight:700; font-size:0.88rem; color:#1c1c1c; }
+.user-info .role { font-size:0.72rem; color:#888; margin-top:1px; }
+.verified-badge { color:#1a4fbf; font-size:0.78rem; margin-left:3px; }
+
+.unread-badge { position:absolute; right:14px; background:#2e7d32; color:#fff; border-radius:50%; width:20px; height:20px; font-size:0.7rem; font-weight:700; display:flex; align-items:center; justify-content:center; }
+
+.chat-main { flex:1; display:flex; flex-direction:column; min-width:0; }
+
+.no-chat-selected { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; color:#bbb; gap:10px; }
+.no-chat-selected .icon { font-size:2.5rem; }
+
+.chat-topbar { background:#fff; border-bottom:1px solid #e5e0d5; padding:14px 22px; display:flex; align-items:center; justify-content:space-between; flex-shrink:0; }
+.chat-topbar .left { display:flex; align-items:center; gap:12px; }
+.chat-topbar .chat-name { font-weight:700; color:#1c1c1c; font-size:0.95rem; }
+.chat-topbar .chat-role { font-size:0.75rem; color:#888; }
+
+.chat-messages { flex:1; overflow-y:auto; padding:20px; display:flex; flex-direction:column; gap:10px; background:#f7f5ef; }
+
+.message { max-width:68%; display:flex; flex-direction:column; }
+.message.sent { align-self:flex-end; align-items:flex-end; }
+.message.received { align-self:flex-start; align-items:flex-start; }
+.bubble { padding:10px 14px; border-radius:14px; font-size:0.88rem; line-height:1.5; word-break:break-word; }
+.sent .bubble { background:#2e7d32; color:#fff; border-bottom-right-radius:3px; }
+.received .bubble { background:#fff; color:#1c1c1c; border:1px solid #eee; border-bottom-left-radius:3px; box-shadow:0 1px 2px rgba(0,0,0,0.04); }
+.msg-time { font-size:0.68rem; color:#aaa; margin-top:3px; }
+.sent .msg-time { text-align:right; }
+
+.chat-input-area { background:#fff; border-top:1px solid #e5e0d5; padding:14px 20px; display:flex; gap:10px; align-items:flex-end; flex-shrink:0; }
+.chat-input-area textarea { flex:1; padding:10px 14px; border:1px solid #ddd; border-radius:8px; font-size:0.9rem; font-family:inherit; resize:none; min-height:42px; max-height:120px; outline:none; }
+.chat-input-area textarea:focus { border-color:#2e7d32; }
+.send-btn { background:#2e7d32; color:#fff; border:none; padding:10px 20px; border-radius:8px; font-weight:700; cursor:pointer; height:42px; font-size:0.9rem; white-space:nowrap; }
+.send-btn:hover { background:#256528; }
+.send-btn:disabled { background:#9bbf9d; cursor:not-allowed; }
+
+.back-link { display:block; text-align:center; padding:12px; border-top:1px solid #eee; color:#666; text-decoration:none; font-size:0.82rem; }
+.back-link:hover { background:#f5f5f5; }
+
+.day-divider { text-align:center; font-size:0.72rem; color:#aaa; margin:6px 0; }
+</style>
+</head>
+<body data-user-id="{{ current_user.id }}" data-user-name="{{ current_user.fullname }}">
+
+<!-- SIDEBAR -->
+<div class="sidebar">
+    <div class="sidebar-header">
+        <h2>💬 AGROSPHERE Chat</h2>
+        <p>Verified users only · Private & secure</p>
+    </div>
+
+    <div class="user-search-box">
+        <input type="text" id="chat-user-search" placeholder="🔍 Search users...">
+    </div>
+
+    <div class="users-list" id="users-list">
+        {% if verified_users %}
+            {% for u in verified_users %}
+            <div class="user-item"
+                 id="user-item-{{ u.id }}"
+                 data-uid="{{ u.id }}"
+                 data-name="{{ u.fullname.lower() }}"
+                 data-fullname="{{ u.fullname }}"
+                 data-role="{{ u.role }}"
+                 data-specialization="{{ u.specialization or '' }}">
+                <div class="user-avatar {{ u.role }}">{{ u.fullname[0].upper() }}</div>
+                <div class="user-info">
+                    <div class="name">
+                        {{ u.fullname }}
+                        <span class="verified-badge">✔</span>
+                    </div>
+                    <div class="role">
+                        {{ u.role.upper() }}
+                        {% if u.specialization %} · {{ u.specialization }}{% endif %}
+                    </div>
+                </div>
+                <span class="unread-badge" id="unread-{{ u.id }}" style="display:none;"></span>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div style="padding:24px; text-align:center; color:#bbb; font-size:0.85rem;">
+                No verified users available yet.
+            </div>
+        {% endif %}
+    </div>
+
+    <a href="/{{ current_user.role }}/dashboard" class="back-link">← Back to Dashboard</a>
+</div>
+
+<!-- MAIN CHAT -->
+<div class="chat-main">
+
+    <div class="no-chat-selected" id="no-chat-selected">
+        <div class="icon">🔒</div>
+        <p style="font-weight:700; color:#888;">Select a verified user to chat</p>
+        <p style="font-size:0.8rem;">Messages are private — only visible to you and the recipient</p>
+    </div>
+
+    <div id="active-chat" style="display:none; flex:1; flex-direction:column; overflow:hidden;">
+        <div class="chat-topbar">
+            <div class="left">
+                <div class="user-avatar" id="chat-avatar" style="width:34px;height:34px;font-size:0.85rem;"></div>
+                <div>
+                    <div class="chat-name" id="chat-name"></div>
+                    <div class="chat-role" id="chat-role"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="chat-messages" id="chat-messages"></div>
+
+        <div class="chat-input-area">
+            <textarea id="message-input"
+                      placeholder="Type a message... (Enter to send, Shift+Enter for new line)"
+                      rows="1"></textarea>
+            <button class="send-btn" id="send-btn" onclick="sendMessage()">Send ➤</button>
+        </div>
+    </div>
+
+</div>
+
+<script>
+const CURRENT_USER_ID = parseInt(document.body.dataset.userId || '0', 10);
+const CURRENT_USER_NAME = document.body.dataset.userName || '';
+let activeChatUserId = null;
+let pollInterval = null;
+let lastMessageId = 0;
+
+// ── Open a chat conversation ──
+function openChat(uid, name, role, specialization) {
+    activeChatUserId = uid;
+    lastMessageId = 0;
+
+    // Highlight user in sidebar
+    document.querySelectorAll('.user-item').forEach(i => i.classList.remove('active'));
+    const item = document.getElementById(`user-item-${uid}`);
+    if (item) item.classList.add('active');
+
+    // Clear unread badge
+    const badge = document.getElementById(`unread-${uid}`);
+    if (badge) badge.style.display = 'none';
+
+    // Update topbar
+    document.getElementById('chat-name').textContent = name + ' ✔';
+    document.getElementById('chat-role').textContent =
+        role.toUpperCase() + (specialization ? ` · ${specialization}` : '');
+    const avatar = document.getElementById('chat-avatar');
+    avatar.textContent = name[0].toUpperCase();
+    avatar.className = `user-avatar ${role}`;
+
+    // Show chat pane
+    document.getElementById('no-chat-selected').style.display = 'none';
+    const activeChat = document.getElementById('active-chat');
+    activeChat.style.display = 'flex';
+
+    // Load messages
+    loadMessages(uid);
+
+    // Start polling every 3 seconds
+    if (pollInterval) clearInterval(pollInterval);
+    pollInterval = setInterval(() => loadMessages(uid), 3000);
+
+    document.getElementById('message-input').focus();
+}
+
+// ── Load messages from backend ──
+async function loadMessages(uid) {
+    try {
+        const res = await fetch(`/api/messages/${uid}`);
+        if (!res.ok) return;
+        const messages = await res.json();
+        renderMessages(messages);
+    } catch (err) {
+        console.error('Failed to load messages:', err);
+    }
+}
+
+// ── Render messages in the chat pane ──
+function renderMessages(messages) {
+    const container = document.getElementById('chat-messages');
+
+    if (messages.length === 0) {
+        container.innerHTML = `
+            <div style="flex:1; display:flex; align-items:center; justify-content:center; color:#bbb; font-size:0.88rem;">
+                No messages yet. Say hello! 👋
+            </div>`;
+        return;
+    }
+
+    const wasAtBottom = container.scrollHeight - container.clientHeight <= container.scrollTop + 10;
+
+    container.innerHTML = messages.map((m, i) => {
+        const sent = m.sender_id === CURRENT_USER_ID;
+        const showDivider = i === 0 || messages[i-1].created_at.split(':')[0] !== m.created_at.split(':')[0];
+        return `
+            <div class="message ${sent ? 'sent' : 'received'}">
+                <div class="bubble">${escapeHtml(m.content)}</div>
+                <div class="msg-time">${m.created_at}${sent ? (m.is_read ? ' · Seen' : '') : ''}</div>
+            </div>
+        `;
+    }).join('');
+
+    // Auto-scroll to bottom if user was already there
+    if (wasAtBottom || messages.length <= 5) {
+        container.scrollTop = container.scrollHeight;
+    }
+}
+
+// ── Send a message ──
+async function sendMessage() {
+    const input = document.getElementById('message-input');
+    const content = input.value.trim();
+    if (!content || !activeChatUserId) return;
+
+    const btn = document.getElementById('send-btn');
+    btn.disabled = true;
+
+    try {
+        const res = await fetch('/api/messages/send', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                receiver_id: activeChatUserId,
+                content: content
+            })
+        });
+
+        if (res.ok) {
+            input.value = '';
+            input.style.height = 'auto';
+            await loadMessages(activeChatUserId);
+        } else {
+            const data = await res.json();
+            alert(data.error || 'Failed to send message.');
+        }
+    } catch (err) {
+        alert('Connection error. Please try again.');
+    }
+
+    btn.disabled = false;
+    input.focus();
+}
+
+// ── Load unread counts for sidebar badges ──
+async function loadUnreadCounts() {
+    try {
+        const res = await fetch('/api/messages/unread-counts');
+        if (!res.ok) return;
+        const counts = await res.json();
+        Object.entries(counts).forEach(([uid, count]) => {
+            const badge = document.getElementById(`unread-${uid}`);
+            if (badge && uid !== String(activeChatUserId)) {
+                badge.textContent = count;
+                badge.style.display = count > 0 ? 'flex' : 'none';
+            }
+        });
+    } catch (err) {}
+}
+
+// Poll unread counts every 5 seconds
+setInterval(loadUnreadCounts, 5000);
+loadUnreadCounts();
+
+// ── Enter to send ──
+document.getElementById('message-input').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        sendMessage();
+    }
+});
+
+// ── Auto-resize textarea ──
+document.getElementById('message-input').addEventListener('input', function () {
+    this.style.height = 'auto';
+    this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+});
+
+// ── User search ──
+document.getElementById('chat-user-search').addEventListener('input', function () {
+    const term = this.value.toLowerCase();
+    document.querySelectorAll('.user-item').forEach(item => {
+        item.style.display = item.dataset.name.includes(term) ? '' : 'none';
+    });
+});
+
+// ── Wire up user list clicks ──
+document.querySelectorAll('.user-item').forEach(item => {
+    item.addEventListener('click', () => {
+        openChat(
+            parseInt(item.dataset.uid),
+            item.dataset.fullname,
+            item.dataset.role,
+            item.dataset.specialization
+        );
+    });
+});
+
+// ── Escape HTML to prevent XSS ──
+function escapeHtml(text) {
+    return text
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+}
+</script>
+
+</body>
+</html>

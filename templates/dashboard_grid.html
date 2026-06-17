@@ -1,0 +1,110 @@
+<style>
+    .dashboard-grid-container {
+        padding: 20px;
+        max-width: 1000px;
+        font-family: '-apple-system', BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+    .welcome-header { font-size: 28px; font-weight: 700; margin-bottom: 5px; color: #1e293b; }
+    .welcome-subtitle { color: #64748b; font-size: 15px; margin-bottom: 30px; }
+    .dashboard-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+    
+    .grid-card {
+        background: #ffffff; border-radius: 18px; padding: 24px; text-decoration: none; 
+        color: inherit; display: flex; flex-direction: column; justify-content: space-between; 
+        position: relative; box-sizing: border-box; transition: transform 0.2s ease, box-shadow 0.2s ease;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.02); min-height: 160px;
+    }
+    .grid-card:hover { transform: translateY(-3px); box-shadow: 0 10px 20px rgba(0,0,0,0.06); }
+    
+    /* Card Accent Colors */
+    .card-purple { background-color: #f5f3ff; border: 1px solid #ede9fe; }
+    .card-green { background-color: #f0fdf4; border: 1px solid #dcfce7; }
+    .card-orange { background-color: #fff7ed; border: 1px solid #ffedd5; }
+    .card-blue { background-color: #eff6ff; border: 1px solid #dbeafe; }
+    
+    .card-icon {
+        width: 46px; height: 46px; border-radius: 12px; display: flex; 
+        align-items: center; justify-content: center; font-size: 24px; margin-bottom: 15px;
+    }
+    .icon-purple { background-color: #6366f1; color: white; }
+    .icon-green { background-color: #22c55e; color: white; }
+    .icon-orange { background-color: #f97316; color: white; }
+    .icon-blue { background-color: #3b82f6; color: white; }
+    
+    .card-title { font-size: 18px; font-weight: 700; margin: 0 0 6px 0; color: #1e293b; }
+    .card-desc { font-size: 13px; color: #64748b; margin: 0; line-height: 1.4; }
+    .card-arrow { position: absolute; bottom: 24px; right: 24px; color: #94a3b8; font-size: 14px; }
+</style>
+
+<div class="dashboard-grid-container">
+    <h1 class="welcome-header">Hello, {{ current_user.username if current_user.username else 'User' }} 👋</h1>
+    <p class="welcome-subtitle">What do you want to do today?</p>
+
+    <div class="dashboard-grid">
+        {% set role = current_user.role | lower if current_user.role else 'farmer' %}
+
+        {% if role == 'farmer' %}
+        <a href="#" class="grid-card card-purple">
+            <div>
+                <div class="card-icon icon-purple">❓</div>
+                <h3 class="card-title">Ask an Expert</h3>
+                <p class="card-desc">Submit your agricultural queries directly to verified professionals.</p>
+            </div>
+            <span class="card-arrow">❯</span>
+        </a>
+        {% elif role == 'expert' %}
+        <a href="#" class="grid-card card-purple">
+            <div>
+                <div class="card-icon icon-purple">📥</div>
+                <h3 class="card-title">Consultation Queue</h3>
+                <p class="card-desc">Review and answer questions submitted by farmers.</p>
+            </div>
+            <span class="card-arrow">❯</span>
+        </a>
+        {% elif role == 'business' %}
+        <a href="#" class="grid-card card-purple">
+            <div>
+                <div class="card-icon icon-purple">🏪</div>
+                <h3 class="card-title">Business Posts</h3>
+                <p class="card-desc">Manage your marketplace advertisements and agro-supply updates.</p>
+            </div>
+            <span class="card-arrow">❯</span>
+        </a>
+        {% else %} <a href="#" class="grid-card card-purple">
+            <div>
+                <div class="card-icon icon-purple">🛡️</div>
+                <h3 class="card-title">User Approvals</h3>
+                <p class="card-desc">Audit pending verification documents and registration credentials.</p>
+            </div>
+            <span class="card-arrow">❯</span>
+        </a>
+        {% endif %}
+
+        <a href="#" class="grid-card card-green">
+            <div>
+                <div class="card-icon icon-green">🌱</div>
+                <h3 class="card-title">Community Feed</h3>
+                <p class="card-desc">Interact with agricultural updates and news listings across regions.</p>
+            </div>
+            <span class="card-arrow">❯</span>
+        </a>
+
+        <a href="#" class="grid-card card-orange">
+            <div>
+                <div class="card-icon icon-orange">📄</div>
+                <h3 class="card-title">Knowledge Hub</h3>
+                <p class="card-desc">Explore verified extension articles, guides, and production logs.</p>
+            </div>
+            <span class="card-arrow">❯</span>
+        </a>
+
+        <a href="{{ url_for('settings') }}" class="grid-card card-blue">
+            <div>
+                <div class="card-icon icon-blue">⚙️</div>
+                <h3 class="card-title">Account Settings</h3>
+                <p class="card-desc">Configure your business profile parameters and system preferences.</p>
+            </div>
+            <span class="card-arrow">❯</span>
+        </a>
+    </div>
+</div>
