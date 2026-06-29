@@ -344,14 +344,14 @@ textarea { width:100%; padding:10px 12px; border:1px solid var(--border); border
         <span class="arrow">›</span>
       </button>
 
-      <button class="nav-card" onclick="showSection('setting')">
-        <div class="icon-box ic-pink">⚙️</div>
-        <div>
-          <h3>Settings</h3>
-          <p>Verification, payment &amp; profile.</p>
-        </div>
-        <span class="arrow">›</span>
-      </button>
+      <button class="nav-card" onclick="window.location.href='/settings'">
+  <div class="icon-box ic-purple">⚙️</div>
+  <div>
+    <h3>Settings</h3>
+    <p>Verification, payment &amp; profile.</p>
+  </div>
+  <span class="arrow">›</span>
+</button>
 
     </div>
   </div>
@@ -1425,221 +1425,7 @@ function pcWeatherFilter(q) {
     {% endfor %}{% else %}<div class="empty-state"><div class="emoji">🏪</div>No business posts yet.</div>{% endif %}
   </div>
 
-  <!-- ══ SETTINGS HOME ══ -->
-<div class="page-section" id="section-setting">
-  <button class="back-btn" onclick="showSection('home')">Dashboard</button>
-  <div class="page-header"><h2>Settings</h2><p>Manage your account and preferences.</p></div>
-
-  <div class="card-grid">
-
-    <button class="nav-card" onclick="showSection('setting-account')">
-      <div class="icon-box ic-green">👤</div>
-      <div>
-        <h3>Account & Profile</h3>
-        <p>Name, contact, password & 2FA.</p>
-      </div>
-      {% if current_user.is_verified %}
-      <span style="font-size:0.68rem;font-weight:700;background:#DCFCE7;color:#166534;padding:3px 8px;border-radius:20px;">✓ Verified</span>
-      {% else %}
-      <span style="font-size:0.68rem;font-weight:700;background:#FEF3C7;color:#92400E;padding:3px 8px;border-radius:20px;">Pending</span>
-      {% endif %}
-    </button>
-
-    <button class="nav-card" onclick="showSection('setting-business')">
-      <div class="icon-box ic-blue">🏢</div>
-      <div>
-        <h3>Business & Subscription</h3>
-        <p>Billing, MTN & Airtel payment.</p>
-      </div>
-      <span style="font-size:0.68rem;font-weight:700;color:#2E7D32;">
-        {% if current_user.role == 'expert' %}5,000 UGX
-        {% elif current_user.role == 'business' %}10,000 UGX
-        {% else %}3,000 UGX{% endif %} /mo
-      </span>
-    </button>
-
-    <button class="nav-card" onclick="showSection('setting-notifications')">
-      <div class="icon-box ic-yellow">🔔</div>
-      <div>
-        <h3>Notifications</h3>
-        <p>Alerts, summaries & reminders.</p>
-      </div>
-      <span class="arrow">›</span>
-    </button>
-
-    <button class="nav-card" onclick="showSection('setting-technical')">
-      <div class="icon-box ic-purple">⚙️</div>
-      <div>
-        <h3>Technical & Tools</h3>
-        <p>API keys & integrations.</p>
-      </div>
-      <span class="arrow">›</span>
-    </button>
-
-  </div>
-</div>
-
-<!-- ══ SETTING: ACCOUNT & PROFILE ══ -->
-<div class="page-section" id="section-setting-account">
-  <button class="back-btn" onclick="showSection('setting')">Settings</button>
-  <div class="page-header"><h2>Account & Profile</h2><p>Update your personal details and security.</p></div>
-
-  <form action="{{ url_for('settings') }}" method="POST" enctype="multipart/form-data">
-    <input type="hidden" name="setting_type" value="account">
-
-    <div class="panel">
-      <h3>Profile</h3>
-      <label class="form-label">Full Name</label>
-      <input type="text" name="username" value="{{ current_user.username or '' }}">
-      <label class="form-label">Contact (Email / Phone)</label>
-      <input type="text" name="contact" value="{{ current_user.contact or '' }}" placeholder="077xxxxxxx">
-    </div>
-
-    <div class="panel">
-      <h3>Security</h3>
-      <label class="form-label">New Password</label>
-      <input type="password" name="new_password" placeholder="Leave blank to keep current">
-      <div class="checkbox-group" style="margin-top:10px;">
-        <input type="checkbox" id="2fa" name="enable_2fa">
-        <label for="2fa" style="font-size:0.85rem;">Enable Two-Factor Authentication (2FA)</label>
-      </div>
-    </div>
-
-    <div class="panel">
-      <h3>Verification Status</h3>
-      {% if current_user.is_verified %}
-      <div class="status-pill pill-verified">✓ Verified Account</div>
-      <p style="font-size:0.8rem;color:#2e7d32;margin-top:6px;">Your identity has been verified by AGROSPHERE.</p>
-      {% else %}
-      <div class="status-pill pill-unverified">⏳ Pending Review</div>
-      <p style="font-size:0.8rem;color:var(--text-secondary);margin-top:6px;">Upload credentials to unlock full platform access.</p>
-      <label class="form-label" style="margin-top:12px;">Document Type</label>
-      <select name="verification_type">
-        <option value="nin">National ID (NIN)</option>
-        <option value="business_license">Business Registration</option>
-        <option value="certificate">Agricultural Certificate</option>
-      </select>
-      <label class="form-label">Upload Document (PDF, PNG, JPG)</label>
-      <label class="file-drop" for="doc_file">📎 Tap to attach document</label>
-      <input type="file" id="doc_file" name="verification_doc" style="display:none;">
-      <button type="submit" name="action" value="submit_verification"
-              class="btn btn-green" style="width:100%;margin-top:12px;padding:12px;">
-        Submit Verification Documents
-      </button>
-      {% endif %}
-    </div>
-
-    <button type="submit" class="btn btn-green" style="width:100%;padding:12px;margin-bottom:16px;">
-      Save Account Settings
-    </button>
-  </form>
-</div>
-
-<!-- ══ SETTING: BUSINESS & SUBSCRIPTION ══ -->
-<div class="page-section" id="section-setting-business">
-  <button class="back-btn" onclick="showSection('setting')">Settings</button>
-  <div class="page-header"><h2>Business & Subscription</h2><p>Manage billing and payments.</p></div>
-
-  <form action="{{ url_for('settings') }}" method="POST">
-    <input type="hidden" name="setting_type" value="business">
-
-    <div class="panel">
-      <h3>Business Profile</h3>
-      <label class="form-label">Company Name</label>
-      <input type="text" name="company_name" placeholder="AGROSPHERE Enterprise">
-      <label class="form-label">Tax ID / TIN</label>
-      <input type="text" name="tax_id" placeholder="100xxxxxxxx">
-      <label class="form-label">Primary Currency</label>
-      <select name="currency">
-        <option value="UGX">Ugandan Shilling (UGX)</option>
-        <option value="USD">US Dollar ($)</option>
-      </select>
-    </div>
-
-    <div class="panel">
-      <h3>Billing & Subscription</h3>
-      <p style="font-size:0.85rem;margin-bottom:4px;">
-        <strong>Account Tier:</strong>
-        <span style="color:var(--green);font-weight:700;text-transform:capitalize;">
-          {{ current_user.role }}
-        </span>
-      </p>
-      <p style="font-size:1rem;font-weight:800;color:var(--green);margin-bottom:16px;">
-        {% if current_user.role == 'expert' %}5,000
-        {% elif current_user.role == 'business' %}10,000
-        {% else %}3,000{% endif %} UGX / month
-      </p>
-
-      <label class="form-label">Payment Provider</label>
-      <select name="payment_provider" id="dash-payment-provider"
-              onchange="dashTogglePayment(this.value)">
-        <option value="mtn">MTN Mobile Money</option>
-        <option value="airtel">Airtel Money</option>
-        <option value="card">Credit / Debit Card</option>
-      </select>
-
-      <div id="dash-momo-field" style="margin-top:10px;">
-        <label class="form-label">Mobile Money Number</label>
-        <input type="text" name="momo_number"
-               value="{{ current_user.contact or '' }}"
-               placeholder="077xxxxxxx">
-      </div>
-
-      <div id="dash-card-field" style="display:none;margin-top:10px;">
-        <label class="form-label">Card Number</label>
-        <input type="text" name="card_number" placeholder="xxxx xxxx xxxx xxxx">
-      </div>
-
-      <button type="submit" name="action" value="initiate_subscription"
-              class="btn btn-green" style="width:100%;padding:12px;margin-top:16px;">
-        ⚡ Pay
-        {% if current_user.role == 'expert' %}5,000
-        {% elif current_user.role == 'business' %}10,000
-        {% else %}3,000{% endif %} UGX Now
-      </button>
-    </div>
-  </form>
-</div>
-
-<!-- ══ SETTING: NOTIFICATIONS ══ -->
-<div class="page-section" id="section-setting-notifications">
-  <button class="back-btn" onclick="showSection('setting')">Settings</button>
-  <div class="page-header"><h2>Notifications</h2><p>Control your alerts and updates.</p></div>
-
-  <form action="{{ url_for('settings') }}" method="POST">
-    <input type="hidden" name="setting_type" value="notifications">
-
-    <div class="panel">
-      <h3>Email Alerts</h3>
-      <div class="checkbox-group">
-        <input type="checkbox" id="n1" name="email_weekly" checked>
-        <label for="n1" style="font-size:0.85rem;">Weekly production summaries</label>
-      </div>
-      <div class="checkbox-group" style="margin-top:10px;">
-        <input type="checkbox" id="n2" name="email_inventory" checked>
-        <label for="n2" style="font-size:0.85rem;">Low stock alerts</label>
-      </div>
-    </div>
-
-    <button type="submit" class="btn btn-green" style="width:100%;padding:12px;margin-bottom:16px;">
-      Save Preferences
-    </button>
-  </form>
-</div>
-
-<!-- ══ SETTING: TECHNICAL & TOOLS ══ -->
-<div class="page-section" id="section-setting-technical">
-  <button class="back-btn" onclick="showSection('setting')">Settings</button>
-  <div class="page-header"><h2>Technical & Tools</h2><p>API keys and integration settings.</p></div>
-
-  <div class="panel">
-    <h3>API Configuration</h3>
-    <label class="form-label">Active Platform Key</label>
-    <input type="text" value="ag_live_8391hdkshf8190237hdskjfh"
-           readonly style="background:var(--bg);font-family:monospace;font-size:0.8rem;">
-  </div>
-</div>
-
+  
 <!-- Support FAB -->
 <button class="support-fab" id="supportFab" title="Contact Support">🛠</button>
 
@@ -1674,8 +1460,6 @@ function pcWeatherFilter(q) {
 
 <div class="toast" id="toast">✓ Message sent!</div>
 
-<script src="{{ url_for('static', filename='js/script.js') }}"></script>
-<script src="{{ url_for('static', filename='js/script.js') }}"></script>
 <script>
 function showSection(id) {
   document.querySelectorAll('.page-section').forEach(s => s.classList.remove('active'));
