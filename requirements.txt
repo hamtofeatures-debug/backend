@@ -30,3 +30,4 @@ flask_talisman
 beautifulsoup4
 lxml
 python-dotenv
+cryptography==42.0.5
