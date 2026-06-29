@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify, render_template, session
 from extensions import db
-from models import User, Question, Announcement, AnnouncementReaction, ExpertRating, Articles, Business, BusinessPost, Post, SupportMessage
+from models import User, Question, Announcement, AnnouncementReaction, ExpertRating, Articles, Business, BusinessPost, Post, SupportMessage, SupportReply
 
 admin_bp = Blueprint('admin', __name__)
 
@@ -143,6 +143,7 @@ def get_announcements():
             "user_reaction": user_reaction
         })
     return jsonify(result)
+
 
 @admin_bp.route('/announcements', methods=['POST'])
 def post_announcement():
@@ -457,16 +458,85 @@ def verify_user(user_id):
     status = "verified" if user.blue_tick else "unverified"
     return jsonify({"message": f"User {status} successfully", "blue_tick": user.blue_tick}), 200 
 
-@admin_bp.route('/admin/dashboard')
+@admin_bp.route('/dashboard')
 def admin_dashboard():
-
     support_messages = SupportMessage.query.order_by(
         SupportMessage.created_at.desc()
     ).all()
+    
+    users = User.query.all()
+    questions = Question.query.order_by(Question.id.desc()).all()
+
+    stats = {
+        "users": User.query.count(),
+        "farmers": User.query.filter_by(role='farmer').count(),
+        "experts": User.query.filter_by(role='expert').count(),
+        "businesses": Business.query.count(),
+        "questions": Question.query.count(),
+        "answered": Question.query.filter_by(status='answered').count(),
+        "announcements": Announcement.query.count(),
+    }
 
     return render_template(
-    'admin_dashboard.html',
-    support_messages=support_messages,
-    all_users=all_users,
-    all_questions=all_questions
-)
+        'admin_dashboard.html',
+        support_messages=support_messages,
+        all_users=users,
+        all_questions=questions,
+        stats=stats
+    )
+from models import SupportReply
+
+@admin_bp.route('/support/<int:msg_id>/reply', methods=['POST'])
+def reply_support_message(msg_id):
+    if session.get('role') != 'admin':
+        return jsonify({"error": "Unauthorized"}), 403
+
+    msg = SupportMessage.query.get_or_404(msg_id)
+    data = request.get_json(silent=True) or {}
+    reply_text = data.get('reply', '').strip()
+
+    if not reply_text:
+        return jsonify({"error": "Reply cannot be empty"}), 400
+
+    reply = SupportReply(
+        message_id = msg.id,
+        admin_id   = session.get('user_id'),
+        reply      = reply_text
+    )
+    db.session.add(reply)
+
+    # Mark message as read
+    msg.status = 'Read'
+    db.session.commit()
+
+    return jsonify({"message": "Reply sent successfully!"}), 200
+
+
+@admin_bp.route('/support/<int:msg_id>', methods=['GET'])
+def get_support_message(msg_id):
+    msg = SupportMessage.query.get_or_404(msg_id)
+    return jsonify({
+        "id": msg.id,
+        "user": msg.user.fullname,
+        "message": msg.message,
+        "status": msg.status,
+        "created_at": msg.created_at.strftime('%d %b %Y %H:%M'),
+        "replies": [
+            {
+                "reply": r.reply,
+                "admin": r.admin.fullname,
+                "created_at": r.created_at.strftime('%d %b %Y %H:%M')
+            } for r in msg.replies
+        ]
+    })
+
+@admin_bp.route('/support/<int:msg_id>/close', methods=['POST'])
+def close_support_message(msg_id):
+    if session.get('role') != 'admin':
+        return jsonify({'error': 'Unauthorized'}), 403
+
+    msg = SupportMessage.query.get_or_404(msg_id)
+    msg.is_closed = True
+    msg.status = 'Closed'
+    db.session.commit()
+    return jsonify({'message': 'Thread closed'}), 200

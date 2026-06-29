@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta http-equiv="refresh" content="30">    
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Admin Dashboard - AGROSPHERE</title>
@@ -24,17 +23,11 @@
   --tab-h: 68px;
   --header-h: 80px;
 }
-html, body { height:100%; font-family:-apple-system, 'SF Pro Display', 'Segoe UI', Arial, sans-serif; background:var(--bg); color:var(--text-primary); }
+html, body { height:100%; font-family:-apple-system,'SF Pro Display','Segoe UI',Arial,sans-serif; background:var(--bg); color:var(--text-primary); }
 body { display:flex; flex-direction:column; max-width:430px; margin:0 auto; position:relative; min-height:100vh; }
 
 /* ─── HEADER ─── */
-.header {
-  background:var(--card-bg);
-  padding: 20px 20px 16px;
-  display:flex; align-items:center; justify-content:space-between;
-  border-bottom: 1px solid var(--border);
-  position:sticky; top:0; z-index:100;
-}
+.header { background:var(--card-bg); padding:20px 20px 16px; display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid var(--border); position:sticky; top:0; z-index:100; }
 .header-greeting h1 { font-size:1.55rem; font-weight:700; letter-spacing:-0.3px; }
 .header-greeting h1 span { font-size:1.3rem; }
 .header-greeting p { font-size:0.85rem; color:var(--text-secondary); margin-top:2px; }
@@ -57,20 +50,9 @@ body { display:flex; flex-direction:column; max-width:430px; margin:0 auto; posi
 /* ─── CARD GRID ─── */
 .section-title { font-size:0.75rem; font-weight:700; letter-spacing:1px; color:var(--text-tertiary); text-transform:uppercase; margin-bottom:12px; }
 .card-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:24px; }
-.nav-card {
-  background:var(--card-bg); border-radius:var(--radius-card);
-  padding:20px 16px 18px; cursor:pointer;
-  box-shadow:var(--shadow); border:1px solid var(--border);
-  display:flex; flex-direction:column; gap:14px;
-  transition:transform 0.15s, box-shadow 0.15s;
-  text-align:left;
-}
+.nav-card { background:var(--card-bg); border-radius:var(--radius-card); padding:20px 16px 18px; cursor:pointer; box-shadow:var(--shadow); border:1px solid var(--border); display:flex; flex-direction:column; gap:14px; transition:transform 0.15s, box-shadow 0.15s; text-align:left; }
 .nav-card:active { transform:scale(0.97); box-shadow:0 1px 6px rgba(0,0,0,0.08); }
-.icon-box {
-  width:52px; height:52px; border-radius:var(--radius-icon);
-  display:flex; align-items:center; justify-content:center;
-  font-size:1.4rem; flex-shrink:0;
-}
+.icon-box { width:52px; height:52px; border-radius:var(--radius-icon); display:flex; align-items:center; justify-content:center; font-size:1.4rem; flex-shrink:0; }
 .nav-card .card-body { flex:1; }
 .nav-card h3 { font-size:0.95rem; font-weight:700; color:var(--text-primary); margin-bottom:4px; }
 .nav-card p { font-size:0.78rem; color:var(--text-secondary); line-height:1.4; }
@@ -104,12 +86,12 @@ body { display:flex; flex-direction:column; max-width:430px; margin:0 auto; posi
 
 .tag { display:inline-block; background:var(--bg); border:1px solid var(--border); border-radius:20px; padding:2px 10px; font-size:0.72rem; color:var(--text-secondary); font-weight:600; }
 .status-badge { display:inline-block; padding:3px 10px; border-radius:20px; font-size:0.68rem; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; }
-.s-pending       { background:#FEF3C7; color:#92400E; }
-.s-assigned      { background:#DBEAFE; color:#1E40AF; }
-.s-pending_review{ background:#F3E8FF; color:#6D28D9; }
-.s-answered      { background:#DCFCE7; color:#166534; }
-.s-approved      { background:#DCFCE7; color:#166534; }
-.s-rejected      { background:#FEE2E2; color:#991B1B; }
+.s-pending        { background:#FEF3C7; color:#92400E; }
+.s-assigned       { background:#DBEAFE; color:#1E40AF; }
+.s-pending_review { background:#F3E8FF; color:#6D28D9; }
+.s-answered       { background:#DCFCE7; color:#166534; }
+.s-approved       { background:#DCFCE7; color:#166534; }
+.s-rejected       { background:#FEE2E2; color:#991B1B; }
 
 .answer-box { background:#F0FDF4; border-radius:10px; padding:12px 14px; margin-top:10px; border-left:3px solid var(--green); }
 .answer-box .lbl { font-size:0.68rem; font-weight:700; color:var(--green); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:4px; }
@@ -140,48 +122,23 @@ textarea { min-height:90px; }
 .rank-info .name { font-weight:700; font-size:0.92rem; }
 .rank-info .stats { font-size:0.75rem; color:var(--text-secondary); margin-top:2px; }
 
-/* ─── ANNOUNCEMENTS FORM ─── */
+/* ─── ANNOUNCEMENTS ─── */
 .panel { background:var(--card-bg); border-radius:14px; padding:18px; margin-bottom:16px; box-shadow:var(--shadow); }
 .panel h3 { font-size:1rem; font-weight:700; margin-bottom:14px; }
 
 /* ─── BOTTOM TAB BAR ─── */
-.tab-bar {
-  position:fixed; bottom:0; left:50%; transform:translateX(-50%);
-  width:100%; max-width:430px;
-  background:rgba(255,255,255,0.95);
-  backdrop-filter:blur(12px);
-  border-top:1px solid var(--border);
-  height:var(--tab-h);
-  display:flex; align-items:center; justify-content:space-around;
-  padding:0 8px;
-  z-index:200;
-}
+.tab-bar { position:fixed; bottom:0; left:50%; transform:translateX(-50%); width:100%; max-width:430px; background:rgba(255,255,255,0.95); backdrop-filter:blur(12px); border-top:1px solid var(--border); height:var(--tab-h); display:flex; align-items:center; justify-content:space-around; padding:0 8px; z-index:200; }
 .tab-item { display:flex; flex-direction:column; align-items:center; gap:3px; cursor:pointer; padding:6px 10px; border-radius:10px; flex:1; background:none; border:none; font-family:inherit; }
 .tab-item .tab-icon { font-size:1.3rem; }
 .tab-item .tab-label { font-size:0.62rem; font-weight:600; color:var(--text-tertiary); letter-spacing:0.2px; }
 .tab-item.active .tab-label { color:var(--green); }
-.tab-item.active .tab-icon { filter: drop-shadow(0 0 4px rgba(46,125,50,0.3)); }
+.tab-item.active .tab-icon { filter:drop-shadow(0 0 4px rgba(46,125,50,0.3)); }
 
 /* ─── FLOATING SUPPORT FAB ─── */
-.support-fab {
-  position:fixed; bottom:calc(var(--tab-h) + 16px); right:20px;
-  width:48px; height:48px; border-radius:50%;
-  background:var(--green); color:#fff; border:none; font-size:1.2rem;
-  cursor:pointer; box-shadow:0 4px 16px rgba(46,125,50,0.4);
-  display:flex; align-items:center; justify-content:center;
-  z-index:190; transition:transform 0.15s;
-}
+.support-fab { position:fixed; bottom:calc(var(--tab-h) + 16px); right:20px; width:48px; height:48px; border-radius:50%; background:var(--green); color:#fff; border:none; font-size:1.2rem; cursor:pointer; box-shadow:0 4px 16px rgba(46,125,50,0.4); display:flex; align-items:center; justify-content:center; z-index:190; transition:transform 0.15s; }
 .support-fab:active { transform:scale(0.93); }
 
-.support-modal {
-  display:none; position:fixed;
-  bottom:calc(var(--tab-h) + 72px); right:16px;
-  width:290px; background:var(--card-bg);
-  border-radius:16px; box-shadow:var(--shadow-lg);
-  padding:18px; z-index:195;
-  border:1px solid var(--border);
-  animation:popUp 0.18s ease;
-}
+.support-modal { display:none; position:fixed; bottom:calc(var(--tab-h) + 72px); right:16px; width:290px; background:var(--card-bg); border-radius:16px; box-shadow:var(--shadow-lg); padding:18px; z-index:195; border:1px solid var(--border); animation:popUp 0.18s ease; }
 @keyframes popUp { from{opacity:0;transform:translateY(8px) scale(0.97)} to{opacity:1;transform:translateY(0) scale(1)} }
 .support-modal.open { display:block; }
 .support-modal h4 { font-size:0.95rem; font-weight:700; margin-bottom:4px; }
@@ -189,6 +146,7 @@ textarea { min-height:90px; }
 .support-modal textarea { min-height:80px; margin-bottom:10px; }
 .support-modal-btns { display:flex; gap:8px; }
 .support-modal-btns button { flex:1; }
+
 .toast { display:none; position:fixed; bottom:calc(var(--tab-h) + 16px); left:50%; transform:translateX(-50%); background:#1B5E20; color:#fff; padding:10px 22px; border-radius:10px; font-size:0.83rem; font-weight:700; z-index:300; box-shadow:var(--shadow); white-space:nowrap; }
 
 /* ─── BACK BUTTON ─── */
@@ -198,6 +156,53 @@ textarea { min-height:90px; }
 /* media grid */
 .media-grid { display:flex; flex-wrap:wrap; gap:8px; margin-top:10px; }
 .media-grid img, .media-grid video { width:80px; height:80px; object-fit:cover; border-radius:10px; border:1px solid var(--border); }
+
+/* ─── SOCIAL POST CARDS ─── */
+.social-post { background:#fff; border-radius:18px; padding:16px; margin-bottom:20px; box-shadow:0 2px 8px rgba(0,0,0,.08); }
+.post-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; }
+.post-menu-btn { border:none; background:none; font-size:22px; cursor:pointer; color:#666; }
+.post-content { white-space:pre-wrap; line-height:1.7; font-size:15px; color:#333; }
+.post-content.collapsed { display:-webkit-box; -webkit-box-orient:vertical; -webkit-line-clamp:5; line-clamp:5; overflow:hidden; }
+.read-more { display:inline-block; margin-top:8px; color:#2E7D32; font-weight:600; cursor:pointer; }
+.post-media { margin-top:15px; }
+.post-photo { width:100%; max-height:500px; object-fit:cover; border-radius:14px; display:block; }
+.article-title { margin:10px 0; font-size:1.1rem; color:#222; font-weight:700; }
+
+/* ─── PRICE CARDS ─── */
+.pc-grid { display:flex; flex-direction:column; gap:14px; margin-bottom:24px; }
+.pc-card { background:var(--card-bg); border-radius:16px; border:1px solid var(--border); box-shadow:var(--shadow); overflow:hidden; transition:box-shadow 0.2s; }
+.pc-card__header { display:flex; align-items:center; gap:14px; padding:16px 18px; cursor:pointer; user-select:none; -webkit-user-select:none; }
+.pc-card__icon { width:46px; height:46px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:1.3rem; flex-shrink:0; }
+.pc-card__meta { flex:1; min-width:0; }
+.pc-card__title { font-size:0.95rem; font-weight:700; color:var(--text-primary); margin-bottom:2px; }
+.pc-card__sub { font-size:0.75rem; color:var(--text-secondary); }
+.pc-card__chevron { font-size:1rem; color:var(--text-tertiary); transition:transform 0.22s ease; flex-shrink:0; }
+.pc-card.open .pc-card__chevron { transform:rotate(90deg); }
+.pc-card__body { display:none; padding:0 18px 18px; }
+.pc-card.open .pc-card__body { display:block; }
+.pc-search { width:100%; padding:9px 13px; border:1px solid var(--border); border-radius:10px; font-size:0.83rem; font-family:inherit; color:var(--text-primary); background:var(--bg); outline:none; margin-bottom:12px; }
+.pc-search:focus { border-color:#9CA3AF; }
+.pc-list { display:flex; flex-direction:column; gap:8px; }
+.pc-item { display:flex; align-items:center; justify-content:space-between; background:var(--bg); border-radius:10px; padding:10px 13px; border:1px solid var(--border); gap:10px; }
+.pc-item__left { flex:1; min-width:0; }
+.pc-item__name { font-size:0.85rem; font-weight:600; color:var(--text-primary); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.pc-item__unit { font-size:0.72rem; color:var(--text-tertiary); margin-top:2px; }
+.pc-item__right { text-align:right; flex-shrink:0; }
+.pc-item__price { font-size:0.9rem; font-weight:800; color:var(--green); }
+.pc-item__change { font-size:0.68rem; font-weight:700; margin-top:2px; }
+.pc-item__change.up   { color:#16a34a; }
+.pc-item__change.down { color:#dc2626; }
+.pc-item__change.flat { color:var(--text-tertiary); }
+.pc-inner-empty { text-align:center; padding:24px 16px; font-size:0.82rem; color:var(--text-tertiary); }
+.pc-inner-empty .emoji { font-size:1.5rem; display:block; margin-bottom:6px; }
+.pc-skeleton { height:44px; background:linear-gradient(90deg,var(--bg) 25%,#e5e7eb 50%,var(--bg) 75%); background-size:200% 100%; animation:pc-shimmer 1.4s infinite; border-radius:10px; margin-bottom:8px; }
+@keyframes pc-shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+.pc-refresh-row { display:flex; justify-content:flex-end; margin-bottom:10px; }
+.pc-refresh-btn { background:none; border:1px solid var(--border); border-radius:8px; padding:5px 12px; font-size:0.75rem; font-family:inherit; color:var(--text-secondary); cursor:pointer; display:flex; align-items:center; gap:5px; }
+.pc-refresh-btn:active { opacity:0.7; }
+.pc-refresh-btn.spinning .pc-refresh-icon { animation:pc-spin 0.8s linear infinite; }
+@keyframes pc-spin { to{transform:rotate(360deg)} }
+.pc-updated { font-size:0.68rem; color:var(--text-tertiary); text-align:right; margin-top:8px; }
 </style>
 </head>
 <body data-user-id="{{ current_user.id }}">
@@ -214,10 +219,8 @@ textarea { min-height:90px; }
 <!-- ── SCROLL AREA ── -->
 <div class="scroll-area">
 
-  <!-- ══ HOME SECTION ══ -->
+  <!-- ══ HOME ══ -->
   <div class="page-section active" id="section-home">
-
-    <!-- Stats -->
     <div class="stats-row">
       <div class="stat-pill"><div class="val">{{ stats.users }}</div><div class="lbl">Users</div></div>
       <div class="stat-pill"><div class="val">{{ stats.questions }}</div><div class="lbl">Questions</div></div>
@@ -226,133 +229,86 @@ textarea { min-height:90px; }
 
     <div class="section-title">Manage</div>
     <div class="card-grid">
-
       <button class="nav-card" onclick="showSection('overview')">
         <div class="icon-box ic-blue">📊</div>
-        <div class="card-body">
-          <h3>Overview</h3>
-          <p>Get insights and key statistics.</p>
-        </div>
+        <div class="card-body"><h3>Overview</h3><p>Get insights and key statistics.</p></div>
         <span class="arrow">›</span>
       </button>
-
       <button class="nav-card" onclick="showSection('users')">
         <div class="icon-box ic-indigo">👥</div>
-        <div class="card-body">
-          <h3>All Users</h3>
-          <p>View and manage all registered users.</p>
-        </div>
+        <div class="card-body"><h3>All Users</h3><p>View and manage all registered users.</p></div>
         <span class="arrow">›</span>
       </button>
-
       <button class="nav-card" onclick="showSection('questions')">
         <div class="icon-box ic-green">❓</div>
-        <div class="card-body">
-          <h3>All Questions</h3>
-          <p>Browse and manage all questions.</p>
-        </div>
+        <div class="card-body"><h3>All Questions</h3><p>Browse and manage all questions.</p></div>
         <span class="arrow">›</span>
       </button>
-
       <button class="nav-card" onclick="showSection('pending')">
         <div class="icon-box ic-orange">🔍</div>
-        <div class="card-body">
-          <h3>Pending Review</h3>
-          <p>Review and take action on pending items.</p>
-        </div>
+        <div class="card-body"><h3>Pending Review</h3><p>Review and take action on pending items.</p></div>
         <span class="arrow">›</span>
       </button>
-
+      <button class="nav-card" onclick="showSection('priceupdates')">
+        <div class="icon-box ic-yellow">🏷️</div>
+        <div class="card-body"><h3>Price Updates</h3><p>Monitor regional market prices and trends.</p></div>
+        <span class="arrow">›</span>
+      </button>
+      <button class="nav-card" onclick="showSection('weather')">
+        <div class="icon-box ic-blue">🌤️</div>
+        <div class="card-body"><h3>Weather Changes</h3><p>Track weather forecasts and climate alerts.</p></div>
+        <span class="arrow">›</span>
+      </button>
       <button class="nav-card" onclick="showSection('pending-articles')">
         <div class="icon-box ic-pink">📝</div>
-        <div class="card-body">
-          <h3>Pending Articles</h3>
-          <p>Review and publish pending articles.</p>
-        </div>
+        <div class="card-body"><h3>Pending Articles</h3><p>Review and publish pending articles.</p></div>
         <span class="arrow">›</span>
       </button>
-
-      <button class="nav-card" onclick="showSection('approved-articles')">
+      <button class="nav-card" onclick="showSection('articles')">
         <div class="icon-box ic-teal">📃</div>
-        <div class="card-body">
-          <h3>Articles</h3>
-          <p>All approved expert articles.</p>
-        </div>
+        <div class="card-body"><h3>Articles</h3><p>All approved expert articles.</p></div>
         <span class="arrow">›</span>
       </button>
-
       <button class="nav-card" onclick="showSection('announcements')">
         <div class="icon-box ic-yellow">📢</div>
-        <div class="card-body">
-          <h3>Announcements</h3>
-          <p>Post updates to all users.</p>
-        </div>
+        <div class="card-body"><h3>Announcements</h3><p>Post updates to all users.</p></div>
         <span class="arrow">›</span>
       </button>
-
       <button class="nav-card" onclick="showSection('communityposts')">
         <div class="icon-box ic-green">🌱</div>
-        <div class="card-body">
-          <h3>Community Posts</h3>
-          <p>Posts shared by farmers.</p>
-        </div>
+        <div class="card-body"><h3>Community Posts</h3><p>Posts shared by farmers.</p></div>
         <span class="arrow">›</span>
       </button>
-
       <button class="nav-card" onclick="showSection('rankings')">
         <div class="icon-box ic-yellow">🏆</div>
-        <div class="card-body">
-          <h3>Expert Rankings</h3>
-          <p>Top experts by score.</p>
-        </div>
+        <div class="card-body"><h3>Expert Rankings</h3><p>Top experts by score.</p></div>
         <span class="arrow">›</span>
       </button>
-
       <button class="nav-card" onclick="showSection('publicqa')">
         <div class="icon-box ic-blue">🌐</div>
-        <div class="card-body">
-          <h3>Public Q&amp;A</h3>
-          <p>Published answers visible to all.</p>
-        </div>
+        <div class="card-body"><h3>Public Q&amp;A</h3><p>Published answers visible to all.</p></div>
         <span class="arrow">›</span>
       </button>
-
       <button class="nav-card" onclick="showSection('businesses')">
         <div class="icon-box ic-purple">🏢</div>
-        <div class="card-body">
-          <h3>Businesses</h3>
-          <p>Approve and verify businesses.</p>
-        </div>
+        <div class="card-body"><h3>Businesses</h3><p>Approve and verify businesses.</p></div>
         <span class="arrow">›</span>
       </button>
-
       <button class="nav-card" onclick="showSection('businessposts')">
         <div class="icon-box ic-orange">🏪</div>
-        <div class="card-body">
-          <h3>Business Posts</h3>
-          <p>Products &amp; services shared.</p>
-        </div>
+        <div class="card-body"><h3>Business Posts</h3><p>Products &amp; services shared.</p></div>
         <span class="arrow">›</span>
       </button>
-
-      <button class="nav-card" onclick="showSection('support')">
+      <button class="nav-card" onclick="showSection('supportmessages')">
         <div class="icon-box ic-yellow">💬</div>
-        <div class="card-body">
-          <h3>Support Messages</h3>
-          <p>View and respond to user messages.</p>
-        </div>
+        <div class="card-body"><h3>Support Messages</h3><p>View and respond to user messages.</p></div>
         <span class="arrow">›</span>
       </button>
-
       <button class="nav-card" onclick="showSection('settings')">
         <div class="icon-box ic-purple">⚙️</div>
-        <div class="card-body">
-          <h3>Settings</h3>
-          <p>Manage app settings and preferences.</p>
-        </div>
+        <div class="card-body"><h3>Settings</h3><p>Manage app settings and preferences.</p></div>
         <span class="arrow">›</span>
       </button>
-
     </div>
   </div><!-- /home -->
 
@@ -369,7 +325,7 @@ textarea { min-height:90px; }
       <div class="stat-pill"><div class="val">{{ stats.published }}</div><div class="lbl">Published Q&A</div></div>
     </div>
     <div class="list-card">
-      <div class="info-row">👤 <strong>{{ current_user.fullname }}</strong></div>
+      <div style="font-weight:700;font-size:0.9rem;">👤 {{ current_user.fullname }}</div>
       <div style="font-size:0.82rem;color:var(--text-secondary);margin-top:4px;">{{ current_user.email }}</div>
       <div style="margin-top:10px;">
         <form action="{{ url_for('auth.logout') }}" method="POST">
@@ -449,6 +405,74 @@ textarea { min-height:90px; }
     {% endfor %}{% else %}<div class="empty-state"><div class="emoji">✅</div>Nothing pending review.</div>{% endif %}
   </div>
 
+  <!-- ══ PRICE UPDATES ══ -->
+  <div class="page-section" id="section-priceupdates">
+    <button class="back-btn" onclick="showSection('home')">Dashboard</button>
+    <div class="page-header"><h2>Price Updates</h2><p>Monitor regional market prices and trends.</p></div>
+    <div class="pc-grid">
+      <div class="pc-card" id="pc-inputs">
+        <div class="pc-card__header" onclick="pcToggle('inputs')">
+          <div class="pc-card__icon ic-green">🌱</div>
+          <div class="pc-card__meta"><div class="pc-card__title">Agricultural Inputs</div><div class="pc-card__sub">Seeds, fertilisers, pesticides &amp; chemicals</div></div>
+          <span class="pc-card__chevron">›</span>
+        </div>
+        <div class="pc-card__body">
+          <div class="pc-refresh-row"><button class="pc-refresh-btn" id="pc-inputs-refresh" onclick="pcLoad('inputs',true)"><span class="pc-refresh-icon">↻</span> Refresh</button></div>
+          <input class="pc-search" id="pc-inputs-search" placeholder="🔍  Search inputs…" oninput="pcFilter('inputs',this.value)">
+          <div class="pc-list" id="pc-inputs-list"><div class="pc-skeleton"></div><div class="pc-skeleton"></div><div class="pc-skeleton"></div></div>
+          <div class="pc-updated" id="pc-inputs-updated"></div>
+        </div>
+      </div>
+      <div class="pc-card" id="pc-outputs">
+        <div class="pc-card__header" onclick="pcToggle('outputs')">
+          <div class="pc-card__icon ic-orange">🌾</div>
+          <div class="pc-card__meta"><div class="pc-card__title">Agricultural Outputs</div><div class="pc-card__sub">Crops, grains, livestock &amp; produce</div></div>
+          <span class="pc-card__chevron">›</span>
+        </div>
+        <div class="pc-card__body">
+          <div class="pc-refresh-row"><button class="pc-refresh-btn" id="pc-outputs-refresh" onclick="pcLoad('outputs',true)"><span class="pc-refresh-icon">↻</span> Refresh</button></div>
+          <input class="pc-search" id="pc-outputs-search" placeholder="🔍  Search outputs…" oninput="pcFilter('outputs',this.value)">
+          <div class="pc-list" id="pc-outputs-list"><div class="pc-skeleton"></div><div class="pc-skeleton"></div><div class="pc-skeleton"></div></div>
+          <div class="pc-updated" id="pc-outputs-updated"></div>
+        </div>
+      </div>
+      <div class="pc-card" id="pc-equipment">
+        <div class="pc-card__header" onclick="pcToggle('equipment')">
+          <div class="pc-card__icon ic-blue">🚜</div>
+          <div class="pc-card__meta"><div class="pc-card__title">Equipment &amp; Machinery</div><div class="pc-card__sub">Tools, tractors, irrigation &amp; storage</div></div>
+          <span class="pc-card__chevron">›</span>
+        </div>
+        <div class="pc-card__body">
+          <div class="pc-refresh-row"><button class="pc-refresh-btn" id="pc-equipment-refresh" onclick="pcLoad('equipment',true)"><span class="pc-refresh-icon">↻</span> Refresh</button></div>
+          <input class="pc-search" id="pc-equipment-search" placeholder="🔍  Search equipment…" oninput="pcFilter('equipment',this.value)">
+          <div class="pc-list" id="pc-equipment-list"><div class="pc-skeleton"></div><div class="pc-skeleton"></div><div class="pc-skeleton"></div></div>
+          <div class="pc-updated" id="pc-equipment-updated"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ WEATHER ══ -->
+  <div class="page-section" id="section-weather">
+    <button class="back-btn" onclick="showSection('home')">Dashboard</button>
+    <div class="page-header"><h2>Weather Changes</h2><p>Track weather forecasts and climate alerts.</p></div>
+    <div class="pc-grid">
+      <div class="pc-card" id="pc-weather">
+        <div class="pc-card__header" onclick="pcToggleWeather()">
+          <div class="pc-card__icon ic-blue">🌦️</div>
+          <div class="pc-card__meta"><div class="pc-card__title">Uganda Weather Dashboard</div><div class="pc-card__sub">Live weather by district</div></div>
+          <span class="pc-card__chevron">›</span>
+        </div>
+        <div class="pc-card__body">
+          <div class="pc-refresh-row"><button class="pc-refresh-btn" id="pc-weather-refresh" onclick="pcWeatherLoad(true)"><span class="pc-refresh-icon">↻</span> Refresh</button></div>
+          <input class="pc-search" placeholder="Search district…" oninput="pcWeatherFilter(this.value)">
+          <div class="pc-list" id="pc-weather-list"></div>
+          <div class="pc-updated" id="pc-weather-updated"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- ══ PENDING ARTICLES ══ -->
   <div class="page-section" id="section-pending-articles">
     <button class="back-btn" onclick="showSection('home')">Dashboard</button>
@@ -458,7 +482,7 @@ textarea { min-height:90px; }
       <div class="meta"><span>By {{ a.expert.fullname if a.expert else 'Unknown' }}</span><span>{{ a.created_at_display or '' }}</span></div>
       <h4>{{ a.title }}</h4>
       <p>{{ a.content[:200] }}{% if a.content|length > 200 %}…{% endif %}</p>
-      {% if a.photos %}<div class="media-grid">{% for photo in a.photos %}<img src="{{ photo.url }}" alt="">{% endfor %}</div>{% endif %}
+      {% if a.photos %}<div class="media-grid">{% for photo in a.photos %}<img src="{{ photo.url }}" alt="Article photo">{% endfor %}</div>{% endif %}
       <div class="actions">
         <button class="btn btn-green" data-action="approve-article" data-aid="{{ a.id }}">Approve</button>
         <button class="btn btn-red" data-action="reject-article" data-aid="{{ a.id }}">Reject</button>
@@ -468,16 +492,20 @@ textarea { min-height:90px; }
   </div>
 
   <!-- ══ APPROVED ARTICLES ══ -->
-  <div class="page-section" id="section-approved-articles">
+  <div class="page-section" id="section-articles">
     <button class="back-btn" onclick="showSection('home')">Dashboard</button>
-    <div class="page-header"><h2>Approved Articles</h2><p>Published expert knowledge.</p></div>
-    {% if approved_articles %}{% for a in approved_articles %}
-    <div class="list-card">
-      <div class="meta">👨‍🌾 {{ a.expert_name }} · {{ a.created_at.strftime('%d %b %Y') if a.created_at else '' }}</div>
-      <h4>{{ a.title }}</h4>
-      <p>{{ a.content[:200] }}{% if a.content|length > 200 %}…{% endif %}</p>
+    <div class="page-header"><h2>Expert Articles</h2><p>Published expert knowledge.</p></div>
+    {% if expert_articles %}{% for a in expert_articles %}
+    <div class="list-card social-post">
+      <div class="post-header">
+        <div class="meta">👨‍🌾 {{ a.expert_name }} · {{ a.created_at.strftime('%d %b %Y') if a.created_at else '' }}</div>
+        <button class="post-menu-btn">⋮</button>
+      </div>
+      <h3 class="article-title">{{ a.title }}</h3>
+      <div class="post-content collapsed">{{ a.content }}</div>
+      <span class="read-more" onclick="toggleReadMore(this)">Read More</span>
     </div>
-    {% endfor %}{% else %}<div class="empty-state"><div class="emoji">📃</div>No approved articles yet.</div>{% endif %}
+    {% endfor %}{% else %}<div class="empty-state"><div class="emoji">📃</div>No expert articles yet.</div>{% endif %}
   </div>
 
   <!-- ══ ANNOUNCEMENTS ══ -->
@@ -495,29 +523,64 @@ textarea { min-height:90px; }
       </select>
       <label class="form-label">Message</label>
       <textarea id="ann-body" placeholder="Write your announcement…"></textarea>
-      <button class="btn btn-green" style="width:100%;margin-top:12px;" data-action="post-announcement">Post Announcement</button>
+      <button class="btn btn-green" style="width:100%;margin-top:12px;" id="post-announcement-btn">Post Announcement</button>
     </div>
-    <div id="announcementsList">
-      {% if announcements %}{% for a in announcements %}
-      <div class="list-card">
-        <div class="meta"><span class="tag">{{ a.category }}</span><span>{{ a.created_at.strftime('%d %b %Y, %H:%M') }}</span></div>
-        <h4>{{ a.title }}</h4>
-        <p>{{ a.body }}</p>
-        <p style="font-size:0.75rem;color:var(--text-tertiary);margin-top:8px;">👍 {{ a.likes }} · 👎 {{ a.dislikes }}</p>
-      </div>
-      {% endfor %}{% else %}<div class="empty-state"><div class="emoji">📢</div>No announcements yet.</div>{% endif %}
-    </div>
+    <!-- ══ ANNOUNCEMENTS ══ -->
+<div class="page-section" id="section-announcements">
+  <button class="back-btn" onclick="showSection('home')">Dashboard</button>
+
+  <div class="page-header">
+    <h2>Announcements</h2>
+    <p>Updates from AGROSPHERE admins.</p>
   </div>
+
+  {% if announcements %}
+    {% for a in announcements %}
+    <div class="list-card">
+
+      <div class="meta">
+        <span class="tag">{{ a.category }}</span>
+        <span>{{ a.created_at.strftime('%d %b %Y, %H:%M') }}</span>
+      </div>
+
+      <h4 style="font-weight:700; margin-bottom:10px;">
+        {{ a.title }}
+      </h4>
+
+      <div class="announcement-body collapsed"
+           id="announcement-{{ loop.index }}">
+        {{ a.body }}
+      </div>
+
+      <button class="read-more-btn"
+              onclick="toggleAnnouncement('announcement-{{ loop.index }}', this)">
+        Read More
+      </button>
+
+    </div>
+    {% endfor %}
+  {% else %}
+    <div class="empty-state">
+      <div class="emoji">📢</div>
+      No announcements yet.
+    </div>
+  {% endif %}
+</div>
+</div>
 
   <!-- ══ COMMUNITY POSTS ══ -->
   <div class="page-section" id="section-communityposts">
     <button class="back-btn" onclick="showSection('home')">Dashboard</button>
-    <div class="page-header"><h2>Community Posts</h2><p>Posts shared by farmers.</p></div>
+    <div class="page-header"><h2>Community Posts</h2><p>Tips and experiences from farmers.</p></div>
     {% if community_posts %}{% for post in community_posts %}
-    <div class="list-card">
-      <div class="meta">🌱 {{ post.farmer_name }} · {{ post.created_at.strftime('%d %b %Y, %H:%M') }}</div>
-      <p>{{ post.text }}</p>
-      {% if post.photos %}<div class="media-grid">{% for photo in post.photos %}<img src="{{ photo.url }}" alt="">{% endfor %}</div>{% endif %}
+    <div class="list-card social-post">
+      <div class="post-header">
+        <div class="meta">🌱 {{ post.author_name.upper() }} · {{ post.created_at.strftime('%d %b %Y, %H:%M') }}</div>
+        <button class="post-menu-btn">⋮</button>
+      </div>
+      <div class="post-content collapsed">{{ post.text }}</div>
+      <span class="read-more" onclick="toggleReadMore(this)">Read More</span>
+      {% if post.photos %}<div class="post-media">{% for photo in post.photos %}<img src="{{ photo.url }}" class="post-photo" alt="">{% endfor %}</div>{% endif %}
     </div>
     {% endfor %}{% else %}<div class="empty-state"><div class="emoji">🌱</div>No community posts yet.</div>{% endif %}
   </div>
@@ -587,24 +650,55 @@ textarea { min-height:90px; }
       <div class="meta">🏢 {{ post.business_name }} · {{ post.created_at.strftime('%d %b %Y') }}</div>
       <h4>{{ post.title }}</h4>
       <p>{{ post.description }}</p>
-      {% if post.media %}<div class="media-grid">{% for item in post.media %}{% if item.type=='video' %}<video src="{{ item.url }}" controls></video>{% else %}<img src="{{ item.url }}" alt="">{% endif %}{% endfor %}</div>{% endif %}
+      {% if post.media %}<div class="media-grid">{% for item in post.media %}{% if item.type=='video' %}<video src="{{ item.url }}" controls></video>{% else %}<img src="{{ item.url }}" alt="Post media">{% endif %}{% endfor %}</div>{% endif %}
       <p style="font-size:0.75rem;color:var(--text-tertiary);margin-top:8px;">👍 {{ post.likes_count }} · 👁️ {{ post.views_count }}</p>
     </div>
     {% endfor %}{% else %}<div class="empty-state"><div class="emoji">🏪</div>No business posts yet.</div>{% endif %}
   </div>
 
   <!-- ══ SUPPORT MESSAGES ══ -->
-  <div class="page-section" id="section-support">
+  <div class="page-section" id="section-supportmessages">
     <button class="back-btn" onclick="showSection('home')">Dashboard</button>
     <div class="page-header"><h2>Support Messages</h2><p>Messages submitted by platform users.</p></div>
     {% if support_messages %}{% for msg in support_messages %}
-    <div class="list-card">
+    <div class="list-card" id="support-card-{{ msg.id }}">
       <div class="meta">
         <span style="font-weight:700;">{{ msg.user.fullname }}</span>
         <span>{{ msg.created_at.strftime('%d %b %Y %H:%M') }}</span>
-        {% if msg.status == 'Unread' %}<span class="tag" style="background:#FEF3C7;color:#92400E;">UNREAD</span>{% endif %}
+        {% if msg.status == 'Unread' %}
+          <span class="tag" style="background:#FEF3C7;color:#92400E;">UNREAD</span>
+        {% else %}
+          <span class="tag" style="background:#D1FAE5;color:#065F46;">READ</span>
+        {% endif %}
+        {% if msg.is_closed %}
+          <span class="tag" style="background:#FEE2E2;color:#991B1B;">CLOSED</span>
+        {% endif %}
       </div>
       <p>{{ msg.message }}</p>
+      {% if msg.replies %}
+      <div style="margin-top:10px;padding:10px 12px;background:#F0FDF4;border-left:3px solid #16a34a;border-radius:6px;">
+        <p style="font-size:0.78rem;color:#6b7280;margin:0 0 6px 0;">Admin Replies:</p>
+        {% for r in msg.replies %}
+        <div style="margin-bottom:6px;">
+          <span style="font-weight:600;font-size:0.85rem;">{{ r.admin.fullname }}</span>
+          <span style="color:#9ca3af;font-size:0.78rem;margin-left:8px;">{{ r.created_at.strftime('%d %b %Y %H:%M') }}</span>
+          <p style="margin:2px 0 0 0;font-size:0.88rem;">{{ r.reply }}</p>
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+      {% if not msg.is_closed %}
+      <div style="margin-top:10px;display:flex;gap:8px;">
+        <input type="text" id="reply-{{ msg.id }}" placeholder="Type a reply…"
+               style="flex:1;padding:8px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:0.9rem;outline:none;">
+        <button onclick="sendReply(this)" data-id="{{ msg.id }}"
+                style="background:#16a34a;color:white;border:none;padding:8px 18px;border-radius:8px;cursor:pointer;font-weight:700;">Reply</button>
+        <button onclick="closeThread(this)" data-id="{{ msg.id }}"
+                style="background:#dc2626;color:white;border:none;padding:8px 18px;border-radius:8px;cursor:pointer;font-weight:700;">Close</button>
+      </div>
+      {% else %}
+      <p style="margin-top:10px;font-size:0.8rem;color:#dc2626;font-weight:600;">🔒 Thread closed</p>
+      {% endif %}
     </div>
     {% endfor %}{% else %}<div class="empty-state"><div class="emoji">💬</div>No support messages yet.</div>{% endif %}
   </div>
@@ -636,59 +730,75 @@ textarea { min-height:90px; }
 
 </div><!-- /scroll-area -->
 
-<!-- ── BOTTOM TAB BAR ── -->
+<!-- ── TAB BAR ── -->
 <nav class="tab-bar">
-  <button class="tab-item active" id="tab-dashboard" onclick="switchTab('home','tab-dashboard')">
-    <span class="tab-icon">🏠</span><span class="tab-label">Dashboard</span>
+  <button class="tab-item active" id="tab-home" onclick="switchTab('home','tab-home')">
+    <span class="tab-icon">🏠</span><span class="tab-label">Home</span>
   </button>
   <button class="tab-item" id="tab-users" onclick="switchTab('users','tab-users')">
     <span class="tab-icon">👥</span><span class="tab-label">Users</span>
   </button>
-  <button class="tab-item" id="tab-questions" onclick="switchTab('questions','tab-questions')">
-    <span class="tab-icon">❓</span><span class="tab-label">Questions</span>
+  <button class="tab-item" id="tab-pending" onclick="switchTab('pending','tab-pending')">
+    <span class="tab-icon">🔍</span><span class="tab-label">Review</span>
   </button>
-  <button class="tab-item" id="tab-articles" onclick="switchTab('approved-articles','tab-articles')">
-    <span class="tab-icon">📃</span><span class="tab-label">Articles</span>
+  <button class="tab-item" id="tab-support" onclick="switchTab('supportmessages','tab-support')">
+    <span class="tab-icon">💬</span><span class="tab-label">Support</span>
   </button>
-  <button class="tab-item" id="tab-more" onclick="switchTab('settings','tab-more')">
-    <span class="tab-icon">•••</span><span class="tab-label">More</span>
+  <button class="tab-item" id="tab-settings" onclick="switchTab('settings','tab-settings')">
+    <span class="tab-icon">⚙️</span><span class="tab-label">Settings</span>
   </button>
 </nav>
 
-<!-- ── FLOATING SUPPORT FAB ── -->
-<button class="support-fab" id="supportFab" title="Contact Support">💬</button>
+<!-- ── SUPPORT FAB ── -->
+<button class="support-fab" id="supportFab" title="My Support Thread">🛠</button>
+
+<!-- ── SUPPORT MODAL ── -->
 <div class="support-modal" id="supportModal">
-  <h4>Admin Support</h4>
-  <p class="sub">Leave an internal note or flag an issue.</p>
-  <textarea id="supportMessage" placeholder="Describe the issue…"></textarea>
-  <div class="support-modal-btns">
-    <button class="btn btn-green" onclick="sendSupportMessage()">Send</button>
-    <button class="btn btn-ghost" onclick="toggleSupport()">Cancel</button>
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+    <h4 style="margin:0;">Admin Support</h4>
+    <button onclick="toggleSupport()" style="background:none;border:none;font-size:1.2rem;cursor:pointer;color:#6b7280;">✕</button>
+  </div>
+  <p class="sub">Your support thread with the system.</p>
+  <div id="supportThread" style="display:none;">
+    <div id="supportChatBox" style="max-height:260px;overflow-y:auto;background:#f9fafb;border:1px solid #e5e7eb;border-radius:10px;padding:10px;margin-bottom:10px;"></div>
+    <p id="supportClosedMsg" style="display:none;text-align:center;color:#dc2626;font-size:0.85rem;font-weight:600;margin:8px 0;">This thread has been closed.</p>
+  </div>
+  <div id="supportNewForm">
+    <textarea id="supportMessage" placeholder="Describe your issue…"></textarea>
+    <div class="support-modal-btns">
+      <button class="btn btn-green" onclick="sendSupportMessage()">Send</button>
+      <button class="btn btn-ghost" onclick="toggleSupport()">Cancel</button>
+    </div>
   </div>
 </div>
-<div class="toast" id="toast">✓ Message sent!</div>
 
+<div class="toast" id="toast">✓ Done!</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     SCRIPTS
+══════════════════════════════════════════════════════════ -->
 <script src="{{ url_for('static', filename='js/script.js') }}"></script>
 <script>
-// ── Section switcher ──
+
+/* ══ NAVIGATION ══ */
 function showSection(id) {
   document.querySelectorAll('.page-section').forEach(s => s.classList.remove('active'));
   const el = document.getElementById('section-' + id);
-  if (el) { el.classList.add('active'); }
+  if (el) el.classList.add('active');
   document.querySelector('.scroll-area').scrollTo(0, 0);
 }
 
-// ── Tab bar ──
 function switchTab(sectionId, tabId) {
   showSection(sectionId);
   document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active'));
-  document.getElementById(tabId).classList.add('active');
+  const tab = document.getElementById(tabId);
+  if (tab) tab.classList.add('active');
 }
 
-// ── User search ──
+/* ══ USER SEARCH ══ */
 const searchInput = document.getElementById('user-search');
 if (searchInput) {
-  searchInput.addEventListener('input', function() {
+  searchInput.addEventListener('input', function () {
     const q = this.value.toLowerCase();
     document.querySelectorAll('.user-card').forEach(card => {
       const match = (card.dataset.name + card.dataset.email + card.dataset.role).includes(q);
@@ -697,22 +807,488 @@ if (searchInput) {
   });
 }
 
-// ── Support modal ──
-const fab = document.getElementById('supportFab');
+/* ══ TOAST HELPER ══ */
+function showToast(msg, color) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.background = color || '#1B5E20';
+  t.style.display = 'block';
+  setTimeout(() => { t.style.display = 'none'; }, 3000);
+}
+
+/* ══ DATA-ACTION BUTTON HANDLER ══ */
+document.addEventListener('click', async function (e) {
+  const btn = e.target.closest('[data-action]');
+  if (!btn) return;
+  const action = btn.dataset.action;
+
+  /* ── Assign question to expert ── */
+  if (action === 'assign') {
+    const qid = btn.dataset.qid;
+    const sel = document.getElementById('expert-select-' + qid);
+    const expertId = sel ? sel.value : '';
+    if (!expertId) { alert('Please select an expert first.'); return; }
+    try {
+      const res  = await fetch('/admin/assign/' + qid, {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ expert_id: expertId })
+      });
+      const data = await res.json();
+      if (res.ok) { showToast('✓ Assigned!'); location.reload(); }
+      else { alert(data.error || 'Failed to assign.'); }
+    } catch { alert('Network error.'); }
+    return;
+  }
+
+  /* ── Approve pending answer ── */
+  if (action === 'approve') {
+    const qid = btn.dataset.qid;
+    if (!confirm('Approve and publish this answer?')) return;
+    try {
+      const res  = await fetch('/admin/approve/' + qid, { method: 'POST' });
+      const data = await res.json();
+      if (res.ok) {
+        document.getElementById('review-card-' + qid)?.remove();
+        showToast('✓ Answer published!');
+      } else { alert(data.error || 'Failed.'); }
+    } catch { alert('Network error.'); }
+    return;
+  }
+
+  /* ── Reject pending answer ── */
+  if (action === 'reject') {
+    const qid = btn.dataset.qid;
+    if (!confirm('Reject this answer and send it back to the expert?')) return;
+    try {
+      const res  = await fetch('/admin/reject/' + qid, { method: 'POST' });
+      const data = await res.json();
+      if (res.ok) {
+        document.getElementById('review-card-' + qid)?.remove();
+        showToast('Answer rejected.', '#92400E');
+      } else { alert(data.error || 'Failed.'); }
+    } catch { alert('Network error.'); }
+    return;
+  }
+
+  /* ── Approve article ── */
+  if (action === 'approve-article') {
+    const aid = btn.dataset.aid;
+    if (!confirm('Approve and publish this article?')) return;
+    try {
+      const res  = await fetch('/admin/article/approve/' + aid, { method: 'POST' });
+      const data = await res.json();
+      if (res.ok) { btn.closest('.list-card')?.remove(); showToast('✓ Article published!'); }
+      else { alert(data.error || 'Failed.'); }
+    } catch { alert('Network error.'); }
+    return;
+  }
+
+  /* ── Reject article ── */
+  if (action === 'reject-article') {
+    const aid = btn.dataset.aid;
+    if (!confirm('Reject this article?')) return;
+    try {
+      const res  = await fetch('/admin/article/reject/' + aid, { method: 'POST' });
+      const data = await res.json();
+      if (res.ok) { btn.closest('.list-card')?.remove(); showToast('Article rejected.', '#92400E'); }
+      else { alert(data.error || 'Failed.'); }
+    } catch { alert('Network error.'); }
+    return;
+  }
+
+  /* ── Grant / Revoke blue tick (user) ── */
+  if (action === 'verify-user') {
+    const uid = btn.dataset.uid;
+    try {
+      const res  = await fetch('/admin/user/verify/' + uid, { method: 'POST' });
+      const data = await res.json();
+      if (res.ok) { showToast('✓ Verification updated!'); location.reload(); }
+      else { alert(data.error || 'Failed.'); }
+    } catch { alert('Network error.'); }
+    return;
+  }
+
+  /* ── Suspend / Unsuspend user ── */
+  if (action === 'suspend-user') {
+    const uid = btn.dataset.uid;
+    try {
+      const res  = await fetch('/admin/user/suspend/' + uid, { method: 'POST' });
+      const data = await res.json();
+      if (res.ok) { showToast('✓ Status updated!'); location.reload(); }
+      else { alert(data.error || 'Failed.'); }
+    } catch { alert('Network error.'); }
+    return;
+  }
+
+  /* ── Delete user ── */
+  if (action === 'delete-user') {
+    const uid = btn.dataset.uid;
+    if (!confirm('Permanently delete this user? This cannot be undone.')) return;
+    try {
+      const res  = await fetch('/admin/user/delete/' + uid, { method: 'POST' });
+      const data = await res.json();
+      if (res.ok) {
+        document.getElementById('user-card-' + uid)?.remove();
+        showToast('User deleted.', '#DC2626');
+      } else { alert(data.error || 'Failed.'); }
+    } catch { alert('Network error.'); }
+    return;
+  }
+
+  /* ── Business: Approve ── */
+  if (action === 'biz-approve') {
+    const bid = btn.dataset.bid;
+    try {
+      const res  = await fetch('/admin/business/approve/' + bid, { method: 'POST' });
+      const data = await res.json();
+      if (res.ok) { showToast('✓ Business approved!'); location.reload(); }
+      else { alert(data.error || 'Failed.'); }
+    } catch { alert('Network error.'); }
+    return;
+  }
+
+  /* ── Business: Reject ── */
+  if (action === 'biz-reject') {
+    const bid = btn.dataset.bid;
+    if (!confirm('Reject this business application?')) return;
+    try {
+      const res  = await fetch('/admin/business/reject/' + bid, { method: 'POST' });
+      const data = await res.json();
+      if (res.ok) { showToast('Business rejected.', '#92400E'); location.reload(); }
+      else { alert(data.error || 'Failed.'); }
+    } catch { alert('Network error.'); }
+    return;
+  }
+
+  /* ── Business: Grant blue tick ── */
+  if (action === 'verify-biz') {
+    const bid = btn.dataset.bid;
+    try {
+      const res  = await fetch('/admin/business/verify/' + bid, { method: 'POST' });
+      const data = await res.json();
+      if (res.ok) { showToast('✓ Business verified!'); location.reload(); }
+      else { alert(data.error || 'Failed.'); }
+    } catch { alert('Network error.'); }
+    return;
+  }
+
+  /* ── Business: Confirm payment ── */
+  if (action === 'confirm-payment') {
+    const bid = btn.dataset.bid;
+    try {
+      const res  = await fetch('/admin/business/confirm-payment/' + bid, { method: 'POST' });
+      const data = await res.json();
+      if (res.ok) { showToast('✓ Payment confirmed!'); location.reload(); }
+      else { alert(data.error || 'Failed.'); }
+    } catch { alert('Network error.'); }
+    return;
+  }
+});
+
+/* ══ POST ANNOUNCEMENT ══ */
+document.getElementById('post-announcement-btn').addEventListener('click', async function () {
+  const title    = document.getElementById('ann-title').value.trim();
+  const category = document.getElementById('ann-category').value;
+  const body     = document.getElementById('ann-body').value.trim();
+  if (!title || !body) { alert('Please fill in both the title and message.'); return; }
+  try {
+    const res  = await fetch('/admin/announcement', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ title, category, body })
+    });
+    const data = await res.json();
+    if (res.ok) {
+      document.getElementById('ann-title').value = '';
+      document.getElementById('ann-body').value  = '';
+      showToast('✓ Announcement posted!');
+      location.reload();
+    } else { alert(data.error || 'Failed to post.'); }
+  } catch { alert('Network error.'); }
+});
+
+/* ══ SUPPORT MESSAGES — REPLY & CLOSE ══ */
+async function sendReply(btn) {
+  const msgId = btn.dataset.id;
+  const input = document.getElementById('reply-' + msgId);
+  const reply = input.value.trim();
+  if (!reply) { alert('Reply cannot be empty.'); return; }
+  try {
+    const res  = await fetch('/admin/support/' + msgId + '/reply', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ reply })
+    });
+    const data = await res.json();
+    if (res.ok) { input.value = ''; location.reload(); }
+    else { alert(data.error || 'Failed to send reply.'); }
+  } catch { alert('Network error.'); }
+}
+
+async function closeThread(btn) {
+  const msgId = btn.dataset.id;
+  if (!confirm('Close this support thread?')) return;
+  try {
+    const res  = await fetch('/admin/support/' + msgId + '/close', { method: 'POST' });
+    const data = await res.json();
+    if (res.ok) { location.reload(); }
+    else { alert(data.error || 'Failed to close thread.'); }
+  } catch { alert('Network error.'); }
+}
+
+/* ══ SUPPORT FAB MODAL (Admin's own thread) ══ */
+const fab   = document.getElementById('supportFab');
 const modal = document.getElementById('supportModal');
-const toast = document.getElementById('toast');
-function toggleSupport() { modal.classList.toggle('open'); }
+
+function toggleSupport() {
+  const isOpening = !modal.classList.contains('open');
+  modal.classList.toggle('open');
+  if (isOpening) loadSupportThread();
+}
+
 fab.addEventListener('click', toggleSupport);
-document.addEventListener('click', e => { if (!modal.contains(e.target) && e.target !== fab) modal.classList.remove('open'); });
+document.addEventListener('click', e => {
+  if (!modal.contains(e.target) && e.target !== fab)
+    modal.classList.remove('open');
+});
+
+async function loadSupportThread() {
+  try {
+    const res  = await fetch('/support/my-thread');
+    const data = await res.json();
+    const thread    = document.getElementById('supportThread');
+    const newForm   = document.getElementById('supportNewForm');
+    const chatBox   = document.getElementById('supportChatBox');
+    const closedMsg = document.getElementById('supportClosedMsg');
+
+    if (data.thread) {
+      thread.style.display  = 'block';
+      newForm.style.display = 'none';
+      let html = `
+        <div style="display:flex;justify-content:flex-end;margin-bottom:10px;">
+          <div style="background:#16a34a;color:white;padding:8px 12px;border-radius:12px 12px 0 12px;max-width:80%;font-size:0.88rem;">
+            <p style="margin:0 0 3px 0;">${data.thread.message}</p>
+            <span style="font-size:0.72rem;opacity:0.8;">${data.thread.created_at}</span>
+          </div>
+        </div>`;
+      data.thread.replies.forEach(r => {
+        html += `
+          <div style="display:flex;justify-content:flex-start;margin-bottom:10px;">
+            <div style="background:#e5e7eb;color:#111827;padding:8px 12px;border-radius:12px 12px 12px 0;max-width:80%;font-size:0.88rem;">
+              <p style="margin:0 0 2px 0;font-size:0.72rem;font-weight:700;color:#16a34a;">${r.admin}</p>
+              <p style="margin:0 0 3px 0;">${r.reply}</p>
+              <span style="font-size:0.72rem;color:#6b7280;">${r.created_at}</span>
+            </div>
+          </div>`;
+      });
+      chatBox.innerHTML = html;
+      chatBox.scrollTop = chatBox.scrollHeight;
+      closedMsg.style.display = data.thread.is_closed ? 'block' : 'none';
+    } else {
+      thread.style.display  = 'none';
+      newForm.style.display = 'block';
+    }
+  } catch (e) {
+    console.error('Support thread load failed', e);
+  }
+}
 
 async function sendSupportMessage() {
   const msg = document.getElementById('supportMessage').value.trim();
   if (!msg) return;
-  try { await fetch('/support/send', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ user_id: document.body.dataset.userId, message: msg }) }); } catch(e) {}
-  modal.classList.remove('open');
-  document.getElementById('supportMessage').value = '';
-  toast.style.display = 'block';
-  setTimeout(() => { toast.style.display = 'none'; }, 3000);
+  try {
+    const res  = await fetch('/support/send', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ user_id: document.body.dataset.userId, message: msg })
+    });
+    const data = await res.json();
+    if (res.ok) {
+      document.getElementById('supportMessage').value = '';
+      showToast('✓ Message sent!');
+      loadSupportThread();
+    } else { alert(data.error || 'Failed to send message.'); }
+  } catch { alert('Network error.'); }
+}
+
+/* ══ READ MORE TOGGLE ══ */
+function toggleReadMore(btn) {
+  const text = btn.previousElementSibling;
+  text.classList.toggle('collapsed');
+  btn.textContent = text.classList.contains('collapsed') ? 'Read More' : 'Show Less';
+}
+
+/* ══ PRICE CARDS ══ */
+const PC_DATA = {
+  inputs: [
+    { name:'Maize Seed (hybrid)',      unit:'per kg',     price:12000,  change:+5  },
+    { name:'Bean Seed (NABE)',         unit:'per kg',     price:8500,   change:0   },
+    { name:'Sunflower Seed',           unit:'per kg',     price:9000,   change:-3  },
+    { name:'NPK Fertiliser (50 kg)',   unit:'per bag',    price:145000, change:+8  },
+    { name:'Urea (50 kg)',             unit:'per bag',    price:130000, change:+2  },
+    { name:'CAN Fertiliser (50 kg)',   unit:'per bag',    price:120000, change:0   },
+    { name:'Dithane (fungicide)',      unit:'per kg',     price:22000,  change:-5  },
+    { name:'Cypermethrin (pesticide)', unit:'per litre',  price:18000,  change:+1  },
+    { name:'Glyphosate (herbicide)',   unit:'per litre',  price:15000,  change:0   },
+    { name:'Lime (soil amendment)',    unit:'per 50 kg',  price:40000,  change:-2  },
+  ],
+  outputs: [
+    { name:'Maize (dry grain)',        unit:'per 100 kg', price:85000,  change:+12 },
+    { name:'Beans (dry)',              unit:'per 100 kg', price:210000, change:+6  },
+    { name:'Groundnuts (shelled)',     unit:'per 100 kg', price:320000, change:-4  },
+    { name:'Sorghum (grain)',          unit:'per 100 kg', price:70000,  change:+3  },
+    { name:'Cassava (fresh)',          unit:'per 100 kg', price:55000,  change:0   },
+    { name:'Matoke (bunch)',           unit:'per bunch',  price:12000,  change:-8  },
+    { name:'Coffee (FAQ)',             unit:'per kg',     price:9500,   change:+15 },
+    { name:'Sunflower (seed)',         unit:'per 100 kg', price:180000, change:+2  },
+    { name:'Rice (paddy)',             unit:'per 100 kg', price:160000, change:-1  },
+    { name:'Cattle (live weight)',     unit:'per kg',     price:8000,   change:+4  },
+    { name:'Goat (live)',              unit:'per head',   price:180000, change:0   },
+    { name:'Milk (fresh)',             unit:'per litre',  price:1200,   change:-3  },
+    { name:'Eggs',                     unit:'per tray',   price:14000,  change:+5  },
+  ],
+  equipment: [
+    { name:'Hand hoe',                 unit:'per piece',  price:18000,  change:0   },
+    { name:'Panga / Machete',          unit:'per piece',  price:12000,  change:+2  },
+    { name:'Ox-plough (single)',       unit:'per unit',   price:280000, change:0   },
+    { name:'Knapsack sprayer (16 L)',  unit:'per unit',   price:85000,  change:-5  },
+    { name:'Power sprayer (portable)', unit:'per unit',   price:450000, change:+3  },
+    { name:'Maize sheller (manual)',   unit:'per unit',   price:120000, change:0   },
+    { name:'Thresher (motorised)',     unit:'per unit',   price:2800000,change:0   },
+    { name:'Water pump (2-inch)',      unit:'per unit',   price:680000, change:+7  },
+    { name:'Drip irrigation kit',      unit:'per acre',   price:1200000,change:+4  },
+    { name:'Tractor hire (2WD)',       unit:'per hour',   price:85000,  change:+10 },
+    { name:'Polythene mulch (100 m)',  unit:'per roll',   price:95000,  change:-2  },
+    { name:'Grain sack (100 kg)',      unit:'per piece',  price:3500,   change:0   },
+  ]
+};
+const _pcLoaded = { inputs:false, outputs:false, equipment:false };
+
+function pcToggle(type) {
+  const card = document.getElementById('pc-' + type);
+  if (!card) return;
+  const isOpen = card.classList.toggle('open');
+  if (isOpen && !_pcLoaded[type]) pcLoad(type, false);
+}
+
+function pcLoad(type, isRefresh) {
+  const listEl     = document.getElementById('pc-' + type + '-list');
+  const updatedEl  = document.getElementById('pc-' + type + '-updated');
+  const refreshBtn = document.getElementById('pc-' + type + '-refresh');
+  if (!listEl) return;
+  listEl.innerHTML = '<div class="pc-skeleton"></div>'.repeat(3);
+  if (refreshBtn) refreshBtn.classList.add('spinning');
+  setTimeout(() => {
+    _pcLoaded[type] = true;
+    pcRender(type, PC_DATA[type] || []);
+    if (updatedEl) updatedEl.textContent = 'Updated ' + new Date().toLocaleTimeString('en-UG', { hour:'2-digit', minute:'2-digit' });
+    if (refreshBtn) refreshBtn.classList.remove('spinning');
+  }, isRefresh ? 900 : 400);
+}
+
+function pcRender(type, items) {
+  const listEl   = document.getElementById('pc-' + type + '-list');
+  const searchEl = document.getElementById('pc-' + type + '-search');
+  const query    = searchEl ? searchEl.value.toLowerCase().trim() : '';
+  if (!listEl) return;
+  const filtered = query ? items.filter(i => i.name.toLowerCase().includes(query)) : items;
+  if (!filtered.length) {
+    listEl.innerHTML = `<div class="pc-inner-empty"><span class="emoji">🔍</span>No matches for "${_pcEsc(query)}".</div>`;
+    return;
+  }
+  listEl.innerHTML = filtered.map(item => {
+    const sign  = item.change > 0 ? '+' : '';
+    const cls   = item.change > 0 ? 'up' : item.change < 0 ? 'down' : 'flat';
+    const label = item.change === 0 ? '→ Stable' : sign + item.change + '% this week';
+    return `<div class="pc-item">
+      <div class="pc-item__left"><div class="pc-item__name">${_pcEsc(item.name)}</div><div class="pc-item__unit">${_pcEsc(item.unit)}</div></div>
+      <div class="pc-item__right"><div class="pc-item__price">UGX ${item.price.toLocaleString()}</div><div class="pc-item__change ${cls}">${label}</div></div>
+    </div>`;
+  }).join('');
+}
+
+function pcFilter(type) {
+  if (!_pcLoaded[type]) return;
+  pcRender(type, PC_DATA[type] || []);
+}
+
+function _pcEsc(str) {
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+/* ══ WEATHER CARD ══ */
+const WEATHER_DATA = [
+  {name:"Abim",temp:29,condition:"Sunny",humidity:55},{name:"Adjumani",temp:31,condition:"Hot",humidity:60},
+  {name:"Agago",temp:30,condition:"Sunny",humidity:58},{name:"Alebtong",temp:29,condition:"Partly Cloudy",humidity:62},
+  {name:"Amolatar",temp:30,condition:"Hot",humidity:64},{name:"Amudat",temp:28,condition:"Windy",humidity:52},
+  {name:"Amuria",temp:29,condition:"Cloudy",humidity:66},{name:"Amuru",temp:31,condition:"Hot",humidity:57},
+  {name:"Apac",temp:30,condition:"Sunny",humidity:60},{name:"Arua",temp:32,condition:"Hot",humidity:50},
+  {name:"Budaka",temp:27,condition:"Rainy",humidity:78},{name:"Bududa",temp:25,condition:"Heavy Rain",humidity:85},
+  {name:"Bugiri",temp:27,condition:"Light Rain",humidity:74},{name:"Bugweri",temp:27,condition:"Cloudy",humidity:73},
+  {name:"Buhweju",temp:23,condition:"Cold",humidity:88},{name:"Buikwe",temp:28,condition:"Humid",humidity:76},
+  {name:"Bukedea",temp:28,condition:"Sunny",humidity:65},{name:"Bukomansimbi",temp:27,condition:"Cloudy",humidity:70},
+  {name:"Bukwo",temp:22,condition:"Cold",humidity:90},{name:"Bulambuli",temp:24,condition:"Rainy",humidity:84},
+  {name:"Buliisa",temp:32,condition:"Hot",humidity:48},{name:"Bundibugyo",temp:29,condition:"Rainy",humidity:82},
+  {name:"Bushenyi",temp:25,condition:"Cloudy",humidity:78},{name:"Busia",temp:28,condition:"Humid",humidity:72},
+  {name:"Gulu",temp:30,condition:"Sunny",humidity:52},{name:"Hoima",temp:32,condition:"Hot",humidity:46},
+  {name:"Jinja",temp:27,condition:"Light Rain",humidity:78},{name:"Kabale",temp:22,condition:"Cold",humidity:88},
+  {name:"Kampala",temp:28,condition:"Partly Cloudy",humidity:66},{name:"Kasese",temp:28,condition:"Rainy",humidity:82},
+  {name:"Kitgum",temp:30,condition:"Sunny",humidity:56},{name:"Kotido",temp:32,condition:"Very Hot",humidity:40},
+  {name:"Lira",temp:29,condition:"Sunny",humidity:55},{name:"Masaka",temp:27,condition:"Cloudy",humidity:69},
+  {name:"Mbale",temp:25,condition:"Rainy",humidity:81},{name:"Mbarara",temp:26,condition:"Cloudy",humidity:70},
+  {name:"Moroto",temp:33,condition:"Very Hot",humidity:38},{name:"Mukono",temp:28,condition:"Humid",humidity:76},
+  {name:"Soroti",temp:30,condition:"Hot",humidity:50},{name:"Tororo",temp:27,condition:"Rainy",humidity:79},
+  {name:"Wakiso",temp:28,condition:"Humid",humidity:77},{name:"Yumbe",temp:31,condition:"Hot",humidity:49},
+  {name:"Zombo",temp:31,condition:"Hot",humidity:50}
+];
+let _weatherLoaded = false;
+
+function pcToggleWeather() {
+  const card = document.getElementById('pc-weather');
+  const isOpen = card.classList.toggle('open');
+  if (isOpen && !_weatherLoaded) pcWeatherLoad(false);
+}
+
+function pcWeatherLoad(isRefresh) {
+  const list    = document.getElementById('pc-weather-list');
+  const updated = document.getElementById('pc-weather-updated');
+  const btn     = document.getElementById('pc-weather-refresh');
+  list.innerHTML = '<div class="pc-skeleton"></div>'.repeat(3);
+  if (btn) btn.classList.add('spinning');
+  setTimeout(() => {
+    _weatherLoaded = true;
+    renderWeather(WEATHER_DATA);
+    if (updated) updated.textContent = 'Updated ' + new Date().toLocaleTimeString();
+    if (btn) btn.classList.remove('spinning');
+  }, isRefresh ? 800 : 400);
+}
+
+function renderWeather(data) {
+  const list = document.getElementById('pc-weather-list');
+  if (!data.length) { list.innerHTML = '<div class="pc-inner-empty"><span class="emoji">🔍</span>No districts found.</div>'; return; }
+  list.innerHTML = data.map(d => `
+    <div class="pc-item">
+      <div class="pc-item__left"><div class="pc-item__name">${d.name}</div><div class="pc-item__unit">${d.condition} • Humidity ${d.humidity}%</div></div>
+      <div class="pc-item__right"><div class="pc-item__price">${d.temp}°C</div><div class="pc-item__change flat">Live</div></div>
+    </div>`).join('');
+}
+
+function pcWeatherFilter(q) {
+  renderWeather(WEATHER_DATA.filter(d => d.name.toLowerCase().includes(q.toLowerCase())));
+}
+function toggleAnnouncement(id, btn){
+    const content = document.getElementById(id);
+
+    if(content.classList.contains("collapsed")){
+        content.classList.remove("collapsed");
+        content.classList.add("expanded");
+        btn.textContent = "Read Less";
+    }else{
+        content.classList.remove("expanded");
+        content.classList.add("collapsed");
+        btn.textContent = "Read More";
+    }
 }
 </script>
 </body>

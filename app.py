@@ -13,6 +13,13 @@ import uuid
 from datetime import datetime, timedelta
 from werkzeug.utils import secure_filename
 from chats_routes import chat_bp
+from dotenv import load_dotenv
+load_dotenv()
+from bs4 import BeautifulSoup
+import re
+from flask_cors import CORS
+from flask_migrate import Migrate
+import requests as http_requests
 
 UGANDA_DISTRICTS = {
     "Gulu": (2.7724, 32.2881),
@@ -48,6 +55,8 @@ from routes.support import support_bp
 app = Flask(__name__)
 app.config.from_object(Config)
 db.init_app(app)
+CORS(app)
+migrate = Migrate(app, db)
 
 # Security headers
 csp = {
@@ -78,7 +87,7 @@ app.register_blueprint(admin_bp, url_prefix='/admin')
 app.register_blueprint(expert_bp, url_prefix='/expert')
 app.register_blueprint(farmer_bp, url_prefix='/farmer')
 app.register_blueprint(business_bp, url_prefix='/business')
-app.register_blueprint(support_bp)
+app.register_blueprint(support_bp, url_prefix='/support')
 app.register_blueprint(chat_bp)
 
 
@@ -153,6 +162,7 @@ def admin_dashboard_page():
         Announcement.id.desc()
     ).all()
 
+
     # =========================
     # EXPERT RANKINGS
     # =========================
@@ -215,6 +225,7 @@ def admin_dashboard_page():
     for article in pending_articles + approved_articles:
         expert = User.query.get(article.expert_id)
         article.expert_name = expert.fullname if expert else "Unknown"
+        article.author_verified = bool(expert.blue_tick) if expert else False
 
     # =========================
     # BUSINESS POSTS
@@ -226,6 +237,8 @@ def admin_dashboard_page():
     for p in business_posts:
         biz_user = User.query.get(p.business_id)
         p.business_name = biz_user.fullname if biz_user else "Unknown"
+        p.author_name = p.business_name
+        p.author_verified = bool(biz_user.blue_tick) if biz_user else False
 
     # =========================
     # COMMUNITY POSTS
@@ -237,6 +250,8 @@ def admin_dashboard_page():
     for p in community_posts:
         farmer = User.query.get(p.farmer_id)
         p.farmer_name = farmer.fullname if farmer else "Unknown"
+        p.author_name = p.farmer_name
+        p.author_verified = bool(farmer.blue_tick) if farmer else False
 
     return render_template(
         'admin_dashboard.html',
@@ -290,6 +305,7 @@ def farmer_dashboard_page():
     for article in articles:
         expert = User.query.get(article.expert_id)
         article.expert_name = expert.fullname if expert else "Unknown"
+        article.author_verified = bool(expert.blue_tick) if expert else False
 
     experts = User.query.filter_by(role='expert').all()
 
@@ -351,6 +367,7 @@ def farmer_dashboard_page():
     for p in community_posts:
         farmer = User.query.get(p.farmer_id)
         p.author_name = farmer.fullname if farmer else "Unknown"
+        p.author_verified = bool(farmer.blue_tick) if farmer else False
 
     # Business Posts
     business_posts = BusinessPost.query.order_by(
@@ -360,6 +377,8 @@ def farmer_dashboard_page():
     for p in business_posts:
         biz_user = User.query.get(p.business_id)
         p.business_name = biz_user.fullname if biz_user else "Unknown"
+        p.author_name = p.business_name
+        p.author_verified = bool(biz_user.blue_tick) if biz_user else False
 
     return render_template(
         'farmer_dashboard.html',
@@ -391,6 +410,7 @@ def farmer_public_qa_page():
     for p in community_posts:
         farmer = User.query.get(p.farmer_id)
         p.author_name = farmer.fullname if farmer else "Unknown"
+        p.author_verified = bool(farmer.blue_tick) if farmer else False
 
     return render_template(
         'farmer_public_qa.html',
@@ -483,6 +503,8 @@ def expert_dashboard_page():
     for p in business_posts:
         biz_user = User.query.get(p.business_id)
         p.business_name = biz_user.fullname if biz_user else "Unknown"
+        p.author_name = p.business_name
+        p.author_verified = bool(biz_user.blue_tick) if biz_user else False
 
     # Community posts
     community_posts = Post.query.order_by(
@@ -492,6 +514,7 @@ def expert_dashboard_page():
     for p in community_posts:
         farmer = User.query.get(p.farmer_id)
         p.author_name = farmer.fullname if farmer else "Unknown"
+        p.author_verified = bool(farmer.blue_tick) if farmer else False
 
     return render_template(
         'expert_dashboard.html',
@@ -536,6 +559,7 @@ def business_dashboard_page():
     for a in articles:
         expert = User.query.get(a.expert_id)
         a.expert_name = expert.fullname if expert else "Unknown"
+        a.author_verified = bool(expert.blue_tick) if expert else False
 
     # Announcements
     announcements = Announcement.query.order_by(
@@ -574,6 +598,7 @@ def business_dashboard_page():
     for p in community_posts:
         farmer = User.query.get(p.farmer_id)
         p.author_name = farmer.fullname if farmer else "Unknown"
+        p.author_verified = bool(farmer.blue_tick) if farmer else False
 
     return render_template(
         'business_dashboard.html',
@@ -685,33 +710,237 @@ def register_business_page():
 def get_districts():
     return jsonify(sorted(UGANDA_DISTRICTS.keys()))
 
-@app.route('/api/weather')
-def get_weather():
-    district = request.args.get('district')
 
-    if district and district in UGANDA_DISTRICTS:
-        lat, lon = UGANDA_DISTRICTS[district]
-    else:
-        lat = request.args.get('lat', 2.7724, type=float)
-        lon = request.args.get('lon', 32.2881, type=float)
+"""
+Add these two routes to your appropriate blueprint (e.g. farmer.py, or a shared routes file).
+They fetch and parse data server-side and return clean JSON to the frontend.
+"""
 
+
+HEADERS = {
+    'User-Agent': (
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) '
+        'AppleWebKit/537.36 (KHTML, like Gecko) '
+        'Chrome/124.0.0.0 Safari/537.36'
+    ),
+    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+    'Accept-Language': 'en-US,en;q=0.5',
+}
+
+
+# ══════════════════════════════════════════════
+#  ROUTE 1 — Uganda Weather Forecast
+#  Source: https://www.mwe.go.ug/public/index.php/weather
+# ══════════════════════════════════════════════
+@app.route('/api/weather-info')
+@login_required
+def get_weather_info():
     try:
-        resp = requests.get(
-            "https://api.open-meteo.com/v1/forecast",
-            params={
-                "latitude": lat,
-                "longitude": lon,
-                "current_weather": True,
-                "daily": "temperature_2m_max,temperature_2m_min,precipitation_probability_max,weathercode",
-                "timezone": "auto"
-            },
-            timeout=5
+        session = requests.Session()
+        resp = session.get(
+            'https://www.mwe.go.ug/public/index.php/weather',
+            headers=HEADERS,
+            timeout=10
         )
-        data = resp.json()
-        return jsonify(data), 200
+        resp.raise_for_status()
+        soup = BeautifulSoup(resp.text, 'lxml')
+
+        # ── Overview text ──────────────────────
+        overview = ''
+        outlook = ''
+        for p in soup.find_all('p'):
+            txt = p.get_text(strip=True)
+            if 'country' in txt.lower() or 'conditions' in txt.lower():
+                overview = txt
+            if 'outlook' in txt.lower() or 'next' in txt.lower():
+                outlook = txt
+
+        # ── Date ──────────────────────────────
+        date_str = ''
+        for tag in soup.find_all(['h2', 'p', 'span', 'div']):
+            txt = tag.get_text(strip=True)
+            if re.search(r'\d{1,2}\s+\w+\s+\d{4}', txt) or 'Jun' in txt or 'Jul' in txt:
+                date_str = txt[:40]
+                break
+
+        # ── City forecasts ─────────────────────
+        # MWE page: each city is an <h3> followed by img (condition) + temp text
+        cities = []
+        known_cities = [
+            'Arua', 'Entebbe', 'Gulu', 'Kabale', 'Kampala',
+            'Kasese', 'Masindi', 'Mbarara', 'Soroti', 'Tororo'
+        ]
+
+        for h3 in soup.find_all('h3'):
+            city_name = h3.get_text(strip=True)
+            if city_name not in known_cities:
+                continue
+
+            condition = ''
+            today_temp = ''
+            tomorrow_temp = ''
+
+            # Walk siblings to collect condition image alt + temp strings
+            sib = h3.next_sibling
+            text_chunks = []
+            img_alt = ''
+            steps = 0
+
+            while sib and steps < 20:
+                if hasattr(sib, 'name'):
+                    if sib.name == 'h3':  # reached next city
+                        break
+                    if sib.name == 'img' and not img_alt:
+                        img_alt = sib.get('alt', '')
+                    inner = sib.get_text(separator=' ', strip=True)
+                    if inner:
+                        text_chunks.append(inner)
+                else:
+                    raw = str(sib).strip()
+                    if raw:
+                        text_chunks.append(raw)
+                sib = sib.next_sibling
+                steps += 1
+
+            condition = img_alt or (text_chunks[0] if text_chunks else '')
+            full_text = ' '.join(text_chunks)
+
+            # Extract temperatures — pattern like "30° / 19°C"
+            temp_matches = re.findall(r'\d+°\s*/\s*\d+°C', full_text)
+            if temp_matches:
+                today_temp = temp_matches[0]
+            if len(temp_matches) > 1:
+                tomorrow_temp = temp_matches[1]
+
+            # Extract day labels
+            today_label = ''
+            tomorrow_label = ''
+            day_matches = re.findall(r'(Today|Tomorrow)\s*·\s*[\d\w\s]+', full_text)
+            if day_matches:
+                today_label = day_matches[0].strip()
+            if len(day_matches) > 1:
+                tomorrow_label = day_matches[1].strip()
+
+            cities.append({
+                'city': city_name,
+                'condition': condition,
+                'today': {'label': today_label or 'Today', 'temp': today_temp},
+                'tomorrow': {'label': tomorrow_label or 'Tomorrow', 'temp': tomorrow_temp},
+            })
+
+        return jsonify({
+            'success': True,
+            'date': date_str,
+            'overview': overview,
+            'outlook': outlook,
+            'cities': cities
+        })
+
+    except requests.RequestException as e:
+        return jsonify({'success': False, 'error': f'Network error: {str(e)}'}), 500
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
-    
+        return jsonify({'success': False, 'error': f'Parse error: {str(e)}'}), 500
+
+
+# ══════════════════════════════════════════════
+#  ROUTE 2 — Agricultural Market Prices
+#  Source: https://agric-care.com/regional-market
+# ══════════════════════════════════════════════
+@app.route('/api/market-prices')
+@login_required
+def get_market_prices():
+    try:
+        session = requests.Session()
+        # First visit homepage to get cookies (bypasses some bot checks)
+        session.get('https://agric-care.com/', headers=HEADERS, timeout=8)
+
+        resp = session.get(
+            'https://agric-care.com/regional-market',
+            headers={**HEADERS, 'Referer': 'https://agric-care.com/'},
+            timeout=12
+        )
+        resp.raise_for_status()
+        soup = BeautifulSoup(resp.text, 'lxml')
+
+        categories = []
+
+        # ── Strategy 1: Look for tables ────────
+        for table in soup.find_all('table'):
+            rows = table.find_all('tr')
+            if not rows:
+                continue
+
+            # Try to get a category heading above the table
+            prev = table.find_previous(['h2', 'h3', 'h4'])
+            cat_name = prev.get_text(strip=True) if prev else 'Price List'
+
+            headers_row = rows[0].find_all(['th', 'td'])
+            col_headers = [h.get_text(strip=True) for h in headers_row]
+
+            items = []
+            for row in rows[1:]:
+                cells = row.find_all(['td', 'th'])
+                if not cells:
+                    continue
+                cell_texts = [c.get_text(strip=True) for c in cells]
+                if any(cell_texts):
+                    item = {}
+                    for i, txt in enumerate(cell_texts):
+                        key = col_headers[i] if i < len(col_headers) else f'col{i}'
+                        item[key] = txt
+                    items.append(item)
+
+            if items:
+                categories.append({
+                    'category': cat_name,
+                    'columns': col_headers,
+                    'items': items
+                })
+
+        # ── Strategy 2: Look for price list divs ─
+        if not categories:
+            for section in soup.find_all(['section', 'div'], class_=re.compile(
+                r'price|market|product|item|list', re.I
+            )):
+                heading = section.find(['h2', 'h3', 'h4'])
+                cat_name = heading.get_text(strip=True) if heading else ''
+                if not cat_name:
+                    continue
+
+                items = []
+                # Look for name + price pairs
+                rows = section.find_all(['li', 'tr', 'div'], class_=re.compile(r'row|item|entry', re.I))
+                for row in rows:
+                    texts = [t.strip() for t in row.stripped_strings]
+                    if len(texts) >= 2:
+                        items.append({'name': texts[0], 'price': texts[1]})
+
+                if items:
+                    categories.append({'category': cat_name, 'columns': ['Name', 'Price'], 'items': items})
+
+        # ── Strategy 3: Generic text extraction ──
+        if not categories:
+            # Pull all text that looks like "Product ... UGX X,XXX"
+            full_text = soup.get_text(separator='\n')
+            lines = [l.strip() for l in full_text.split('\n') if l.strip()]
+            items = []
+            for line in lines:
+                if re.search(r'ugx|ush|shs|\d{3,}', line, re.I) and len(line) < 120:
+                    items.append({'entry': line})
+            if items:
+                categories.append({
+                    'category': 'Market Prices',
+                    'columns': ['Entry'],
+                    'items': items[:60]
+                })
+
+        return jsonify({'success': True, 'categories': categories})
+
+    except requests.RequestException as e:
+        return jsonify({'success': False, 'error': f'Network error: {str(e)}'}), 500
+    except Exception as e:
+        return jsonify({'success': False, 'error': f'Parse error: {str(e)}'}), 500
+
 @app.errorhandler(429)
 def ratelimit_handler(e):
     return jsonify({"error": "Too many requests. Please try again later."}), 429    
@@ -752,7 +981,7 @@ def chat_page():
         User.is_suspended == False
     ).all()
 
-    return render_template('chats.html', current_user=user, verified_users=verified_users)
+    return render_template('chat.html', current_user=user, verified_users=verified_users)
 
 @app.route('/api/messages/send', methods=['POST'])
 def send_message():
@@ -1072,8 +1301,15 @@ def settings():
                 
                 db.session.add(new_payment)
                 db.session.commit()
-                
-                # TODO: Trigger Mobile Money Payment Gateway (Yo! / Beyonic / Flutterwave)
+
+            if provider =='mtn':
+                status_code = mtn_request_payment(formatted_phone, amount, unique_reference)
+                if status_code == 202:
+                    flash(f"✅ Payment prompt sent to {formatted_phone}. Enter your MoMo PIN to complete payment of {amount:,.0f} UGX.", "success")
+                else:
+                    flash("⚠️ Could not reach MTN. Please try again or pay manually using code 51877465.", "danger")
+            elif provider == 'airtel':
+                flash(f"Airtel integration coming soon. Please pay manually by dialling *185# and using merchant code 7127282.", "info")
                 
                 flash(f"An instant verification push has been sent to {formatted_phone}. Please enter your MoMo PIN to complete the payment of {amount:,.0f} UGX.", "success")
             else:
@@ -1106,6 +1342,111 @@ def send_support_message():
 
     return jsonify({'message': 'Message sent!'}), 200
 
+
+
+MTN_SUB_KEY = "17287ff3d7744014ae7d153c8d3b6a3d"
+MTN_USER_ID = "8ee0fa79-cdc0-4006-a90d-4b3bd02cde71"
+MTN_API_KEY = "1705978f576940969a2f405076630d32"
+MTN_ENV     = "mtnuganda"
+print("SUB KEY:", MTN_SUB_KEY)
+print("USER ID:", MTN_USER_ID)
+print("API KEY:", MTN_API_KEY)
+
+def mtn_get_token():
+    import base64
+    try:
+        credentials = base64.b64encode(f"{MTN_USER_ID}:{MTN_API_KEY}".encode()).decode()
+        res = http_requests.post(
+            "https://sandbox.momodeveloper.mtn.com/collection/token/",
+            headers={
+                "Authorization": f"Basic {credentials}",
+                "Ocp-Apim-Subscription-Key": MTN_SUB_KEY
+            },
+            timeout=10
+        )
+        print("TOKEN STATUS:", res.status_code)
+        print("TOKEN BODY:", res.text)
+        return res.json().get('access_token')
+    except Exception as e:
+        print("TOKEN ERROR:", e)
+        return None
+def mtn_request_payment(phone, amount, reference):
+    try:
+        token = mtn_get_token()
+        if not token:
+            print("No token received")
+            return None
+
+        phone = phone.strip().replace(" ", "").replace("+", "")
+
+        phone = phone.strip().replace(" ", "").replace("+", "")
+        if phone.startswith("256"):
+           formatted = phone
+        elif phone.startswith("0"):
+           formatted = "256" + phone[1:]
+        else:
+           formatted = "256" + phone
+
+        print("FORMATTED PHONE:", formatted)
+
+        payload = {
+            "amount": str(int(amount)),
+            "currency": "UGX",
+            "externalId": reference,
+            "payer": {
+                "partyIdType": "MSISDN",
+                "partyId": formatted
+            },
+            "payerMessage": "AGROSPHERE Subscription",
+            "payeeNote": "Monthly subscription payment"
+        }
+        print("PAYLOAD:", payload)
+
+        res = http_requests.post(
+            "https://sandbox.momodeveloper.mtn.com/collection/v1_0/requesttopay",
+            headers={
+                "Authorization": f"Bearer {token}",
+                "X-Reference-Id": reference,
+                "X-Target-Environment": MTN_ENV,
+                "Ocp-Apim-Subscription-Key": MTN_SUB_KEY,
+                "Content-Type": "application/json"
+            },
+            json=payload,
+            timeout=10
+        )
+        print("PAYMENT STATUS:", res.status_code)
+        print("PAYMENT BODY:", res.text)
+        return res.status_code
+    except Exception as e:
+        print("PAYMENT ERROR:", e)
+        return None
+
+from datetime import datetime
+
+@app.template_filter('humanize_time')
+def humanize_time(value):
+    if not value:
+        return ""
+
+    now = datetime.utcnow()
+    diff = now - value
+
+    seconds = diff.total_seconds()
+
+    if seconds < 60:
+        return "Just now"
+
+    if seconds < 3600:
+        return f"{int(seconds // 60)} min ago"
+
+    if seconds < 86400:
+        return f"{int(seconds // 3600)} hrs ago"
+
+    if seconds < 604800:
+        return f"{int(seconds // 86400)} days ago"
+
+    return value.strftime("%d %b %Y")
+    
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))
     app.run(host='0.0.0.0', port=port, debug=True)

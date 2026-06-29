@@ -127,3 +127,804 @@
 .card-title { font-size: 18px; font-weight: 700; margin: 0 0 6px 0; color: #1e293b; }
 .card-desc { font-size: 13px; color: #64748b; margin: 0; line-height: 1.4; }
 .card-arrow { position: absolute; bottom: 24px; right: 24px; color: #94a3b8; font-size: 14px; }
+
+/* ════════════════════════════════════════════════════════
+   AGROSPHERE — Info Buttons & Modals
+   Add to: static/css/style.css
+   ════════════════════════════════════════════════════════ */
+
+/* ── Info Action Buttons ─────────────────────────────── */
+.info-action-buttons {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin: 18px 0;
+}
+
+.info-btn {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 20px;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s;
+  text-align: left;
+  min-width: 200px;
+}
+.info-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(0,0,0,0.15);
+}
+.info-btn:active { transform: translateY(0); }
+
+.info-btn--weather {
+  background: linear-gradient(135deg, #1565c0, #0288d1);
+  color: #fff;
+}
+.info-btn--market {
+  background: linear-gradient(135deg, #2e7d32, #558b2f);
+  color: #fff;
+}
+
+.info-btn__icon {
+  font-size: 28px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+.info-btn__text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.info-btn__text strong {
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+}
+.info-btn__text small {
+  font-size: 11px;
+  opacity: 0.85;
+}
+
+/* ── Modal Overlay ───────────────────────────────────── */
+.info-modal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  align-items: center;
+  justify-content: center;
+}
+.info-modal.is-open {
+  display: flex;
+}
+
+.info-modal__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(3px);
+}
+
+.info-modal__box {
+  position: relative;
+  background: #fff;
+  border-radius: 14px;
+  width: 92%;
+  max-width: 720px;
+  max-height: 88vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+  animation: modal-in 0.22s ease;
+}
+.info-modal__box--wide { max-width: 960px; }
+
+@keyframes modal-in {
+  from { opacity: 0; transform: translateY(18px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0)    scale(1); }
+}
+
+/* ── Modal Header ────────────────────────────────────── */
+.info-modal__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 22px;
+  flex-shrink: 0;
+}
+.info-modal__header--weather {
+  background: linear-gradient(135deg, #1565c0, #0288d1);
+  color: #fff;
+}
+.info-modal__header--market {
+  background: linear-gradient(135deg, #2e7d32, #558b2f);
+  color: #fff;
+}
+.info-modal__title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.info-modal__title span { font-size: 28px; line-height: 1; }
+.info-modal__title h2  { margin: 0; font-size: 16px; font-weight: 700; }
+.info-modal__subtitle  { margin: 2px 0 0; font-size: 12px; opacity: 0.85; }
+
+.info-modal__close {
+  background: rgba(255,255,255,0.2);
+  border: none;
+  color: #fff;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: background 0.15s;
+}
+.info-modal__close:hover { background: rgba(255,255,255,0.35); }
+
+/* Soft background color for the Price Updates icon */
+.price-icon-bg {
+    background-color: #ffecc7; /* Light soft orange/gold */
+}
+
+/* Soft background color for the Weather Changes icon */
+.weather-icon-bg {
+    background-color: #d1f7ff; /* Light soft sky blue */
+}
+
+/* Ensure your grid container handles 2 columns appropriately */
+.manage-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px; /* Adjust based on your current spacing */
+}
+
+.agro-card {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 22px;
+  text-align: center;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+  transition: all 0.3s ease;
+  height: 100%;
+  border: 1px solid rgba(0,0,0,0.05);
+}
+
+.agro-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 12px 25px rgba(0,0,0,0.15);
+}
+
+.agro-card .icon {
+  font-size: 38px;
+  margin-bottom: 10px;
+}
+
+.agro-card h5 {
+  font-weight: 700;
+  margin-bottom: 10px;
+  color: #1f2d3d;
+}
+
+.agro-card p {
+  font-size: 14px;
+  color: #6c757d;
+  margin-bottom: 15px;
+}
+
+/* Links */
+.agro-card a {
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+/* Individual themes */
+.agro-card.inputs a { color: #28a745; }
+.agro-card.outputs a { color: #007bff; }
+.agro-card.equipment a { color: #ff9800; }
+
+/* subtle top border accent */
+.agro-card.inputs { border-top: 4px solid #28a745; }
+.agro-card.outputs { border-top: 4px solid #007bff; }
+.agro-card.equipment { border-top: 4px solid #ff9800; }
+
+/* Settings cards — matches Price Updates card style */
+.settings-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 0 16px;
+}
+
+.settings-card {
+    display: flex;
+    align-items: center;
+    background: #ffffff;
+    border-radius: 14px;
+    padding: 16px;
+    text-decoration: none;
+    color: inherit;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+    transition: background 0.15s;
+}
+
+.settings-card:hover {
+    background: #f9f9f9;
+}
+
+.settings-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    flex-shrink: 0;
+}
+
+.settings-info {
+    flex: 1;
+    margin-left: 14px;
+    display: flex;
+    flex-direction: column;
+}
+
+.settings-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: #1a1a1a;
+}
+
+.settings-sub {
+    font-size: 13px;
+    color: #888;
+    margin-top: 2px;
+}
+
+.chevron {
+    font-size: 20px;
+    color: #bbb;
+    margin-left: 8px;
+}
+
+/* Verification badges — tied to your is_verified logic */
+.verified-badge {
+    font-size: 11px;
+    font-weight: 600;
+    background: #d4edda;
+    color: #155724;
+    padding: 3px 8px;
+    border-radius: 20px;
+    margin-right: 8px;
+    white-space: nowrap;
+}
+
+.unverified-badge {
+    font-size: 11px;
+    font-weight: 600;
+    background: #fff3cd;
+    color: #856404;
+    padding: 3px 8px;
+    border-radius: 20px;
+    margin-right: 8px;
+    white-space: nowrap;
+}
+/* ============================================================
+   post_card.css — AGROSPHERE Post Card Styles
+   Link in base.html:
+     <link rel="stylesheet" href="{{ url_for('static', filename='css/post_card.css') }}">
+   ============================================================ */
+
+/* ── Token variables (scoped to post cards) ── */
+.post-card {
+  --pc-green:        #2D7A3A;
+  --pc-green-light:  #f0f5f1;
+  --pc-green-border: #e8f0e9;
+  --pc-text:         #1a1a1a;
+  --pc-text-body:    #2a2a2a;
+  --pc-text-muted:   #7a8c7e;
+  --pc-danger:       #d93025;
+  --pc-danger-bg:    #fff0ef;
+  --pc-bg:           #ffffff;
+  --pc-shadow:       0 1px 3px rgba(0, 0, 0, .06);
+  --pc-shadow-hover: 0 3px 10px rgba(0, 0, 0, .09);
+  --pc-radius:       14px;
+  --pc-radius-sm:    8px;
+  --pc-radius-menu:  10px;
+}
+
+
+/* ════════════════════════════════════
+   CARD SHELL
+   ════════════════════════════════════ */
+
+.post-card {
+  background: var(--pc-bg);
+  border-radius: var(--pc-radius);
+  border: 1px solid var(--pc-green-border);
+  margin-bottom: 16px;
+  overflow: hidden;
+  box-shadow: var(--pc-shadow);
+  transition: box-shadow 0.2s ease;
+}
+
+.post-card:hover {
+  box-shadow: var(--pc-shadow-hover);
+}
+
+
+/* ════════════════════════════════════
+   HEADER  (avatar · name · meta · menu)
+   ════════════════════════════════════ */
+
+.post-card__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 14px 16px 0;
+  gap: 8px;
+}
+
+/* Author block */
+.post-card__author {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.post-card__avatar-link {
+  flex-shrink: 0;
+  text-decoration: none;
+}
+
+.post-card__avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--pc-green-border);
+  display: block;
+}
+
+.post-card__avatar--placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--pc-green);
+  color: #fff;
+  font-size: 18px;
+  font-weight: 700;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  user-select: none;
+}
+
+/* Meta column */
+.post-card__meta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.post-card__name-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.post-card__name {
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--pc-text);
+  text-decoration: none;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.3;
+}
+
+.post-card__name:hover {
+  color: var(--pc-green);
+}
+
+.post-card__verified {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+/* Sub-row: time · dot · visibility */
+.post-card__sub {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  color: var(--pc-text-muted);
+  line-height: 1;
+}
+
+.post-card__time {
+  color: var(--pc-text-muted);
+}
+
+.post-card__dot {
+  opacity: 0.5;
+  line-height: 1;
+}
+
+.post-card__visibility {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  color: var(--pc-text-muted);
+}
+
+
+/* ════════════════════════════════════
+   THREE-DOT MENU
+   ════════════════════════════════════ */
+
+.post-card__menu-wrap {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.post-card__menu-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--pc-text-muted);
+  padding: 6px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s, color 0.15s;
+  line-height: 1;
+}
+
+.post-card__menu-btn:hover,
+.post-card__menu-btn[aria-expanded="true"] {
+  background: var(--pc-green-light);
+  color: var(--pc-green);
+}
+
+/* Dropdown panel */
+.post-card__dropdown {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 4px);
+  z-index: 200;
+  background: var(--pc-bg);
+  border: 1px solid var(--pc-green-border);
+  border-radius: var(--pc-radius-menu);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, .12);
+  min-width: 160px;
+  padding: 4px 0;
+  overflow: hidden;
+  /* animation */
+  transform-origin: top right;
+  animation: pc-dropdown-in 0.12s ease;
+}
+
+.post-card__dropdown[hidden] {
+  display: none;
+}
+
+@keyframes pc-dropdown-in {
+  from { opacity: 0; transform: scale(0.95) translateY(-4px); }
+  to   { opacity: 1; transform: scale(1)    translateY(0);    }
+}
+
+/* Divider between owner-only items and shared items */
+.post-card__dropdown-item + .post-card__dropdown-item--divider-above {
+  border-top: 1px solid var(--pc-green-border);
+  margin-top: 4px;
+  padding-top: 8px;
+}
+
+.post-card__dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  width: 100%;
+  padding: 9px 14px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 13px;
+  color: var(--pc-text-body);
+  text-align: left;
+  white-space: nowrap;
+  transition: background 0.12s;
+  line-height: 1.4;
+}
+
+.post-card__dropdown-item:hover {
+  background: var(--pc-green-light);
+}
+
+.post-card__dropdown-item svg {
+  flex-shrink: 0;
+  color: var(--pc-text-muted);
+}
+
+.post-card__dropdown-item--danger {
+  color: var(--pc-danger);
+}
+
+.post-card__dropdown-item--danger svg {
+  color: var(--pc-danger);
+}
+
+.post-card__dropdown-item--danger:hover {
+  background: var(--pc-danger-bg);
+}
+
+
+/* ════════════════════════════════════
+   BODY / TEXT CONTENT
+   ════════════════════════════════════ */
+
+.post-card__body {
+  padding: 12px 16px 4px;
+}
+
+.post-card__para {
+  margin: 0 0 10px;
+  font-size: 14px;
+  line-height: 1.65;
+  color: var(--pc-text-body);
+  word-break: break-word;
+}
+
+.post-card__para:last-of-type {
+  margin-bottom: 0;
+}
+
+.post-card__para--hidden {
+  display: none;
+}
+
+/* Read More / Show Less button */
+.post-card__readmore {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--pc-green);
+  font-size: 13px;
+  font-weight: 600;
+  padding: 4px 0;
+  margin-top: 6px;
+  display: inline-block;
+  line-height: 1;
+  transition: opacity 0.15s;
+}
+
+.post-card__readmore:hover {
+  text-decoration: underline;
+  opacity: 0.85;
+}
+
+
+/* ════════════════════════════════════
+   IMAGES
+   ════════════════════════════════════ */
+
+.post-card__images {
+  margin-top: 12px;
+  display: grid;
+  gap: 2px;
+  /* no border-radius clip needed — card clips via overflow:hidden */
+}
+
+/* Layout variants by image count */
+.post-card__images--1 {
+  grid-template-columns: 1fr;
+}
+
+.post-card__images--2 {
+  grid-template-columns: 1fr 1fr;
+}
+
+.post-card__images--3 {
+  grid-template-columns: 1fr 1fr;
+}
+
+/* First image spans full width when there are 3 */
+.post-card__images--3 .post-card__image-link:first-child {
+  grid-column: 1 / -1;
+}
+
+.post-card__images--4 {
+  grid-template-columns: 1fr 1fr;
+}
+
+.post-card__image-link {
+  display: block;
+  overflow: hidden;
+  background: var(--pc-green-light);
+  /* aspect ratio for consistent grid cells */
+  aspect-ratio: 4 / 3;
+}
+
+/* Single image gets a taller aspect ratio */
+.post-card__images--1 .post-card__image-link {
+  aspect-ratio: 16 / 9;
+  max-height: 420px;
+}
+
+.post-card__image {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+  transition: transform 0.25s ease;
+}
+
+.post-card__image-link:hover .post-card__image {
+  transform: scale(1.03);
+}
+
+
+/* ════════════════════════════════════
+   ACTIONS BAR  (like · comment · share · bookmark)
+   ════════════════════════════════════ */
+
+.post-card__actions {
+  display: flex;
+  align-items: center;
+  padding: 4px 8px 10px;
+  gap: 2px;
+  border-top: 1px solid var(--pc-green-border);
+  margin-top: 10px;
+}
+
+.post-card__action-btn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--pc-text-muted);
+  font-size: 13px;
+  font-weight: 500;
+  padding: 7px 10px;
+  border-radius: var(--pc-radius-sm);
+  transition: background 0.15s, color 0.15s;
+  line-height: 1;
+  user-select: none;
+}
+
+.post-card__action-btn:hover {
+  background: var(--pc-green-light);
+  color: var(--pc-green);
+}
+
+.post-card__action-btn:hover svg {
+  color: var(--pc-green);
+}
+
+/* Active / pressed state (liked, bookmarked) */
+.post-card__action-btn--active {
+  color: var(--pc-green);
+}
+
+.post-card__action-btn--active svg {
+  color: var(--pc-green);
+}
+
+/* Bookmark pushed to the far right */
+.post-card__action-btn--bookmark {
+  margin-left: auto;
+}
+
+.post-card__action-count {
+  line-height: 1;
+  min-width: 0;
+}
+
+
+/* ════════════════════════════════════
+   FEED WRAPPER  (optional utility class
+   for the page that renders multiple cards)
+   ════════════════════════════════════ */
+
+.post-feed {
+  max-width: 620px;
+  margin: 0 auto;
+  padding: 0 12px;
+}
+
+
+/* ════════════════════════════════════
+   ACCESSIBILITY UTILITY
+   ════════════════════════════════════ */
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+
+/* ════════════════════════════════════
+   RESPONSIVE — narrow mobile (≤ 480px)
+   ════════════════════════════════════ */
+
+@media (max-width: 480px) {
+  .post-card {
+    border-radius: 10px;
+    margin-bottom: 12px;
+  }
+
+  .post-card__header {
+    padding: 12px 12px 0;
+  }
+
+  .post-card__body {
+    padding: 10px 12px 4px;
+  }
+
+  .post-card__actions {
+    padding: 4px 4px 8px;
+    gap: 0;
+  }
+
+  .post-card__action-btn {
+    padding: 7px 8px;
+    font-size: 12px;
+  }
+
+  .post-card__avatar,
+  .post-card__avatar--placeholder {
+    width: 38px;
+    height: 38px;
+    font-size: 15px;
+  }
+
+  .post-card__name {
+    font-size: 13px;
+  }
+
+  /* Stack 2-image grids on very small screens */
+  .post-card__images--2,
+  .post-card__images--4 {
+    grid-template-columns: 1fr;
+  }
+
+  .post-card__images--3 {
+    grid-template-columns: 1fr;
+  }
+
+  .post-card__images--3 .post-card__image-link:first-child {
+    grid-column: auto;
+  }
+
+  .post-card__dropdown {
+    right: -4px;
+    min-width: 150px;
+  }
+}

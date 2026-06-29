@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta http-equiv="refresh" content="30">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Farmer Dashboard - AGROSPHERE</title>
@@ -180,6 +179,71 @@ textarea{width:100%;padding:10px 12px;border:1px solid var(--border);border-radi
   box-shadow:var(--shadow);
   white-space:nowrap;
 }
+.social-post{
+    background:#fff;
+    border-radius:18px;
+    padding:16px;
+    margin-bottom:20px;
+    box-shadow:0 2px 8px rgba(0,0,0,.08);
+}
+
+.post-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:12px;
+}
+
+.post-menu-btn{
+    border:none;
+    background:none;
+    font-size:22px;
+    cursor:pointer;
+    color:#666;
+}
+
+.post-content{
+    white-space:pre-wrap;
+    line-height:1.7;
+    font-size:15px;
+    color:#333;
+}
+
+.post-content.collapsed{
+    display:-webkit-box;
+    -webkit-box-orient:vertical;
+
+    -webkit-line-clamp:5;
+    line-clamp:5;
+
+    overflow:hidden;
+}
+
+.read-more{
+    display:inline-block;
+    margin-top:8px;
+    color:#2E7D32;
+    font-weight:600;
+    cursor:pointer;
+}
+
+.post-media{
+    margin-top:15px;
+}
+
+.post-photo{
+    width:100%;
+    max-height:500px;
+    object-fit:cover;
+    border-radius:14px;
+    display:block;
+}
+.article-title{
+    margin:10px 0;
+    font-size:1.1rem;
+    color:#222;
+    font-weight:700;
+}
 </style>
 </head>
 <body data-user-id="{{ current_user.id }}">
@@ -217,7 +281,7 @@ textarea{width:100%;padding:10px 12px;border:1px solid var(--border);border-radi
         <span class="arrow">›</span>
       </button>
 
-      <button class="nav-card" onclick="showSection('community')">
+      <button class="nav-card" onclick="showSection('communityposts')">
         <div class="icon-box ic-teal">🌱</div>
         <div><h3>Community Posts</h3><p>Share tips and see what others post.</p></div>
         <span class="arrow">›</span>
@@ -226,6 +290,18 @@ textarea{width:100%;padding:10px 12px;border:1px solid var(--border);border-radi
       <button class="nav-card" onclick="showSection('articles')">
         <div class="icon-box ic-orange">📃</div>
         <div><h3>Expert Articles</h3><p>Read the latest farming knowledge.</p></div>
+        <span class="arrow">›</span>
+      </button>
+
+      <button class="nav-card" onclick="showSection('priceupdates')">
+        <div class="icon-box ic-yellow">🏷️</div>
+        <div><h3>Price Updates</h3><p>Monitor regional market prices and trends.</p></div>
+        <span class="arrow">›</span>
+      </button>
+
+      <button class="nav-card" onclick="showSection('weather')">
+        <div class="icon-box ic-blue">🌤️</div>
+        <div><h3>Weather Changes</h3><p>Track weather forecasts and climate alerts.</p></div>
         <span class="arrow">›</span>
       </button>
 
@@ -253,17 +329,17 @@ textarea{width:100%;padding:10px 12px;border:1px solid var(--border);border-radi
         <span class="arrow">›</span>
       </button>
 
-      {% if current_user.blue_tick %}
-      <button class="nav-card" onclick="showSection('chat')">
-        <div class="icon-box ic-teal">💬</div>
-        <div><h3>Chat</h3><p>Message experts and the AGROSPHERE team.</p></div>
+       {% if current_user.blue_tick %}
+      <button class="nav-card" onclick="window.location.href='/chat'">
+        <div class="icon-box ic-green">💬</div>
+        <div><h3>Chat</h3><p>Message users directly.</p></div>
         <span class="arrow">›</span>
       </button>
       {% else %}
       <div class="nav-card" style="opacity:0.5;cursor:not-allowed;">
         <div class="icon-box ic-red">💬</div>
         <div><h3>Chat</h3><p>Verify your account to unlock chat.</p></div>
-        <span style="font-size:0.72rem;color:#DC2626;font-weight:700;">🔒 Locked</span>
+        <span style="font-size:0.75rem;color:#DC2626;">🔒</span>
       </div>
       {% endif %}
 
@@ -325,51 +401,1065 @@ textarea{width:100%;padding:10px 12px;border:1px solid var(--border);border-radi
         <span>{{ q.created_at.strftime('%d %b %Y') }}</span>
       </div>
       <p>{{ q.question }}</p>
-      {% if q.photos %}<div class="media-grid">{% for photo in q.photos %}<img src="{{ photo.url }}" alt="">{% endfor %}</div>{% endif %}
+      {% if q.photos %}<div class="media-grid">{% for photo in q.photos %}<img src="{{ photo.url }}" alt=""">{% endfor %}</div>{% endif %}
       {% if q.answer %}<div class="answer-box"><div class="lbl">Answer</div><p>{{ q.answer }}</p></div>{% endif %}
     </div>
     {% endfor %}{% else %}<div class="empty-state"><div class="emoji">📄</div>You haven't asked any questions yet.</div>{% endif %}
   </div>
 
   <!-- ══ COMMUNITY POSTS ══ -->
-  <div class="page-section" id="section-community">
-    <button class="back-btn" onclick="showSection('home')">Dashboard</button>
-    <div class="page-header"><h2>Community Posts</h2><p>Tips and experiences from farmers.</p></div>
-    {% if community_posts %}{% for post in community_posts %}
-    <div class="list-card">
-      <div class="meta">🌱 {{ post.author_name.upper() }} · {{ post.created_at.strftime('%d %b %Y, %H:%M') }}</div>
-      <p>{{ post.text }}</p>
-      {% if post.photos %}<div class="media-grid">{% for photo in post.photos %}<img src="{{ photo.url }}" alt="">{% endfor %}</div>{% endif %}
+  <div class="page-section" id="section-communityposts">
+
+    <button class="back-btn"
+            onclick="showSection('home')">
+        Dashboard
+    </button>
+
+    <div class="page-header">
+        <h2>Community Posts</h2>
+        <p>Tips and experiences from farmers.</p>
     </div>
-    {% endfor %}{% else %}<div class="empty-state"><div class="emoji">🌱</div>No community posts yet.</div>{% endif %}
-  </div>
+
+    {% if community_posts %}
+
+        {% for post in community_posts %}
+
+        <div class="list-card social-post">
+
+            <div class="post-header">
+
+                <div class="meta">
+                    🌱 {{ post.author_name.upper() }}
+                    · {{ post.created_at.strftime('%d %b %Y, %H:%M') }}
+                </div>
+
+                <button class="post-menu-btn">⋮</button>
+
+            </div>
+
+            <div class="post-content collapsed">
+                {{ post.text }}
+            </div>
+
+            <span class="read-more"
+                  onclick="toggleReadMore(this)">
+                Read More
+            </span>
+
+            {% if post.photos %}
+            <div class="post-media">
+                {% for photo in post.photos %}
+                    <img src="{{ photo.url }}"
+                         class="post-photo"
+                         alt="">
+                {% endfor %}
+            </div>
+            {% endif %}
+
+        </div>
+
+        {% endfor %}
+
+    {% else %}
+
+        <div class="empty-state">
+            <div class="emoji">🌱</div>
+            No community posts yet.
+        </div>
+
+    {% endif %}
+
+</div>
 
   <!-- ══ ARTICLES ══ -->
   <div class="page-section" id="section-articles">
-    <button class="back-btn" onclick="showSection('home')">Dashboard</button>
-    <div class="page-header"><h2>Expert Articles</h2><p>Knowledge shared by agricultural experts.</p></div>
-    {% if articles %}{% for article in articles %}
-    <div class="list-card">
-      <div class="meta">👨‍🌾 {{ article.expert_name }} · {{ article.created_at.strftime('%d %b %Y') }}</div>
-      <h4>{{ article.title }}</h4>
-      <p>{{ article.content[:300] }}{% if article.content|length > 300 %}…{% endif %}</p>
-      {% if article.photos %}<div class="media-grid">{% for photo in article.photos %}<img src="{{ photo.url }}" alt="">{% endfor %}</div>{% endif %}
+
+    <button class="back-btn"
+            onclick="showSection('home')">
+        Dashboard
+    </button>
+
+    <div class="page-header">
+        <h2>Expert Articles</h2>
+        <p>Knowledge shared by AGROSPHERE experts.</p>
     </div>
-    {% endfor %}{% else %}<div class="empty-state"><div class="emoji">📃</div>No expert articles yet.</div>{% endif %}
+
+    {% if articles %}
+
+        {% for a in articles %}
+
+        <div class="list-card social-post">
+
+            <div class="post-header">
+
+                <div class="meta">
+                    👨‍🌾 {{ a.expert_name }}
+                    · {{ a.created_at.strftime('%d %b %Y') }}
+                </div>
+
+                <button class="post-menu-btn">⋮</button>
+
+            </div>
+
+            <h3 class="article-title">
+                {{ a.title }}
+            </h3>
+
+            <div class="post-content collapsed">
+                {{ a.content }}
+            </div>
+
+            <span class="read-more"
+                  onclick="toggleReadMore(this)">
+                Read More
+            </span>
+
+            {% if a.photos %}
+
+            <div class="post-media">
+
+                {% for photo in a.photos %}
+
+                <img src="{{ photo.url }}"
+                     class="post-photo"
+                     alt="Article Image">
+
+                {% endfor %}
+
+            </div>
+
+            {% endif %}
+
+        </div>
+
+        {% endfor %}
+
+    {% else %}
+
+        <div class="empty-state">
+            <div class="emoji">📝</div>
+            No articles published yet.
+        </div>
+
+    {% endif %}
+
+</div>
+
+  <!-- ══ PRICE UPDATES ══ -->
+  <div class="page-section" id="section-priceupdates">
+    <button class="back-btn" onclick="showSection('home')">Dashboard</button>
+    <div class="page-header"><h2>Price Updates</h2><p>Monitor regional market prices and trends.</p></div>
+    <!--
+  ══════════════════════════════════════════════════════════════
+  AGROSPHERE — Price Updates Section
+  
+  HOW TO USE:
+  In admin_dashboard.html, find the section-priceupdates div:
+
+    <div class="page-section" id="section-priceupdates">
+      <button class="back-btn" onclick="showSection('home')">Dashboard</button>
+      <div class="page-header"><h2>Price Updates</h2>...</div>
+      <div class="empty-state">...</div>   ← REPLACE THIS LINE ONLY
+    </div>
+
+  Replace just the <div class="empty-state">...</div> line
+  with the block below (everything between the CUT markers).
+  ══════════════════════════════════════════════════════════════
+-->
+
+<!-- ── CUT START ── -->
+
+<style>
+/* ── Price cards — scoped with .pc- prefix, won't leak ── */
+.pc-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-bottom: 24px;
+}
+
+.pc-card {
+  background: var(--card-bg);
+  border-radius: 16px;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+  transition: box-shadow 0.2s;
+}
+
+/* Header row — click to expand */
+.pc-card__header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 18px;
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.pc-card__icon {
+  width: 46px;
+  height: 46px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.3rem;
+  flex-shrink: 0;
+}
+
+.pc-card__meta { flex: 1; min-width: 0; }
+.pc-card__title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 2px;
+}
+.pc-card__sub {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+}
+
+.pc-card__chevron {
+  font-size: 1rem;
+  color: var(--text-tertiary);
+  transition: transform 0.22s ease;
+  flex-shrink: 0;
+}
+.pc-card.open .pc-card__chevron { transform: rotate(90deg); }
+
+/* Body — hidden until open */
+.pc-card__body {
+  display: none;
+  padding: 0 18px 18px;
+}
+.pc-card.open .pc-card__body { display: block; }
+
+/* Search bar inside card */
+.pc-search {
+  width: 100%;
+  padding: 9px 13px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  font-size: 0.83rem;
+  font-family: inherit;
+  color: var(--text-primary);
+  background: var(--bg);
+  outline: none;
+  margin-bottom: 12px;
+}
+.pc-search:focus { border-color: #9CA3AF; }
+
+/* Items list */
+.pc-list { display: flex; flex-direction: column; gap: 8px; }
+
+.pc-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--bg);
+  border-radius: 10px;
+  padding: 10px 13px;
+  border: 1px solid var(--border);
+  gap: 10px;
+}
+
+.pc-item__left { flex: 1; min-width: 0; }
+.pc-item__name {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.pc-item__unit {
+  font-size: 0.72rem;
+  color: var(--text-tertiary);
+  margin-top: 2px;
+}
+
+.pc-item__right { text-align: right; flex-shrink: 0; }
+.pc-item__price {
+  font-size: 0.9rem;
+  font-weight: 800;
+  color: var(--green);
+}
+.pc-item__change {
+  font-size: 0.68rem;
+  font-weight: 700;
+  margin-top: 2px;
+}
+.pc-item__change.up   { color: #16a34a; }
+.pc-item__change.down { color: #dc2626; }
+.pc-item__change.flat { color: var(--text-tertiary); }
+
+/* Empty / error states inside card */
+.pc-inner-empty {
+  text-align: center;
+  padding: 24px 16px;
+  font-size: 0.82rem;
+  color: var(--text-tertiary);
+}
+.pc-inner-empty .emoji { font-size: 1.5rem; display: block; margin-bottom: 6px; }
+
+/* Loading skeleton */
+.pc-skeleton {
+  height: 44px;
+  background: linear-gradient(90deg, var(--bg) 25%, #e5e7eb 50%, var(--bg) 75%);
+  background-size: 200% 100%;
+  animation: pc-shimmer 1.4s infinite;
+  border-radius: 10px;
+  margin-bottom: 8px;
+}
+@keyframes pc-shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* Refresh button */
+.pc-refresh-row {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 10px;
+}
+.pc-refresh-btn {
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 5px 12px;
+  font-size: 0.75rem;
+  font-family: inherit;
+  color: var(--text-secondary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.pc-refresh-btn:active { opacity: 0.7; }
+.pc-refresh-btn.spinning .pc-refresh-icon { animation: pc-spin 0.8s linear infinite; }
+@keyframes pc-spin { to { transform: rotate(360deg); } }
+
+/* Last updated tag */
+.pc-updated {
+  font-size: 0.68rem;
+  color: var(--text-tertiary);
+  text-align: right;
+  margin-top: 8px;
+}
+</style>
+
+<div class="pc-grid">
+
+  <!-- ── CARD 1: Agricultural Inputs ── -->
+  <div class="pc-card" id="pc-inputs">
+    <div class="pc-card__header" onclick="pcToggle('inputs')">
+      <div class="pc-card__icon ic-green">🌱</div>
+      <div class="pc-card__meta">
+        <div class="pc-card__title">Agricultural Inputs</div>
+        <div class="pc-card__sub">Seeds, fertilisers, pesticides &amp; chemicals</div>
+      </div>
+      <span class="pc-card__chevron">›</span>
+    </div>
+    <div class="pc-card__body">
+      <div class="pc-refresh-row">
+        <button class="pc-refresh-btn" id="pc-inputs-refresh" onclick="pcLoad('inputs', true)">
+          <span class="pc-refresh-icon">↻</span> Refresh
+        </button>
+      </div>
+      <input class="pc-search" id="pc-inputs-search" placeholder="🔍  Search inputs…"
+             oninput="pcFilter('inputs', this.value)">
+      <div class="pc-list" id="pc-inputs-list">
+        <div class="pc-skeleton"></div>
+        <div class="pc-skeleton"></div>
+        <div class="pc-skeleton"></div>
+      </div>
+      <div class="pc-updated" id="pc-inputs-updated"></div>
+    </div>
+  </div>
+
+  <!-- ── CARD 2: Agricultural Outputs ── -->
+  <div class="pc-card" id="pc-outputs">
+    <div class="pc-card__header" onclick="pcToggle('outputs')">
+      <div class="pc-card__icon ic-orange">🌾</div>
+      <div class="pc-card__meta">
+        <div class="pc-card__title">Agricultural Outputs</div>
+        <div class="pc-card__sub">Crops, grains, livestock &amp; produce</div>
+      </div>
+      <span class="pc-card__chevron">›</span>
+    </div>
+    <div class="pc-card__body">
+      <div class="pc-refresh-row">
+        <button class="pc-refresh-btn" id="pc-outputs-refresh" onclick="pcLoad('outputs', true)">
+          <span class="pc-refresh-icon">↻</span> Refresh
+        </button>
+      </div>
+      <input class="pc-search" id="pc-outputs-search" placeholder="🔍  Search outputs…"
+             oninput="pcFilter('outputs', this.value)">
+      <div class="pc-list" id="pc-outputs-list">
+        <div class="pc-skeleton"></div>
+        <div class="pc-skeleton"></div>
+        <div class="pc-skeleton"></div>
+      </div>
+      <div class="pc-updated" id="pc-outputs-updated"></div>
+    </div>
+  </div>
+
+  <!-- ── CARD 3: Equipment & Machinery ── -->
+  <div class="pc-card" id="pc-equipment">
+    <div class="pc-card__header" onclick="pcToggle('equipment')">
+      <div class="pc-card__icon ic-blue">🚜</div>
+      <div class="pc-card__meta">
+        <div class="pc-card__title">Equipment &amp; Machinery</div>
+        <div class="pc-card__sub">Tools, tractors, irrigation &amp; storage</div>
+      </div>
+      <span class="pc-card__chevron">›</span>
+    </div>
+    <div class="pc-card__body">
+      <div class="pc-refresh-row">
+        <button class="pc-refresh-btn" id="pc-equipment-refresh" onclick="pcLoad('equipment', true)">
+          <span class="pc-refresh-icon">↻</span> Refresh
+        </button>
+      </div>
+      <input class="pc-search" id="pc-equipment-search" placeholder="🔍  Search equipment…"
+             oninput="pcFilter('equipment', this.value)">
+      <div class="pc-list" id="pc-equipment-list">
+        <div class="pc-skeleton"></div>
+        <div class="pc-skeleton"></div>
+        <div class="pc-skeleton"></div>
+      </div>
+      <div class="pc-updated" id="pc-equipment-updated"></div>
+    </div>
+  </div>
+
+</div><!-- /pc-grid -->
+
+<script>
+/* ══════════════════════════════════════════════════════════════
+   PRICE CARDS — fully self-contained, no conflicts with script.js
+   All identifiers are prefixed with pc_ / PC_ to avoid collisions.
+   ══════════════════════════════════════════════════════════════ */
+
+/* ── Static price data (Uganda market reference prices, UGX) ──
+   Replace or augment with a real API call when available.        */
+const PC_DATA = {
+  inputs: [
+    { name: 'Maize Seed (hybrid)',      unit: 'per kg',     price: 12000,  change: +5  },
+    { name: 'Bean Seed (NABE)',         unit: 'per kg',     price: 8500,   change: 0   },
+    { name: 'Sunflower Seed',           unit: 'per kg',     price: 9000,   change: -3  },
+    { name: 'NPK Fertiliser (50 kg)',   unit: 'per bag',    price: 145000, change: +8  },
+    { name: 'Urea (50 kg)',             unit: 'per bag',    price: 130000, change: +2  },
+    { name: 'CAN Fertiliser (50 kg)',   unit: 'per bag',    price: 120000, change: 0   },
+    { name: 'Dithane (fungicide)',      unit: 'per kg',     price: 22000,  change: -5  },
+    { name: 'Cypermethrin (pesticide)', unit: 'per litre',  price: 18000,  change: +1  },
+    { name: 'Glyphosate (herbicide)',   unit: 'per litre',  price: 15000,  change: 0   },
+    { name: 'Lime (soil amendment)',    unit: 'per 50 kg',  price: 40000,  change: -2  },
+  ],
+  outputs: [
+    { name: 'Maize (dry grain)',        unit: 'per 100 kg', price: 85000,  change: +12 },
+    { name: 'Beans (dry)',              unit: 'per 100 kg', price: 210000, change: +6  },
+    { name: 'Groundnuts (shelled)',     unit: 'per 100 kg', price: 320000, change: -4  },
+    { name: 'Sorghum (grain)',          unit: 'per 100 kg', price: 70000,  change: +3  },
+    { name: 'Cassava (fresh)',          unit: 'per 100 kg', price: 55000,  change: 0   },
+    { name: 'Matoke (bunch)',           unit: 'per bunch',  price: 12000,  change: -8  },
+    { name: 'Coffee (FAQ)',             unit: 'per kg',     price: 9500,   change: +15 },
+    { name: 'Sunflower (seed)',         unit: 'per 100 kg', price: 180000, change: +2  },
+    { name: 'Rice (paddy)',             unit: 'per 100 kg', price: 160000, change: -1  },
+    { name: 'Cattle (live weight)',     unit: 'per kg',     price: 8000,   change: +4  },
+    { name: 'Goat (live)',             unit: 'per head',   price: 180000, change: 0   },
+    { name: 'Milk (fresh)',             unit: 'per litre',  price: 1200,   change: -3  },
+    { name: 'Eggs',                     unit: 'per tray',   price: 14000,  change: +5  },
+  ],
+  equipment: [
+    { name: 'Hand hoe',                 unit: 'per piece',  price: 18000,  change: 0   },
+    { name: 'Panga / Machete',          unit: 'per piece',  price: 12000,  change: +2  },
+    { name: 'Ox-plough (single)',       unit: 'per unit',   price: 280000, change: 0   },
+    { name: 'Knapsack sprayer (16 L)',  unit: 'per unit',   price: 85000,  change: -5  },
+    { name: 'Power sprayer (portable)', unit: 'per unit',   price: 450000, change: +3  },
+    { name: 'Maize sheller (manual)',   unit: 'per unit',   price: 120000, change: 0   },
+    { name: 'Thresher (motorised)',     unit: 'per unit',   price: 2800000,change: 0   },
+    { name: 'Water pump (2-inch)',      unit: 'per unit',   price: 680000, change: +7  },
+    { name: 'Drip irrigation kit',      unit: 'per acre',   price: 1200000,change: +4  },
+    { name: 'Tractor hire (2WD)',       unit: 'per hour',   price: 85000,  change: +10 },
+    { name: 'Polythene mulch (100 m)',  unit: 'per roll',   price: 95000,  change: -2  },
+    { name: 'Grain sack (100 kg)',      unit: 'per piece',  price: 3500,   change: 0   },
+  ]
+};
+
+/* Track which cards have been loaded */
+const _pcLoaded = { inputs: false, outputs: false, equipment: false };
+
+/* ── Toggle open / close ── */
+function pcToggle(type) {
+  const card = document.getElementById('pc-' + type);
+  if (!card) return;
+
+  const isOpen = card.classList.contains('open');
+
+  if (isOpen) {
+    card.classList.remove('open');
+  } else {
+    card.classList.add('open');
+    if (!_pcLoaded[type]) pcLoad(type, false);
+  }
+}
+
+/* ── Load (or reload) data into a card ── */
+function pcLoad(type, isRefresh) {
+  const listEl   = document.getElementById('pc-' + type + '-list');
+  const updated  = document.getElementById('pc-' + type + '-updated');
+  const refreshBtn = document.getElementById('pc-' + type + '-refresh');
+
+  if (!listEl) return;
+
+  /* Show skeleton while "loading" */
+  listEl.innerHTML = '<div class="pc-skeleton"></div>'
+                   + '<div class="pc-skeleton"></div>'
+                   + '<div class="pc-skeleton"></div>';
+
+  if (refreshBtn) refreshBtn.classList.add('spinning');
+
+  /* Simulate a short fetch delay so it feels live */
+  setTimeout(function() {
+    _pcLoaded[type] = true;
+
+    const items = PC_DATA[type] || [];
+    pcRender(type, items);
+
+    if (updated) {
+      const now = new Date();
+      updated.textContent = 'Updated ' + now.toLocaleTimeString('en-UG', { hour: '2-digit', minute: '2-digit' });
+    }
+    if (refreshBtn) refreshBtn.classList.remove('spinning');
+  }, isRefresh ? 900 : 400);
+}
+
+/* ── Render items into a card list ── */
+function pcRender(type, items) {
+  const listEl  = document.getElementById('pc-' + type + '-list');
+  const searchEl = document.getElementById('pc-' + type + '-search');
+  const query   = searchEl ? searchEl.value.toLowerCase().trim() : '';
+
+  if (!listEl) return;
+
+  if (items.length === 0) {
+    listEl.innerHTML = '<div class="pc-inner-empty">'
+      + '<span class="emoji">📭</span>No price data available.</div>';
+    return;
+  }
+
+  const filtered = query
+    ? items.filter(function(i) { return i.name.toLowerCase().includes(query); })
+    : items;
+
+  if (filtered.length === 0) {
+    listEl.innerHTML = '<div class="pc-inner-empty">'
+      + '<span class="emoji">🔍</span>No matches for "' + _pcEsc(query) + '".</div>';
+    return;
+  }
+
+  listEl.innerHTML = filtered.map(function(item) {
+    const changeSign = item.change > 0 ? '+' : '';
+    const changeClass = item.change > 0 ? 'up' : (item.change < 0 ? 'down' : 'flat');
+    const changeLabel = item.change === 0
+      ? '→ Stable'
+      : changeSign + item.change + '% this week';
+
+    return '<div class="pc-item">'
+      + '<div class="pc-item__left">'
+      + '<div class="pc-item__name">' + _pcEsc(item.name) + '</div>'
+      + '<div class="pc-item__unit">' + _pcEsc(item.unit) + '</div>'
+      + '</div>'
+      + '<div class="pc-item__right">'
+      + '<div class="pc-item__price">UGX ' + item.price.toLocaleString() + '</div>'
+      + '<div class="pc-item__change ' + changeClass + '">' + changeLabel + '</div>'
+      + '</div>'
+      + '</div>';
+  }).join('');
+}
+
+/* ── Filter on search input ── */
+function pcFilter(type, query) {
+  if (!_pcLoaded[type]) return;
+  pcRender(type, PC_DATA[type] || []);
+}
+
+/* ── XSS-safe escaping ── */
+function _pcEsc(str) {
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+</script>
+
+<!-- ── CUT END ── -->
+  </div>
+
+  <!-- ══ WEATHER CHANGES ══ -->
+  <div class="page-section" id="section-weather">
+    <button class="back-btn" onclick="showSection('home')">Dashboard</button>
+    <div class="page-header"><h2>Weather Changes</h2><p>Track weather forecasts and climate alerts.</p></div>
+    <!-- ═══════════════════════════════════════════════
+     AGROSPHERE — WEATHER DASHBOARD SECTION
+     Uganda District Weather System (Live-ready)
+══════════════════════════════════════════════════ -->
+
+<style>
+
+/* ── WEATHER GRID ── */
+.pc-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-bottom: 24px;
+}
+
+/* ── CARD BASE ── */
+.pc-card {
+  background: var(--card-bg, #fff);
+  border-radius: 16px;
+  border: 1px solid var(--border, #e5e7eb);
+  box-shadow: var(--shadow, 0 6px 18px rgba(0,0,0,0.08));
+  overflow: hidden;
+}
+
+/* HEADER */
+.pc-card__header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 18px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.pc-card__icon {
+  width: 46px;
+  height: 46px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.3rem;
+}
+
+.ic-blue { background: #dbeafe; }
+
+.pc-card__meta { flex: 1; }
+.pc-card__title { font-weight: 700; font-size: 0.95rem; }
+.pc-card__sub { font-size: 0.75rem; color: #6b7280; }
+
+.pc-card__chevron {
+  transition: transform 0.2s ease;
+}
+.pc-card.open .pc-card__chevron { transform: rotate(90deg); }
+
+/* BODY */
+.pc-card__body {
+  display: none;
+  padding: 0 18px 18px;
+}
+.pc-card.open .pc-card__body { display: block; }
+
+/* SEARCH */
+.pc-search {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid #e5e7eb;
+  margin-bottom: 12px;
+  outline: none;
+}
+
+/* LIST */
+.pc-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* ITEM */
+.pc-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 12px;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  background: #fafafa;
+}
+
+.pc-item__name {
+  font-weight: 600;
+  font-size: 0.85rem;
+}
+
+.pc-item__unit {
+  font-size: 0.72rem;
+  color: #6b7280;
+}
+
+.pc-item__price {
+  font-weight: 800;
+  font-size: 1rem;
+  color: #0f172a;
+}
+
+.pc-item__change {
+  font-size: 0.7rem;
+  color: #16a34a;
+}
+
+/* REFRESH */
+.pc-refresh-row {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 8px;
+}
+
+.pc-refresh-btn {
+  font-size: 0.75rem;
+  border: 1px solid #e5e7eb;
+  background: transparent;
+  padding: 5px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.pc-refresh-btn.spinning {
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* EMPTY */
+.pc-inner-empty {
+  text-align: center;
+  padding: 20px;
+  color: #6b7280;
+}
+
+.pc-skeleton {
+  height: 40px;
+  border-radius: 10px;
+  background: linear-gradient(90deg,#eee,#f5f5f5,#eee);
+  background-size: 200% 100%;
+  animation: shimmer 1.2s infinite;
+}
+
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+</style>
+
+<div class="pc-grid">
+
+  <!-- ═════════ WEATHER CARD ═════════ -->
+  <div class="pc-card" id="pc-weather">
+
+    <div class="pc-card__header" onclick="pcToggleWeather()">
+      <div class="pc-card__icon ic-blue">🌦️</div>
+      <div class="pc-card__meta">
+        <div class="pc-card__title">Uganda Weather Dashboard</div>
+        <div class="pc-card__sub">Live weather by district</div>
+      </div>
+      <span class="pc-card__chevron">›</span>
+    </div>
+
+    <div class="pc-card__body">
+
+      <!-- Refresh -->
+      <div class="pc-refresh-row">
+        <button class="pc-refresh-btn" onclick="pcWeatherLoad(true)">↻ Refresh</button>
+      </div>
+
+      <!-- Search -->
+      <input class="pc-search"
+             placeholder="Search district..."
+             oninput="pcWeatherFilter(this.value)">
+
+      <!-- List -->
+      <div class="pc-list" id="pc-weather-list"></div>
+
+      <div style="font-size:0.7rem;color:#6b7280;margin-top:8px;" id="pc-weather-updated"></div>
+
+    </div>
+  </div>
+
+</div>
+
+<script>
+
+/* ═════════ UGANDA WEATHER DATA ═════════ */
+const WEATHER_DATA = [
+  { name:"Abim", temp:29, condition:"Sunny", humidity:55 },
+  { name:"Adjumani", temp:31, condition:"Hot", humidity:60 },
+  { name:"Agago", temp:30, condition:"Sunny", humidity:58 },
+  { name:"Alebtong", temp:29, condition:"Partly Cloudy", humidity:62 },
+  { name:"Amolatar", temp:30, condition:"Hot", humidity:64 },
+  { name:"Amudat", temp:28, condition:"Windy", humidity:52 },
+  { name:"Amuria", temp:29, condition:"Cloudy", humidity:66 },
+  { name:"Amuru", temp:31, condition:"Hot", humidity:57 },
+  { name:"Apac", temp:30, condition:"Sunny", humidity:60 },
+  { name:"Arua", temp:32, condition:"Hot", humidity:50 },
+
+  { name:"Budaka", temp:27, condition:"Rainy", humidity:78 },
+  { name:"Bududa", temp:25, condition:"Heavy Rain", humidity:85 },
+  { name:"Bugiri", temp:27, condition:"Light Rain", humidity:74 },
+  { name:"Bugweri", temp:27, condition:"Cloudy", humidity:73 },
+  { name:"Buhweju", temp:23, condition:"Cold", humidity:88 },
+  { name:"Buikwe", temp:28, condition:"Humid", humidity:76 },
+  { name:"Bukedea", temp:28, condition:"Sunny", humidity:65 },
+  { name:"Bukomansimbi", temp:27, condition:"Cloudy", humidity:70 },
+  { name:"Bukwo", temp:22, condition:"Cold", humidity:90 },
+  { name:"Bulambuli", temp:24, condition:"Rainy", humidity:84 },
+
+  { name:"Buliisa", temp:32, condition:"Hot", humidity:48 },
+  { name:"Bundibugyo", temp:29, condition:"Rainy", humidity:82 },
+  { name:"Bunyangabu", temp:24, condition:"Foggy", humidity:83 },
+  { name:"Bushenyi", temp:25, condition:"Cloudy", humidity:78 },
+  { name:"Busia", temp:28, condition:"Humid", humidity:72 },
+  { name:"Butaleja", temp:27, condition:"Rainy", humidity:80 },
+  { name:"Butambala", temp:26, condition:"Cloudy", humidity:75 },
+  { name:"Butebo", temp:27, condition:"Rainy", humidity:77 },
+  { name:"Buvuma", temp:29, condition:"Humid", humidity:85 },
+  { name:"Buyende", temp:29, condition:"Sunny", humidity:63 },
+
+  { name:"Dokolo", temp:30, condition:"Sunny", humidity:59 },
+  { name:"Gomba", temp:27, condition:"Cloudy", humidity:71 },
+  { name:"Gulu", temp:30, condition:"Sunny", humidity:52 },
+  { name:"Hoima", temp:32, condition:"Hot", humidity:46 },
+  { name:"Ibanda", temp:26, condition:"Cloudy", humidity:74 },
+  { name:"Iganga", temp:27, condition:"Rainy", humidity:79 },
+  { name:"Isingiro", temp:27, condition:"Dry", humidity:60 },
+  { name:"Jinja", temp:27, condition:"Light Rain", humidity:78 },
+
+  { name:"Kaabong", temp:31, condition:"Hot", humidity:45 },
+  { name:"Kabale", temp:22, condition:"Cold", humidity:88 },
+  { name:"Kabarole", temp:24, condition:"Foggy", humidity:84 },
+  { name:"Kaberamaido", temp:29, condition:"Cloudy", humidity:66 },
+  { name:"Kagadi", temp:31, condition:"Hot", humidity:49 },
+  { name:"Kakumiro", temp:30, condition:"Sunny", humidity:55 },
+  { name:"Kalaki", temp:29, condition:"Cloudy", humidity:67 },
+  { name:"Kalangala", temp:29, condition:"Humid", humidity:90 },
+  { name:"Kaliro", temp:27, condition:"Rainy", humidity:78 },
+  { name:"Kalungu", temp:27, condition:"Cloudy", humidity:72 },
+
+  { name:"Kampala", temp:28, condition:"Partly Cloudy", humidity:66 },
+  { name:"Kamuli", temp:28, condition:"Rainy", humidity:75 },
+  { name:"Kamwenge", temp:25, condition:"Cloudy", humidity:80 },
+  { name:"Kanungu", temp:23, condition:"Cold", humidity:86 },
+  { name:"Kapchorwa", temp:21, condition:"Cold", humidity:89 },
+  { name:"Kapelebyong", temp:29, condition:"Sunny", humidity:61 },
+  { name:"Karenga", temp:31, condition:"Hot", humidity:44 },
+  { name:"Kasanda", temp:28, condition:"Cloudy", humidity:70 },
+  { name:"Kasese", temp:28, condition:"Rainy", humidity:82 },
+  { name:"Katakwi", temp:30, condition:"Hot", humidity:58 },
+
+  { name:"Kayunga", temp:28, condition:"Humid", humidity:75 },
+  { name:"Kazo", temp:26, condition:"Cloudy", humidity:72 },
+  { name:"Kibaale", temp:29, condition:"Sunny", humidity:62 },
+  { name:"Kiboga", temp:27, condition:"Cloudy", humidity:71 },
+  { name:"Kibuku", temp:27, condition:"Rainy", humidity:77 },
+  { name:"Kikuube", temp:31, condition:"Hot", humidity:50 },
+  { name:"Kiruhura", temp:26, condition:"Dry", humidity:55 },
+  { name:"Kiryandongo", temp:30, condition:"Hot", humidity:53 },
+  { name:"Kisoro", temp:21, condition:"Cold", humidity:90 },
+  { name:"Kitagwenda", temp:25, condition:"Cloudy", humidity:80 },
+
+  { name:"Kitgum", temp:30, condition:"Sunny", humidity:56 },
+  { name:"Koboko", temp:31, condition:"Hot", humidity:48 },
+  { name:"Kole", temp:30, condition:"Sunny", humidity:57 },
+  { name:"Kotido", temp:32, condition:"Very Hot", humidity:40 },
+  { name:"Kumi", temp:28, condition:"Cloudy", humidity:68 },
+  { name:"Kwania", temp:29, condition:"Sunny", humidity:60 },
+  { name:"Kween", temp:22, condition:"Cold", humidity:88 },
+  { name:"Kyankwanzi", temp:28, condition:"Cloudy", humidity:69 },
+  { name:"Kyegegwa", temp:26, condition:"Rainy", humidity:81 },
+  { name:"Kyenjojo", temp:25, condition:"Cloudy", humidity:82 },
+
+  { name:"Kyotera", temp:27, condition:"Cloudy", humidity:73 },
+  { name:"Lamwo", temp:30, condition:"Sunny", humidity:55 },
+  { name:"Lira", temp:29, condition:"Sunny", humidity:55 },
+  { name:"Luuka", temp:27, condition:"Rainy", humidity:76 },
+  { name:"Luwero", temp:28, condition:"Humid", humidity:74 },
+  { name:"Lwengo", temp:27, condition:"Cloudy", humidity:72 },
+  { name:"Lyantonde", temp:26, condition:"Dry", humidity:60 },
+  { name:"Madi-Okollo", temp:31, condition:"Hot", humidity:51 },
+  { name:"Manafwa", temp:24, condition:"Rainy", humidity:86 },
+  { name:"Maracha", temp:31, condition:"Hot", humidity:52 },
+
+  { name:"Masaka", temp:27, condition:"Cloudy", humidity:69 },
+  { name:"Masindi", temp:31, condition:"Hot", humidity:50 },
+  { name:"Mayuge", temp:27, condition:"Rainy", humidity:78 },
+  { name:"Mbale", temp:25, condition:"Rainy", humidity:81 },
+  { name:"Mbarara", temp:26, condition:"Cloudy", humidity:70 },
+  { name:"Mitooma", temp:25, condition:"Cloudy", humidity:75 },
+  { name:"Mityana", temp:27, condition:"Cloudy", humidity:73 },
+  { name:"Moroto", temp:33, condition:"Very Hot", humidity:38 },
+  { name:"Moyo", temp:31, condition:"Hot", humidity:52 },
+  { name:"Mpigi", temp:28, condition:"Humid", humidity:74 },
+
+  { name:"Mubende", temp:28, condition:"Cloudy", humidity:72 },
+  { name:"Mukono", temp:28, condition:"Humid", humidity:76 },
+  { name:"Nabilatuk", temp:31, condition:"Hot", humidity:45 },
+  { name:"Nakapiripirit", temp:30, condition:"Hot", humidity:46 },
+  { name:"Nakaseke", temp:28, condition:"Cloudy", humidity:70 },
+  { name:"Nakasongola", temp:30, condition:"Hot", humidity:58 },
+  { name:"Namayingo", temp:27, condition:"Rainy", humidity:80 },
+  { name:"Namisindwa", temp:24, condition:"Rainy", humidity:85 },
+  { name:"Namutumba", temp:27, condition:"Rainy", humidity:77 },
+  { name:"Napak", temp:32, condition:"Hot", humidity:42 },
+
+  { name:"Nebbi", temp:31, condition:"Hot", humidity:50 },
+  { name:"Ngora", temp:28, condition:"Cloudy", humidity:67 },
+  { name:"Ntoroko", temp:25, condition:"Rainy", humidity:83 },
+  { name:"Ntungamo", temp:26, condition:"Cloudy", humidity:74 },
+  { name:"Nwoya", temp:31, condition:"Hot", humidity:53 },
+  { name:"Obongi", temp:31, condition:"Hot", humidity:52 },
+  { name:"Omoro", temp:30, condition:"Sunny", humidity:56 },
+  { name:"Otuke", temp:29, condition:"Sunny", humidity:60 },
+  { name:"Oyam", temp:30, condition:"Sunny", humidity:58 },
+  { name:"Pader", temp:30, condition:"Sunny", humidity:57 },
+
+  { name:"Pakwach", temp:31, condition:"Hot", humidity:50 },
+  { name:"Pallisa", temp:28, condition:"Rainy", humidity:76 },
+  { name:"Rakai", temp:27, condition:"Cloudy", humidity:73 },
+  { name:"Rubanda", temp:22, condition:"Cold", humidity:89 },
+  { name:"Rubirizi", temp:25, condition:"Cloudy", humidity:81 },
+  { name:"Rukiga", temp:21, condition:"Cold", humidity:90 },
+  { name:"Rukungiri", temp:24, condition:"Cloudy", humidity:83 },
+  { name:"Rwampara", temp:26, condition:"Cloudy", humidity:75 },
+  { name:"Serere", temp:28, condition:"Rainy", humidity:77 },
+  { name:"Sheema", temp:25, condition:"Cloudy", humidity:78 },
+
+  { name:"Sironko", temp:24, condition:"Rainy", humidity:84 },
+  { name:"Soroti", temp:30, condition:"Hot", humidity:50 },
+  { name:"Ssembabule", temp:27, condition:"Cloudy", humidity:72 },
+  { name:"Tororo", temp:27, condition:"Rainy", humidity:79 },
+  { name:"Wakiso", temp:28, condition:"Humid", humidity:77 },
+  { name:"Yumbe", temp:31, condition:"Hot", humidity:49 },
+  { name:"Zombo", temp:31, condition:"Hot", humidity:50 }
+];
+
+let WEATHER_OPEN = false;
+
+/* ── Toggle ── */
+function pcToggleWeather() {
+  const card = document.getElementById("pc-weather");
+  card.classList.toggle("open");
+
+  if (!WEATHER_OPEN) {
+    WEATHER_OPEN = true;
+    pcWeatherLoad();
+  }
+}
+
+/* ── Load weather ── */
+function pcWeatherLoad(refresh=false) {
+  const list = document.getElementById("pc-weather-list");
+  const updated = document.getElementById("pc-weather-updated");
+  const btn = document.querySelector(".pc-refresh-btn");
+
+  list.innerHTML = "<div class='pc-skeleton'></div><div class='pc-skeleton'></div>";
+
+  setTimeout(() => {
+    renderWeather(WEATHER_DATA);
+
+    const now = new Date();
+    updated.textContent = "Updated " + now.toLocaleTimeString();
+
+  }, refresh ? 800 : 400);
+}
+
+/* ── Render ── */
+function renderWeather(data) {
+  const list = document.getElementById("pc-weather-list");
+
+  list.innerHTML = data.map(d => `
+    <div class="pc-item">
+      <div>
+        <div class="pc-item__name">${d.name}</div>
+        <div class="pc-item__unit">${d.condition} • Humidity ${d.humidity}%</div>
+      </div>
+      <div style="text-align:right">
+        <div class="pc-item__price">${d.temp}°C</div>
+        <div class="pc-item__change">Live</div>
+      </div>
+    </div>
+  `).join("");
+}
+
+/* ── Search ── */
+function pcWeatherFilter(q) {
+  const filtered = WEATHER_DATA.filter(d =>
+    d.name.toLowerCase().includes(q.toLowerCase())
+  );
+  renderWeather(filtered);
+}
+function toggleReadMore(btn){
+
+    const text =
+        btn.previousElementSibling;
+
+    text.classList.toggle('collapsed');
+
+    btn.textContent =
+        text.classList.contains('collapsed')
+        ? 'Read More'
+        : 'Show Less';
+}
+</script>
   </div>
 
   <!-- ══ ANNOUNCEMENTS ══ -->
-  <div class="page-section" id="section-announcements">
-    <button class="back-btn" onclick="showSection('home')">Dashboard</button>
-    <div class="page-header"><h2>Announcements</h2><p>Updates from AGROSPHERE admins.</p></div>
-    {% if announcements %}{% for a in announcements %}
-    <div class="list-card">
-      <div class="meta"><span class="tag">{{ a.category }}</span><span>{{ a.created_at.strftime('%d %b %Y, %H:%M') }}</span></div>
-      <h4>{{ a.title }}</h4>
-      <p>{{ a.body }}</p>
-    </div>
-    {% endfor %}{% else %}<div class="empty-state"><div class="emoji">📢</div>No announcements yet.</div>{% endif %}
+<div class="page-section" id="section-announcements">
+  <button class="back-btn" onclick="showSection('home')">Dashboard</button>
+
+  <div class="page-header">
+    <h2>Announcements</h2>
+    <p>Updates from AGROSPHERE admins.</p>
   </div>
+
+  {% if announcements %}
+    {% for a in announcements %}
+    <div class="list-card">
+
+      <div class="meta">
+        <span class="tag">{{ a.category }}</span>
+        <span>{{ a.created_at.strftime('%d %b %Y, %H:%M') }}</span>
+      </div>
+
+      <h4 style="font-weight:700; margin-bottom:10px;">
+        {{ a.title }}
+      </h4>
+
+      <div class="announcement-body collapsed"
+           id="announcement-{{ loop.index }}">
+        {{ a.body }}
+      </div>
+
+      <button class="read-more-btn"
+              onclick="toggleAnnouncement('announcement-{{ loop.index }}', this)">
+        Read More
+      </button>
+
+    </div>
+    {% endfor %}
+  {% else %}
+    <div class="empty-state">
+      <div class="emoji">📢</div>
+      No announcements yet.
+    </div>
+  {% endif %}
+</div>
 
   <!-- ══ RANKINGS ══ -->
   <div class="page-section" id="section-rankings">
@@ -412,134 +1502,259 @@ textarea{width:100%;padding:10px 12px;border:1px solid var(--border);border-radi
       <div class="meta">🏢 {{ post.business_name }} · {{ post.created_at.strftime('%d %b %Y') }}</div>
       <h4>{{ post.title }}</h4>
       <p>{{ post.description }}</p>
-      {% if post.media %}<div class="media-grid">{% for item in post.media %}{% if item.type=='video' %}<video src="{{ item.url }}" controls></video>{% else %}<img src="{{ item.url }}" alt="">{% endif %}{% endfor %}</div>{% endif %}
+      {% if post.media %}<div class="media-grid">{% for item in post.media %}{% if item.type=='video' %}<video src="{{ item.url }}" controls></video>{% else %}<img src="{{ item.url }}" alt=""">{% endif %}{% endfor %}</div>{% endif %}
     </div>
     {% endfor %}{% else %}<div class="empty-state"><div class="emoji">🏪</div>No business posts yet.</div>{% endif %}
   </div>
 
-  <!-- ══ CHAT ══ -->
-  <div class="page-section" id="section-chat">
-    <button class="back-btn" onclick="showSection('home')">Dashboard</button>
-    <div class="page-header"><h2>Chat</h2><p>Direct messages with experts and admins.</p></div>
-    {% if current_user.blue_tick %}
-    <div style="background:#fff;border-radius:14px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,0.07);border:1px solid rgba(0,0,0,0.08);display:flex;flex-direction:column;height:65vh;">
-      <div id="chat-messages" style="flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:10px;">
-        <div style="text-align:center;font-size:0.75rem;color:#AEAEB2;padding:8px 0;">Start a conversation below.</div>
-      </div>
-      <div style="border-top:1px solid rgba(0,0,0,0.08);padding:12px 14px;display:flex;gap:10px;align-items:flex-end;background:#fff;">
-        <textarea id="chat-input" placeholder="Type a message…" rows="1"
-          style="flex:1;border:1px solid rgba(0,0,0,0.08);border-radius:20px;padding:10px 14px;font-size:0.85rem;font-family:inherit;resize:none;outline:none;background:#F2F2F7;max-height:100px;line-height:1.4;"
-          oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px';"
-          onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendChatMessage();}"></textarea>
-        <button onclick="sendChatMessage()"
-          style="width:40px;height:40px;border-radius:50%;background:#2E7D32;border:none;color:#fff;font-size:1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;"
-          onmousedown="this.style.transform='scale(0.92)'" onmouseup="this.style.transform='scale(1)'">➤</button>
-      </div>
-    </div>
-    {% else %}
-    <div class="empty-state">
-      <div class="emoji">🔒</div>
-      <p style="margin-top:8px;font-weight:600;">Chat is locked</p>
-      <p style="margin-top:4px;font-size:0.8rem;">Get your account verified to unlock direct messaging.</p>
-      <button class="btn btn-green" style="margin-top:16px;" onclick="showSection('setting')">Get Verified →</button>
-    </div>
-    {% endif %}
-  </div>
 
-  <!-- ══ SETTINGS ══ -->
-  <div class="page-section" id="section-setting">
-    <button class="back-btn" onclick="showSection('home')">Dashboard</button>
-    <div class="page-header"><h2>Settings</h2><p>Verification, payment &amp; account details.</p></div>
 
-    <div class="settings-block">
-      <h3>🔵 Account Verification</h3>
-      <p class="desc">Get your blue tick to unlock Chat and show the community you're trusted.</p>
-      <div style="margin-bottom:12px;">Status: {% if current_user.blue_tick %}<span class="status-pill pill-verified">✔ Verified</span>{% else %}<span class="status-pill pill-unverified">○ Not Verified</span>{% endif %}</div>
-      {% if not current_user.blue_tick %}
+  <!-- ══ SETTINGS HOME ══ -->
+<div class="page-section" id="section-setting">
+  <button class="back-btn" onclick="showSection('home')">Dashboard</button>
+  <div class="page-header"><h2>Settings</h2><p>Manage your account and preferences.</p></div>
+
+  <div class="card-grid">
+
+    <button class="nav-card" onclick="showSection('setting-account')">
+      <div class="icon-box ic-green">👤</div>
       <div>
-        <div class="verify-step"><div class="step-num">1</div><div class="step-body"><strong>Pay the Fee</strong>See payment options below.</div></div>
-        <div class="verify-step"><div class="step-num">2</div><div class="step-body"><strong>Submit This Form</strong>Upload proof of payment below.</div></div>
-        <div class="verify-step"><div class="step-num">3</div><div class="step-body"><strong>Admin Review</strong>We'll verify you within 1–2 business days.</div></div>
+        <h3>Account & Profile</h3>
+        <p>Name, contact, password & 2FA.</p>
       </div>
-      <div class="divider"></div>
-      <form action="{{ url_for('farmer.request_verification') }}" method="POST" enctype="multipart/form-data">
-        <label class="form-label">Phone Number (used for payment)</label>
-        <input type="tel" name="phone" value="{{ current_user.phone or '' }}" placeholder="e.g. 0771234567" required>
-        <label class="form-label" style="margin-top:10px;">District / Location</label>
-        <input type="text" name="location" placeholder="e.g. Mbarara, Uganda" required>
-        <label class="form-label" style="margin-top:10px;">Proof of Payment</label>
-        <label class="file-drop" for="v_proof">📎 Upload payment screenshot</label>
-        <input type="file" id="v_proof" name="proof" accept="image/*" style="display:none;" required>
-        <label class="form-label" style="margin-top:10px;">Notes (optional)</label>
-        <textarea name="note" placeholder="Any extra info for the admin…"></textarea>
-        <button type="submit" class="btn btn-green" style="width:100%;margin-top:14px;">Submit Verification Request</button>
-      </form>
+      {% if current_user.is_verified %}
+      <span style="font-size:0.68rem;font-weight:700;background:#DCFCE7;color:#166534;padding:3px 8px;border-radius:20px;">✓ Verified</span>
       {% else %}
-      <p style="color:var(--green);font-weight:600;font-size:0.88rem;">✔ Your account is already verified!</p>
+      <span style="font-size:0.68rem;font-weight:700;background:#FEF3C7;color:#92400E;padding:3px 8px;border-radius:20px;">Pending</span>
+      {% endif %}
+    </button>
+
+    <button class="nav-card" onclick="showSection('setting-business')">
+      <div class="icon-box ic-blue">🏢</div>
+      <div>
+        <h3>Business & Subscription</h3>
+        <p>Billing, MTN & Airtel payment.</p>
+      </div>
+      <span style="font-size:0.68rem;font-weight:700;color:#2E7D32;">
+        {% if current_user.role == 'expert' %}5,000 UGX
+        {% elif current_user.role == 'business' %}10,000 UGX
+        {% else %}3,000 UGX{% endif %} /mo
+      </span>
+    </button>
+
+    <button class="nav-card" onclick="showSection('setting-notifications')">
+      <div class="icon-box ic-yellow">🔔</div>
+      <div>
+        <h3>Notifications</h3>
+        <p>Alerts, summaries & reminders.</p>
+      </div>
+      <span class="arrow">›</span>
+    </button>
+
+    <button class="nav-card" onclick="showSection('setting-technical')">
+      <div class="icon-box ic-purple">⚙️</div>
+      <div>
+        <h3>Technical & Tools</h3>
+        <p>API keys & integrations.</p>
+      </div>
+      <span class="arrow">›</span>
+    </button>
+
+  </div>
+</div>
+
+<!-- ══ SETTING: ACCOUNT & PROFILE ══ -->
+<div class="page-section" id="section-setting-account">
+  <button class="back-btn" onclick="showSection('setting')">Settings</button>
+  <div class="page-header"><h2>Account & Profile</h2><p>Update your personal details and security.</p></div>
+
+  <form action="{{ url_for('settings') }}" method="POST" enctype="multipart/form-data">
+    <input type="hidden" name="setting_type" value="account">
+
+    <div class="panel">
+      <h3>Profile</h3>
+      <label class="form-label">Full Name</label>
+      <input type="text" name="username" value="{{ current_user.username or '' }}">
+      <label class="form-label">Contact (Email / Phone)</label>
+      <input type="text" name="contact" value="{{ current_user.contact or '' }}" placeholder="077xxxxxxx">
+    </div>
+
+    <div class="panel">
+      <h3>Security</h3>
+      <label class="form-label">New Password</label>
+      <input type="password" name="new_password" placeholder="Leave blank to keep current">
+      <div class="checkbox-group" style="margin-top:10px;">
+        <input type="checkbox" id="2fa" name="enable_2fa">
+        <label for="2fa" style="font-size:0.85rem;">Enable Two-Factor Authentication (2FA)</label>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h3>Verification Status</h3>
+      {% if current_user.is_verified %}
+      <div class="status-pill pill-verified">✓ Verified Account</div>
+      <p style="font-size:0.8rem;color:#2e7d32;margin-top:6px;">Your identity has been verified by AGROSPHERE.</p>
+      {% else %}
+      <div class="status-pill pill-unverified">⏳ Pending Review</div>
+      <p style="font-size:0.8rem;color:var(--text-secondary);margin-top:6px;">Upload credentials to unlock full platform access.</p>
+      <label class="form-label" style="margin-top:12px;">Document Type</label>
+      <select name="verification_type">
+        <option value="nin">National ID (NIN)</option>
+        <option value="business_license">Business Registration</option>
+        <option value="certificate">Agricultural Certificate</option>
+      </select>
+      <label class="form-label">Upload Document (PDF, PNG, JPG)</label>
+      <label class="file-drop" for="doc_file">📎 Tap to attach document</label>
+      <input type="file" id="doc_file" name="verification_doc" style="display:none;">
+      <button type="submit" name="action" value="submit_verification"
+              class="btn btn-green" style="width:100%;margin-top:12px;padding:12px;">
+        Submit Verification Documents
+      </button>
       {% endif %}
     </div>
 
-    <div class="settings-block">
-      <h3>💳 Payment Information</h3>
-      <p class="desc">Pay via any method below, then upload the screenshot above.</p>
-      <div class="payment-option"><h4>📱 MTN Mobile Money</h4><p>Send to <strong>0771 000 000</strong> (AGROSPHERE Ltd).<br>Reference: Your name + "AGRO-VERIFY"</p></div>
-      <div class="payment-option"><h4>📱 Airtel Money</h4><p>Send to <strong>0701 000 000</strong> (AGROSPHERE Ltd).<br>Reference: Your name + "AGRO-VERIFY"</p></div>
-      <div class="payment-option"><h4>🏦 Stanbic Bank</h4><p>Account: <strong>Integrated Farms Ltd</strong><br>Acc No: <strong>9030012345678</strong> · Kampala Main</p></div>
+    <button type="submit" class="btn btn-green" style="width:100%;padding:12px;margin-bottom:16px;">
+      Save Account Settings
+    </button>
+  </form>
+</div>
+
+<!-- ══ SETTING: BUSINESS & SUBSCRIPTION ══ -->
+<div class="page-section" id="section-setting-business">
+  <button class="back-btn" onclick="showSection('setting')">Settings</button>
+  <div class="page-header"><h2>Business & Subscription</h2><p>Manage billing and payments.</p></div>
+
+  <form action="{{ url_for('settings') }}" method="POST">
+    <input type="hidden" name="setting_type" value="business">
+
+    <div class="panel">
+      <h3>Business Profile</h3>
+      <label class="form-label">Company Name</label>
+      <input type="text" name="company_name" placeholder="AGROSPHERE Enterprise">
+      <label class="form-label">Tax ID / TIN</label>
+      <input type="text" name="tax_id" placeholder="100xxxxxxxx">
+      <label class="form-label">Primary Currency</label>
+      <select name="currency">
+        <option value="UGX">Ugandan Shilling (UGX)</option>
+        <option value="USD">US Dollar ($)</option>
+      </select>
     </div>
 
-    <div class="settings-block">
-      <h3>👤 Update Profile</h3>
-      <p class="desc">Keep your contact details current.</p>
-      <form action="{{ url_for('farmer.update_profile') }}" method="POST">
-        <label class="form-label">Full Name</label>
-        <input type="text" name="fullname" value="{{ current_user.fullname }}" required>
-        <label class="form-label" style="margin-top:10px;">Email</label>
-        <input type="email" name="email" value="{{ current_user.email }}" required>
-        <label class="form-label" style="margin-top:10px;">Phone</label>
-        <input type="tel" name="phone" value="{{ current_user.phone or '' }}">
-        <button type="submit" class="btn btn-green" style="width:100%;margin-top:14px;">Save Changes</button>
-      </form>
+    <div class="panel">
+      <h3>Billing & Subscription</h3>
+      <p style="font-size:0.85rem;margin-bottom:4px;">
+        <strong>Account Tier:</strong>
+        <span style="color:var(--green);font-weight:700;text-transform:capitalize;">
+          {{ current_user.role }}
+        </span>
+      </p>
+      <p style="font-size:1rem;font-weight:800;color:var(--green);margin-bottom:16px;">
+        {% if current_user.role == 'expert' %}5,000
+        {% elif current_user.role == 'business' %}10,000
+        {% else %}3,000{% endif %} UGX / month
+      </p>
+
+      <label class="form-label">Payment Provider</label>
+      <select name="payment_provider" id="dash-payment-provider"
+              onchange="dashTogglePayment(this.value)">
+        <option value="mtn">MTN Mobile Money</option>
+        <option value="airtel">Airtel Money</option>
+        <option value="card">Credit / Debit Card</option>
+      </select>
+
+      <div id="dash-momo-field" style="margin-top:10px;">
+        <label class="form-label">Mobile Money Number</label>
+        <input type="text" name="momo_number"
+               value="{{ current_user.contact or '' }}"
+               placeholder="077xxxxxxx">
+      </div>
+
+      <div id="dash-card-field" style="display:none;margin-top:10px;">
+        <label class="form-label">Card Number</label>
+        <input type="text" name="card_number" placeholder="xxxx xxxx xxxx xxxx">
+      </div>
+
+      <button type="submit" name="action" value="initiate_subscription"
+              class="btn btn-green" style="width:100%;padding:12px;margin-top:16px;">
+        ⚡ Pay
+        {% if current_user.role == 'expert' %}5,000
+        {% elif current_user.role == 'business' %}10,000
+        {% else %}3,000{% endif %} UGX Now
+      </button>
+    </div>
+  </form>
+</div>
+
+<!-- ══ SETTING: NOTIFICATIONS ══ -->
+<div class="page-section" id="section-setting-notifications">
+  <button class="back-btn" onclick="showSection('setting')">Settings</button>
+  <div class="page-header"><h2>Notifications</h2><p>Control your alerts and updates.</p></div>
+
+  <form action="{{ url_for('settings') }}" method="POST">
+    <input type="hidden" name="setting_type" value="notifications">
+
+    <div class="panel">
+      <h3>Email Alerts</h3>
+      <div class="checkbox-group">
+        <input type="checkbox" id="n1" name="email_weekly" checked>
+        <label for="n1" style="font-size:0.85rem;">Weekly production summaries</label>
+      </div>
+      <div class="checkbox-group" style="margin-top:10px;">
+        <input type="checkbox" id="n2" name="email_inventory" checked>
+        <label for="n2" style="font-size:0.85rem;">Low stock alerts</label>
+      </div>
     </div>
 
-    <div class="settings-block">
-      <h3>🔒 Change Password</h3>
-      <form action="{{ url_for('farmer.change_password') }}" method="POST">
-        <label class="form-label">Current Password</label>
-        <input type="password" name="old_password" required>
-        <label class="form-label" style="margin-top:10px;">New Password</label>
-        <input type="password" name="new_password" required>
-        <label class="form-label" style="margin-top:10px;">Confirm Password</label>
-        <input type="password" name="confirm_password" required>
-        <button type="submit" class="btn btn-green" style="width:100%;margin-top:14px;">Update Password</button>
-      </form>
-    </div>
+    <button type="submit" class="btn btn-green" style="width:100%;padding:12px;margin-bottom:16px;">
+      Save Preferences
+    </button>
+  </form>
+</div>
 
-    <form action="{{ url_for('auth.logout') }}" method="POST">
-      <button type="submit" class="btn btn-red" style="width:100%;margin-bottom:20px;">Sign Out</button>
-    </form>
+<!-- ══ SETTING: TECHNICAL & TOOLS ══ -->
+<div class="page-section" id="section-setting-technical">
+  <button class="back-btn" onclick="showSection('setting')">Settings</button>
+  <div class="page-header"><h2>Technical & Tools</h2><p>API keys and integration settings.</p></div>
+
+  <div class="panel">
+    <h3>API Configuration</h3>
+    <label class="form-label">Active Platform Key</label>
+    <input type="text" value="ag_live_8391hdkshf8190237hdskjfh"
+           readonly style="background:var(--bg);font-family:monospace;font-size:0.8rem;">
   </div>
+</div>
 
-</div><!-- /scroll-area -->
-
-<!-- ── Tab Bar ── -->
-<nav class="tab-bar">
-  <button class="tab-item active" id="tab-home" onclick="switchTab('home','tab-home')"><span class="tab-icon">🏠</span><span class="tab-label">Dashboard</span></button>
-  <button class="tab-item" id="tab-ask" onclick="switchTab('ask','tab-ask')"><span class="tab-icon">❓</span><span class="tab-label">Ask</span></button>
-  <button class="tab-item" id="tab-qa" onclick="switchTab('myquestions','tab-qa')"><span class="tab-icon">📄</span><span class="tab-label">My Q&A</span></button>
-  <button class="tab-item" id="tab-articles" onclick="switchTab('articles','tab-articles')"><span class="tab-icon">📃</span><span class="tab-label">Articles</span></button>
-  <button class="tab-item" id="tab-more" onclick="switchTab('setting','tab-more')"><span class="tab-icon">•••</span><span class="tab-label">More</span></button>
-</nav>
 
 <!-- ── ONE support FAB (only one, correct ID) ── -->
-<button class="support-fab" id="supportFab" title="Contact Support">💬</button>
+<!-- Support FAB -->
+<button class="support-fab" id="supportFab" title="Contact Support">🛠</button>
 
+<!-- Support Modal -->
 <div class="support-modal" id="supportModal">
-  <h4>Contact Support</h4>
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+    <h4 style="margin:0;">Contact Support</h4>
+    <button onclick="toggleSupport()" style="background:none;border:none;font-size:1.2rem;cursor:pointer;color:#6b7280;">✕</button>
+  </div>
   <p class="sub">We'll get back to you within 24 hours.</p>
-  <textarea id="supportMessage" placeholder="Describe your issue…"></textarea>
-  <div class="support-modal-btns">
-    <button class="btn btn-green" onclick="sendSupportMessage()">Send</button>
-    <button class="btn btn-ghost" onclick="toggleSupport()">Cancel</button>
+
+  <!-- Chat Thread (shown when open thread exists) -->
+  <div id="supportThread" style="display:none;">
+    <div id="supportChatBox"
+         style="max-height:260px;overflow-y:auto;background:#f9fafb;border:1px solid #e5e7eb;border-radius:10px;padding:10px;margin-bottom:10px;">
+    </div>
+    <p id="supportClosedMsg"
+       style="display:none;text-align:center;color:#dc2626;font-size:0.85rem;font-weight:600;margin:8px 0;">
+      This thread has been closed by support.
+    </p>
+  </div>
+
+  <!-- New Message Form (shown when no open thread) -->
+  <div id="supportNewForm">
+    <textarea id="supportMessage" placeholder="Describe your issue…"></textarea>
+    <div class="support-modal-btns">
+      <button class="btn btn-green" onclick="sendSupportMessage()">Send</button>
+      <button class="btn btn-ghost" onclick="toggleSupport()">Cancel</button>
+    </div>
   </div>
 </div>
 
@@ -562,20 +1777,106 @@ function switchTab(sid, tid) {
   document.getElementById(tid).classList.add('active');
 }
 
-// ── Support FAB (single instance, no duplicates) ──
-const supportFab   = document.getElementById('supportFab');
-const supportModal = document.getElementById('supportModal');
-const toast        = document.getElementById('toast');
+// ── Support Modal ──
+const fab   = document.getElementById('supportFab');
+const modal = document.getElementById('supportModal');
+const toast = document.getElementById('toast');
 
 function toggleSupport() {
-  supportModal.classList.toggle('open');
+  const isOpening = !modal.classList.contains('open');
+  modal.classList.toggle('open');
+  if (isOpening) loadSupportThread();
 }
 
-supportFab.addEventListener('click', function(e) {
-  e.stopPropagation();
-  toggleSupport();
+fab.addEventListener('click', toggleSupport);
+document.addEventListener('click', e => {
+  if (!modal.contains(e.target) && e.target !== fab)
+    modal.classList.remove('open');
 });
 
+async function loadSupportThread() {
+  try {
+    const res  = await fetch('/support/my-thread');
+    const data = await res.json();
+
+    const thread    = document.getElementById('supportThread');
+    const newForm   = document.getElementById('supportNewForm');
+    const chatBox   = document.getElementById('supportChatBox');
+    const closedMsg = document.getElementById('supportClosedMsg');
+
+    if (data.thread) {
+      thread.style.display  = 'block';
+      newForm.style.display = 'none';
+
+      let html = '';
+
+      // Farmer's original message — right bubble
+      html += `
+        <div style="display:flex;justify-content:flex-end;margin-bottom:10px;">
+          <div style="background:#16a34a;color:white;padding:8px 12px;border-radius:12px 12px 0 12px;max-width:80%;font-size:0.88rem;">
+            <p style="margin:0 0 3px 0;">${data.thread.message}</p>
+            <span style="font-size:0.72rem;opacity:0.8;">${data.thread.created_at}</span>
+          </div>
+        </div>`;
+
+      // Admin replies — left bubbles
+      data.thread.replies.forEach(r => {
+        html += `
+          <div style="display:flex;justify-content:flex-start;margin-bottom:10px;">
+            <div style="background:#e5e7eb;color:#111827;padding:8px 12px;border-radius:12px 12px 12px 0;max-width:80%;font-size:0.88rem;">
+              <p style="margin:0 0 2px 0;font-size:0.72rem;font-weight:700;color:#16a34a;">${r.admin}</p>
+              <p style="margin:0 0 3px 0;">${r.reply}</p>
+              <span style="font-size:0.72rem;color:#6b7280;">${r.created_at}</span>
+            </div>
+          </div>`;
+      });
+
+      chatBox.innerHTML = html;
+      chatBox.scrollTop = chatBox.scrollHeight;
+
+      if (data.thread.is_closed) {
+        closedMsg.style.display = 'block';
+      } else {
+        closedMsg.style.display = 'none';
+      }
+
+    } else {
+      thread.style.display  = 'none';
+      newForm.style.display = 'block';
+    }
+
+  } catch (e) {
+    console.error('Support thread load failed', e);
+  }
+}
+
+async function sendSupportMessage() {
+  const msg = document.getElementById('supportMessage').value.trim();
+  if (!msg) return;
+
+  try {
+    const res  = await fetch('/support/send', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({
+        user_id: document.body.dataset.userId,
+        message: msg
+      })
+    });
+    const data = await res.json();
+
+    if (res.ok) {
+      document.getElementById('supportMessage').value = '';
+      toast.style.display = 'block';
+      setTimeout(() => { toast.style.display = 'none'; }, 3000);
+      loadSupportThread(); // switch to chat view
+    } else {
+      alert(data.error || 'Failed to send message');
+    }
+  } catch (e) {
+    alert('Network error. Please try again.');
+  }
+}
 document.addEventListener('click', function(e) {
   if (!supportModal.contains(e.target) && e.target !== supportFab) {
     supportModal.classList.remove('open');
@@ -630,6 +1931,35 @@ function appendChatBubble(text, direction) {
   bubble.textContent = text;
   box.appendChild(bubble);
   box.scrollTop = box.scrollHeight;
+}
+// ── Payment toggle inside dashboard settings ──
+function dashTogglePayment(v) {
+  document.getElementById('dash-momo-field').style.display = v === 'card' ? 'none' : 'block';
+  document.getElementById('dash-card-field').style.display = v === 'card' ? 'block' : 'none';
+}
+function toggleReadMore(btn){
+
+    const text = btn.previousElementSibling;
+
+    text.classList.toggle('collapsed');
+
+    btn.textContent =
+        text.classList.contains('collapsed')
+        ? 'Read More'
+        : 'Show Less';
+}
+function toggleAnnouncement(id, btn){
+    const content = document.getElementById(id);
+
+    if(content.classList.contains("collapsed")){
+        content.classList.remove("collapsed");
+        content.classList.add("expanded");
+        btn.textContent = "Read Less";
+    }else{
+        content.classList.remove("expanded");
+        content.classList.add("collapsed");
+        btn.textContent = "Read More";
+    }
 }
 </script>
 </body>

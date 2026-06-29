@@ -2,6 +2,9 @@ from extensions import db
 from datetime import datetime
 from flask_login import UserMixin
 from datetime import datetime
+import base64
+import os
+from cryptography.fernet import Fernet
 
 
 class User(db.Model, UserMixin):
@@ -185,6 +188,18 @@ class Message(db.Model):
     is_read = db.Column(db.Boolean, default=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
+CHAT_KEY = os.environ.get('CHAT_KEY', Fernet.generate_key())
+_fernet  = Fernet(CHAT_KEY if isinstance(CHAT_KEY, bytes) else CHAT_KEY.encode())
+
+def encrypt_message(text: str) -> str:
+    return _fernet.encrypt(text.encode()).decode()
+
+def decrypt_message(token: str) -> str:
+    try:
+        return _fernet.decrypt(token.encode()).decode()
+    except Exception:
+        return '[Message could not be decrypted]'
+
 class ChatMessage(db.Model):
     __tablename__ = 'chat_messages'
     id          = db.Column(db.Integer, primary_key=True)
@@ -203,29 +218,41 @@ class SupportMessage(db.Model):
     user_id    = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     message    = db.Column(db.Text, nullable=False)
     status     = db.Column(db.String(20), default='Unread')
+    is_closed  = db.Column(db.Boolean, default=False)          # ← add this
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    user = db.relationship('User', backref='support_messages')
+    user       = db.relationship('User', backref='support_messages')
 
 
 
 class Payment(db.Model):
-     id = db.Column(db.Integer, primary_key=True)
+    __tablename__ = 'payment'
+    __table_args__ = (
+        db.UniqueConstraint('reference', name='uq_payment_reference'),
+    )
 
-user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    id                      = db.Column(db.Integer, primary_key=True)
+    user_id                 = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    amount                  = db.Column(db.Float, nullable=False)
+    product_type            = db.Column(db.String(30), nullable=False)
+    provider                = db.Column(db.String(20), nullable=False)
+    reference               = db.Column(db.String(100), nullable=False)
+    external_transaction_id = db.Column(db.String(100), nullable=True)
+    status                  = db.Column(db.String(20), default='pending')
+    created_at              = db.Column(db.DateTime, default=datetime.utcnow)
+    expires_at              = db.Column(db.DateTime, nullable=True)
 
-amount = db.Column(db.Float, nullable=False)
-product_type = db.Column(db.String(30), nullable=False)
+    user = db.relationship('User', backref=db.backref('payments', lazy=True))
 
-provider = db.Column(db.String(20), nullable=False)
-    # mtn / airtel
+    def __repr__(self):
+        return f'<Payment {self.reference} | {self.status}>'
+    
+class SupportReply(db.Model):
+    __tablename__ = 'support_replies'
+    id         = db.Column(db.Integer, primary_key=True)
+    message_id = db.Column(db.Integer, db.ForeignKey('support_messages.id'), nullable=False)
+    admin_id   = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    reply      = db.Column(db.Text, nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
-reference = db.Column(db.String(100), unique=True, nullable=False)
-
-external_transaction_id = db.Column(db.String(100), nullable=True)
-
-status = db.Column(db.String(20), default='pending')
-    # pending / processing / paid / failed
-
-created_at = db.Column(db.DateTime, default=datetime.utcnow)
-
-expires_at = db.Column(db.DateTime)
+    message = db.relationship('SupportMessage', backref='replies')
+    admin   = db.relationship('User', backref='support_replies')

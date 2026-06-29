@@ -1,0 +1,183 @@
+{# _post_card.html — AGROSPHERE Post Card Partial
+   Usage: {% include '_post_card.html' %}
+   Expects: `post` object with fields:
+     post.id, post.author (user obj), post.content, post.created_at,
+     post.visibility, post.images (list), post.likes_count,
+     post.comments_count, post.shares_count,
+     post.is_liked_by_current_user (bool),
+     post.is_bookmarked_by_current_user (bool)
+   Expects: `current_user` in context
+#}
+
+<article class="post-card" id="post-{{ post.id }}">
+
+  {# ── Header ── #}
+  <div class="post-card__header">
+    <div class="post-card__author">
+      <a href="{{ url_for('profile.view', user_id=post.author.id) }}" class="post-card__avatar-link">
+        {% if post.author.profile_picture %}
+          <img src="{{ post.author.profile_picture }}" alt="{{ post.author.full_name }}" class="post-card__avatar">
+        {% else %}
+          <div class="post-card__avatar post-card__avatar--placeholder">
+            {{ post.author.full_name[0]|upper }}
+          </div>
+        {% endif %}
+      </a>
+      <div class="post-card__meta">
+        <div class="post-card__name-row">
+          <a href="{{ url_for('profile.view', user_id=post.author.id) }}" class="post-card__name">
+            {{ post.author.full_name }}
+          </a>
+          {% if post.author.is_verified %}
+            <span class="post-card__verified" title="Verified">
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+                <circle cx="7" cy="7" r="7" fill="#2D7A3A"/>
+                <path d="M4 7l2 2 4-4" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </span>
+          {% endif %}
+        </div>
+        <div class="post-card__sub">
+          <time class="post-card__time" datetime="{{ post.created_at.isoformat() }}">
+            {{ post.created_at.strftime('%d %b %Y %H:%M') }}
+          </time>
+          <span class="post-card__dot" aria-hidden="true">·</span>
+          <span class="post-card__visibility" title="{{ post.visibility | capitalize }}">
+            {% if post.visibility == 'public' %}
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+              <span class="sr-only">Public</span>
+            {% elif post.visibility == 'friends' %}
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+              <span class="sr-only">Friends</span>
+            {% else %}
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+              <span class="sr-only">Only me</span>
+            {% endif %}
+          </span>
+        </div>
+      </div>
+    </div>
+
+    {# ── Three-dot menu ── #}
+    <div class="post-card__menu-wrap">
+      <button class="post-card__menu-btn" aria-label="Post options" aria-haspopup="true" aria-expanded="false"
+              data-post-id="{{ post.id }}">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+          <circle cx="12" cy="5"  r="1.5"/>
+          <circle cx="12" cy="12" r="1.5"/>
+          <circle cx="12" cy="19" r="1.5"/>
+        </svg>
+      </button>
+      <div class="post-card__dropdown" role="menu" hidden>
+        {% if current_user.id == post.author.id or current_user.role == 'admin' %}
+          <button class="post-card__dropdown-item" role="menuitem"
+                  data-action="edit-post" data-post-id="{{ post.id }}">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            Edit Post
+          </button>
+          <button class="post-card__dropdown-item post-card__dropdown-item--danger" role="menuitem"
+                  data-action="delete-post" data-post-id="{{ post.id }}">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+            Delete Post
+          </button>
+        {% endif %}
+        <button class="post-card__dropdown-item" role="menuitem"
+                data-action="report-post" data-post-id="{{ post.id }}">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>
+          Report Post
+        </button>
+        <button class="post-card__dropdown-item" role="menuitem"
+                data-action="share-post" data-post-id="{{ post.id }}">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+          Share Post
+        </button>
+      </div>
+    </div>
+  </div>{# /.post-card__header #}
+
+  {# ── Content ── #}
+  <div class="post-card__body">
+    <div class="post-card__text" data-post-id="{{ post.id }}">
+      {#
+        Render paragraphs — split on double newlines so paragraph breaks are preserved.
+        The first PREVIEW_LINES lines show by default; the rest are hidden until "Read More".
+      #}
+      {% set paragraphs = post.content.split('\n\n') %}
+      {% set preview_count = 3 %}
+
+      <div class="post-card__paragraphs">
+        {% for para in paragraphs %}
+          <p class="post-card__para {% if loop.index > preview_count %}post-card__para--hidden{% endif %}">
+            {{ para | e | replace('\n', '<br>') | safe }}
+          </p>
+        {% endfor %}
+      </div>
+
+      {% if paragraphs | length > preview_count %}
+        <button class="post-card__readmore" data-post-id="{{ post.id }}" aria-expanded="false">
+          Read More
+        </button>
+      {% endif %}
+    </div>
+  </div>
+
+  {# ── Images ── #}
+  {% if post.images %}
+    <div class="post-card__images post-card__images--{{ post.images | length }}">
+      {% for img in post.images %}
+        <a href="{{ img.url }}" class="post-card__image-link" target="_blank" rel="noopener">
+          <img src="{{ img.url }}" alt="Post image {{ loop.index }}" class="post-card__image" loading="lazy">
+        </a>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  {# ── Actions ── #}
+  <div class="post-card__actions">
+    <button class="post-card__action-btn {% if post.is_liked_by_current_user %}post-card__action-btn--active{% endif %}"
+            data-action="like-post" data-post-id="{{ post.id }}" aria-label="Like post"
+            aria-pressed="{{ 'true' if post.is_liked_by_current_user else 'false' }}">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="{% if post.is_liked_by_current_user %}currentColor{% else %}none{% endif %}"
+           stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3H14z"/>
+        <path d="M7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/>
+      </svg>
+      <span class="post-card__action-count" data-likes="{{ post.likes_count }}">
+        {{ post.likes_count if post.likes_count > 0 else '' }}
+      </span>
+    </button>
+
+    <button class="post-card__action-btn"
+            data-action="comment-post" data-post-id="{{ post.id }}" aria-label="Comment on post">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+      </svg>
+      <span class="post-card__action-count">
+        {{ post.comments_count if post.comments_count > 0 else '' }}
+      </span>
+    </button>
+
+    <button class="post-card__action-btn"
+            data-action="share-post" data-post-id="{{ post.id }}" aria-label="Share post">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/>
+        <polyline points="16 6 12 2 8 6"/>
+        <line x1="12" y1="2" x2="12" y2="15"/>
+      </svg>
+      <span class="post-card__action-count">
+        {{ post.shares_count if post.shares_count > 0 else '' }}
+      </span>
+    </button>
+
+    <button class="post-card__action-btn post-card__action-btn--bookmark {% if post.is_bookmarked_by_current_user %}post-card__action-btn--active{% endif %}"
+            data-action="bookmark-post" data-post-id="{{ post.id }}" aria-label="Bookmark post"
+            aria-pressed="{{ 'true' if post.is_bookmarked_by_current_user else 'false' }}">
+      <svg width="18" height="18" viewBox="0 0 24 24"
+           fill="{% if post.is_bookmarked_by_current_user %}currentColor{% else %}none{% endif %}"
+           stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
+      </svg>
+    </button>
+  </div>
+
+</article>

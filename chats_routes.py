@@ -1,64 +1,78 @@
 from flask import Blueprint, request, jsonify, session, render_template, redirect, url_for
 from extensions import db
-from models import User, ChatMessage
+from models import User, ChatMessage, encrypt_message, decrypt_message
 from datetime import datetime
+from sqlalchemy import or_, and_
 
 chat_bp = Blueprint('chat', __name__)
 
 
-# ── Chat page (the HTML you already have) ──
-@chat_bp.route('/chat')
-def chat_page():
+def get_verified_user():
+    """Returns current user only if logged in AND verified. Else None."""
     user_id = session.get('user_id')
     if not user_id:
-        return redirect(url_for('auth.login'))
+        return None
+    user = User.query.get(user_id)
+    if not user or not user.blue_tick:
+        return None
+    return user
 
-    current_user = User.query.get(user_id)
 
-    # Only verified users can access chat
-    if not current_user.blue_tick:
-        return redirect(f'/{current_user.role}/dashboard')
+# ── Chat page ──
+@chat_bp.route('/chat')
+def chat_page():
+    user = get_verified_user()
+    if not user:
+        # Not verified — send back to their dashboard
+        role = session.get('role', 'farmer')
+        return redirect(f'/{role}/dashboard')
 
-    # Show all OTHER verified users in the sidebar
+    # Only other verified users, excluding admin
     verified_users = User.query.filter(
         User.blue_tick == True,
-        User.id != user_id
+        User.id        != user.id,
+        User.role      != 'admin'          # admin excluded
     ).order_by(User.fullname).all()
 
     return render_template('chat.html',
-                           current_user=current_user,
-                           verified_users=verified_users)
+                           current_user  = user,
+                           verified_users = verified_users)
 
 
-# ── Get messages between current user and another user ──
-@chat_bp.route('/api/messages/<int:other_user_id>')
-def get_messages(other_user_id):
-    user_id = session.get('user_id')
-    if not user_id:
+# ── Get messages — only between the two participants ──
+@chat_bp.route('/api/messages/<int:other_id>')
+def get_messages(other_id):
+    user = get_verified_user()
+    if not user:
         return jsonify({'error': 'Unauthorized'}), 401
 
-    # Mark messages from the other user as read
+    # Verify the other person is also verified and not admin
+    other = User.query.get(other_id)
+    if not other or not other.blue_tick or other.role == 'admin':
+        return jsonify({'error': 'Invalid recipient'}), 403
+
+    # Mark messages from other person as read
     ChatMessage.query.filter_by(
-        sender_id=other_user_id,
-        receiver_id=user_id,
-        is_read=False
+        sender_id   = other_id,
+        receiver_id = user.id,
+        is_read     = False
     ).update({'is_read': True})
     db.session.commit()
 
-    # Fetch the full conversation
+    # Fetch ONLY messages between these two users — no one else
     messages = ChatMessage.query.filter(
-        db.or_(
-            db.and_(ChatMessage.sender_id == user_id,
-                    ChatMessage.receiver_id == other_user_id),
-            db.and_(ChatMessage.sender_id == other_user_id,
-                    ChatMessage.receiver_id == user_id)
+        or_(
+            and_(ChatMessage.sender_id   == user.id,
+                 ChatMessage.receiver_id == other_id),
+            and_(ChatMessage.sender_id   == other_id,
+                 ChatMessage.receiver_id == user.id)
         )
     ).order_by(ChatMessage.created_at.asc()).all()
 
     return jsonify([{
         'id':         m.id,
         'sender_id':  m.sender_id,
-        'content':    m.content,
+        'content':    decrypt_message(m.content),   # decrypt on the way out
         'is_read':    m.is_read,
         'created_at': m.created_at.strftime('%d %b %Y, %H:%M')
     } for m in messages])
@@ -67,25 +81,33 @@ def get_messages(other_user_id):
 # ── Send a message ──
 @chat_bp.route('/api/messages/send', methods=['POST'])
 def send_message():
-    user_id = session.get('user_id')
-    if not user_id:
-        return jsonify({'error': 'Unauthorized'}), 401
+    user = get_verified_user()
+    if not user:
+        return jsonify({'error': 'Unauthorized — must be verified'}), 401
 
-    data        = request.get_json()
+    data        = request.get_json(silent=True) or {}
     receiver_id = data.get('receiver_id')
     content     = data.get('content', '').strip()
 
     if not receiver_id or not content:
-        return jsonify({'error': 'Missing receiver_id or content'}), 400
+        return jsonify({'error': 'Missing receiver or message'}), 400
 
+    # Receiver must be verified and not admin
     receiver = User.query.get(receiver_id)
-    if not receiver or not receiver.blue_tick:
-        return jsonify({'error': 'Recipient not found or not verified'}), 404
+    if not receiver:
+        return jsonify({'error': 'Recipient not found'}), 404
+    if not receiver.blue_tick:
+        return jsonify({'error': 'Recipient is not verified'}), 403
+    if receiver.role == 'admin':
+        return jsonify({'error': 'Cannot message admin'}), 403
+    if receiver.id == user.id:
+        return jsonify({'error': 'Cannot message yourself'}), 400
 
+    # Encrypt before saving
     msg = ChatMessage(
-        sender_id=user_id,
-        receiver_id=receiver_id,
-        content=content
+        sender_id   = user.id,
+        receiver_id = receiver_id,
+        content     = encrypt_message(content)   # stored encrypted in DB
     )
     db.session.add(msg)
     db.session.commit()
@@ -93,19 +115,23 @@ def send_message():
     return jsonify({'message': 'Sent', 'id': msg.id}), 201
 
 
-# ── Unread counts for sidebar badges ──
+# ── Unread counts — only from verified non-admin users ──
 @chat_bp.route('/api/messages/unread-counts')
 def unread_counts():
-    user_id = session.get('user_id')
-    if not user_id:
+    user = get_verified_user()
+    if not user:
         return jsonify({}), 401
 
     rows = db.session.query(
         ChatMessage.sender_id,
         db.func.count(ChatMessage.id).label('cnt')
-    ).filter_by(
-        receiver_id=user_id,
-        is_read=False
+    ).join(
+        User, User.id == ChatMessage.sender_id
+    ).filter(
+        ChatMessage.receiver_id == user.id,
+        ChatMessage.is_read     == False,
+        User.blue_tick          == True,
+        User.role               != 'admin'
     ).group_by(ChatMessage.sender_id).all()
 
     return jsonify({str(row.sender_id): row.cnt for row in rows})
