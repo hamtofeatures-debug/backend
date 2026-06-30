@@ -1,5 +1,6 @@
 from flask import Blueprint, request, jsonify, render_template, session
 from extensions import db
+from models import SupportReply
 from models import User, Question, Announcement, AnnouncementReaction, ExpertRating, Articles, Business, BusinessPost, Post, SupportMessage, SupportReply
 
 admin_bp = Blueprint('admin', __name__)
@@ -457,34 +458,6 @@ def verify_user(user_id):
     db.session.commit()
     status = "verified" if user.blue_tick else "unverified"
     return jsonify({"message": f"User {status} successfully", "blue_tick": user.blue_tick}), 200 
-
-@admin_bp.route('/dashboard')
-def admin_dashboard():
-    support_messages = SupportMessage.query.order_by(
-        SupportMessage.created_at.desc()
-    ).all()
-    
-    users = User.query.all()
-    questions = Question.query.order_by(Question.id.desc()).all()
-
-    stats = {
-        "users": User.query.count(),
-        "farmers": User.query.filter_by(role='farmer').count(),
-        "experts": User.query.filter_by(role='expert').count(),
-        "businesses": Business.query.count(),
-        "questions": Question.query.count(),
-        "answered": Question.query.filter_by(status='answered').count(),
-        "announcements": Announcement.query.count(),
-    }
-
-    return render_template(
-        'admin_dashboard.html',
-        support_messages=support_messages,
-        all_users=users,
-        all_questions=questions,
-        stats=stats
-    )
-from models import SupportReply
 
 @admin_bp.route('/support/<int:msg_id>/reply', methods=['POST'])
 def reply_support_message(msg_id):

@@ -1413,17 +1413,33 @@ function pcWeatherFilter(q) {
   </div>
 
   <!-- ══ BUSINESS POSTS ══ -->
-  <div class="page-section" id="section-businessposts">
-    <button class="back-btn" onclick="showSection('home')">Dashboard</button>
-    <div class="page-header"><h2>Business Posts</h2><p>Products and services from local businesses.</p></div>
-    {% if business_posts %}{% for post in business_posts %}
-    <div class="list-card">
-      <div class="meta">🏢 {{ post.business_name }} · {{ post.created_at.strftime('%d %b %Y') }}</div>
-      <h4>{{ post.title }}</h4>
-      <p>{{ post.description[:140] }}…</p>
+<div class="page-section" id="section-businessposts">
+  <button class="back-btn" onclick="showSection('home')">Dashboard</button>
+  <div class="page-header"><h2>Business Posts</h2><p>Products and services shared by businesses.</p></div>
+  {% if business_posts %}{% for post in business_posts %}
+  <div class="list-card social-post">
+    <div class="post-header">
+      <div class="meta">🏢 {{ post.business_name.upper() }} · {{ post.created_at.strftime('%d %b %Y') }}</div>
+      <button class="post-menu-btn">⋮</button>
     </div>
-    {% endfor %}{% else %}<div class="empty-state"><div class="emoji">🏪</div>No business posts yet.</div>{% endif %}
+    <h3 class="article-title">{{ post.title }}</h3>
+    <div class="post-content collapsed">{{ post.description }}</div>
+    <span class="read-more" onclick="toggleReadMore(this)">Read More</span>
+    {% if post.media %}
+    <div class="post-media">
+      {% for item in post.media %}
+        {% if item.type == 'video' %}
+          <video src="{{ item.url }}" class="post-photo" controls></video>
+        {% else %}
+          <img src="{{ item.url }}" class="post-photo" alt="Post media">
+        {% endif %}
+      {% endfor %}
+    </div>
+    {% endif %}
+    <p style="font-size:0.75rem;color:var(--text-tertiary);margin-top:10px;">👍 {{ post.likes_count }} · 👁️ {{ post.views_count }}</p>
   </div>
+  {% endfor %}{% else %}<div class="empty-state"><div class="emoji">🏪</div>No business posts yet.</div>{% endif %}
+</div>
 
   
 <!-- Support FAB -->

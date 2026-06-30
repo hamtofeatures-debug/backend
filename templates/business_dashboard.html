@@ -217,6 +217,42 @@ textarea{width:100%;padding:10px 12px;border:1px solid var(--border);border-radi
 .read-more-btn:hover{
     text-decoration:underline;
 }
+
+/* ── Price cards — scoped with .pc- prefix ── */
+.pc-grid { display: flex; flex-direction: column; gap: 14px; margin-bottom: 24px; }
+.pc-card { background: var(--card-bg); border-radius: 16px; border: 1px solid var(--border); box-shadow: var(--shadow); overflow: hidden; transition: box-shadow 0.2s; }
+.pc-card__header { display: flex; align-items: center; gap: 14px; padding: 16px 18px; cursor: pointer; user-select: none; -webkit-user-select: none; }
+.pc-card__icon { width: 46px; height: 46px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; flex-shrink: 0; }
+.pc-card__meta { flex: 1; min-width: 0; }
+.pc-card__title { font-size: 0.95rem; font-weight: 700; color: var(--text-primary); margin-bottom: 2px; }
+.pc-card__sub { font-size: 0.75rem; color: var(--text-secondary); }
+.pc-card__chevron { font-size: 1rem; color: var(--text-tertiary); transition: transform 0.22s ease; flex-shrink: 0; }
+.pc-card.open .pc-card__chevron { transform: rotate(90deg); }
+.pc-card__body { display: none; padding: 0 18px 18px; }
+.pc-card.open .pc-card__body { display: block; }
+.pc-search { width: 100%; padding: 9px 13px; border: 1px solid var(--border); border-radius: 10px; font-size: 0.83rem; font-family: inherit; color: var(--text-primary); background: var(--bg); outline: none; margin-bottom: 12px; }
+.pc-search:focus { border-color: #9CA3AF; }
+.pc-list { display: flex; flex-direction: column; gap: 8px; }
+.pc-item { display: flex; align-items: center; justify-content: space-between; background: var(--bg); border-radius: 10px; padding: 10px 13px; border: 1px solid var(--border); gap: 10px; }
+.pc-item__left { flex: 1; min-width: 0; }
+.pc-item__name { font-size: 0.85rem; font-weight: 600; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pc-item__unit { font-size: 0.72rem; color: var(--text-tertiary); margin-top: 2px; }
+.pc-item__right { text-align: right; flex-shrink: 0; }
+.pc-item__price { font-size: 0.9rem; font-weight: 800; color: var(--green); }
+.pc-item__change { font-size: 0.68rem; font-weight: 700; margin-top: 2px; }
+.pc-item__change.up { color: #16a34a; }
+.pc-item__change.down { color: #dc2626; }
+.pc-item__change.flat { color: var(--text-tertiary); }
+.pc-inner-empty { text-align: center; padding: 24px 16px; font-size: 0.82rem; color: var(--text-tertiary); }
+.pc-inner-empty .emoji { font-size: 1.5rem; display: block; margin-bottom: 6px; }
+.pc-skeleton { height: 44px; background: linear-gradient(90deg, var(--bg) 25%, #e5e7eb 50%, var(--bg) 75%); background-size: 200% 100%; animation: pc-shimmer 1.4s infinite; border-radius: 10px; margin-bottom: 8px; }
+@keyframes pc-shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+.pc-refresh-row { display: flex; justify-content: flex-end; margin-bottom: 10px; }
+.pc-refresh-btn { background: none; border: 1px solid var(--border); border-radius: 8px; padding: 5px 12px; font-size: 0.75rem; font-family: inherit; color: var(--text-secondary); cursor: pointer; display: flex; align-items: center; gap: 5px; }
+.pc-refresh-btn:active { opacity: 0.7; }
+.pc-refresh-btn.spinning .pc-refresh-icon { animation: pc-spin 0.8s linear infinite; }
+@keyframes pc-spin { to { transform: rotate(360deg); } }
+.pc-updated { font-size: 0.68rem; color: var(--text-tertiary); text-align: right; margin-top: 8px; }
 </style>
 </head>
 <body data-user-id="{{ current_user.id }}">
@@ -307,13 +343,15 @@ textarea{width:100%;padding:10px 12px;border:1px solid var(--border);border-radi
       {% endif %}
 
       <button class="nav-card" onclick="window.location.href='/settings'">
-  <div class="icon-box ic-purple">⚙️</div>
-  <div>
-    <h3>Settings</h3>
-    <p>Verification, payment &amp; profile.</p>
-  </div>
-  <span class="arrow">›</span>
-</button>
+        <div class="icon-box ic-purple">⚙️</div>
+        <div>
+          <h3>Settings</h3>
+          <p>Verification, payment &amp; profile.</p>
+        </div>
+        <span class="arrow">›</span>
+      </button>
+
+    </div><!-- /card-grid -->
 
     <!-- Business Info Card -->
     {% if business %}
@@ -325,7 +363,8 @@ textarea{width:100%;padding:10px 12px;border:1px solid var(--border);border-radi
       <div class="info-row">{{ '✔ Verified' if business.blue_tick else '○ Not yet verified' }}</div>
     </div>
     {% endif %}
-  </div>
+
+  </div><!-- /section-home -->
 
   <!-- ══ MY POSTS ══ -->
   <div class="page-section" id="section-posts">
@@ -346,1069 +385,242 @@ textarea{width:100%;padding:10px 12px;border:1px solid var(--border);border-radi
         <input type="file" id="post_videos" name="videos" accept="video/*" multiple style="display:none;" onchange="previewMedia(event,'videoPreview','video')">
         <div class="media-grid" id="photoPreview"></div>
         <div class="media-grid" id="videoPreview"></div>
-       
-       <button type="submit" class="btn btn-green" style="width:100%;margin-top:14px;">Publish Post</button>
+
+        <button type="submit" class="btn btn-green" style="width:100%;margin-top:14px;">Publish Post</button>
       </form>
+    </div><!-- /panel -->
+
+    <div class="section-title">My Published Posts</div>
+    {% if my_posts %}{% for post in my_posts %}
+    <div class="list-card social-post">
+      <div class="post-header">
+        <div class="meta">{{ post.created_at.strftime('%d %b %Y') }}</div>
+        <button class="post-menu-btn">⋮</button>
+      </div>
+      <h3 class="article-title">{{ post.title }}</h3>
+      <div class="post-content collapsed">{{ post.description }}</div>
+      <span class="read-more" onclick="toggleReadMore(this)">Read More</span>
+      {% if post.media %}
+      <div class="post-media">
+        {% for item in post.media %}
+          {% if item.type == 'video' %}
+            <video src="{{ item.url }}" class="post-photo" controls></video>
+          {% else %}
+            <img src="{{ item.url }}" class="post-photo" alt="Post media">
+          {% endif %}
+        {% endfor %}
+      </div>
+      {% endif %}
+      <p style="font-size:0.75rem;color:var(--text-tertiary);margin-top:10px;">👍 {{ post.likes_count }} · 👁️ {{ post.views_count }}</p>
     </div>
-    {% if my_posts %}
-    <div class="section-title">Your Posts</div>
-    {% for post in my_posts %}
-    <div class="list-card">
-      <div class="meta">🕒 {{ post.created_at.strftime('%d %b %Y, %H:%M') }}</div>
-      <h4>{{ post.title }}</h4>
-      <p>{{ post.description }}</p>
-      {% if post.media %}<div class="media-grid">{% for item in post.media %}{% if item.type=='video' %}<video src="{{ item.url }}" controls></video>{% else %}<img src="{{ item.url }}" alt=""">{% endif %}{% endfor %}</div>{% endif %}
-      <p style="font-size:0.72rem;color:var(--text-tertiary);margin-top:8px;">👍 {{ post.likes_count }} · 👁️ {{ post.views_count }}</p>
-    </div>
-    {% endfor %}
-    {% else %}<div class="empty-state"><div class="emoji">🖼️</div>You haven't posted anything yet.</div>{% endif %}
-  </div>
+    {% endfor %}{% else %}<div class="empty-state"><div class="emoji">🏪</div>You haven't posted anything yet.</div>{% endif %}
+  </div><!-- /section-posts -->
 
   <!-- ══ PRICE UPDATES ══ -->
   <div class="page-section" id="section-priceupdates">
     <button class="back-btn" onclick="showSection('home')">Dashboard</button>
     <div class="page-header"><h2>Price Updates</h2><p>Monitor regional market prices and trends.</p></div>
-    <!--
-  ══════════════════════════════════════════════════════════════
-  AGROSPHERE — Price Updates Section
-  
-  HOW TO USE:
-  In admin_dashboard.html, find the section-priceupdates div:
 
-    <div class="page-section" id="section-priceupdates">
-      <button class="back-btn" onclick="showSection('home')">Dashboard</button>
-      <div class="page-header"><h2>Price Updates</h2>...</div>
-      <div class="empty-state">...</div>   ← REPLACE THIS LINE ONLY
-    </div>
+    <div class="pc-grid">
 
-  Replace just the <div class="empty-state">...</div> line
-  with the block below (everything between the CUT markers).
-  ══════════════════════════════════════════════════════════════
--->
-
-<!-- ── CUT START ── -->
-
-<style>
-/* ── Price cards — scoped with .pc- prefix, won't leak ── */
-.pc-grid {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-  margin-bottom: 24px;
-}
-
-.pc-card {
-  background: var(--card-bg);
-  border-radius: 16px;
-  border: 1px solid var(--border);
-  box-shadow: var(--shadow);
-  overflow: hidden;
-  transition: box-shadow 0.2s;
-}
-
-/* Header row — click to expand */
-.pc-card__header {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  padding: 16px 18px;
-  cursor: pointer;
-  user-select: none;
-  -webkit-user-select: none;
-}
-
-.pc-card__icon {
-  width: 46px;
-  height: 46px;
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.3rem;
-  flex-shrink: 0;
-}
-
-.pc-card__meta { flex: 1; min-width: 0; }
-.pc-card__title {
-  font-size: 0.95rem;
-  font-weight: 700;
-  color: var(--text-primary);
-  margin-bottom: 2px;
-}
-.pc-card__sub {
-  font-size: 0.75rem;
-  color: var(--text-secondary);
-}
-
-.pc-card__chevron {
-  font-size: 1rem;
-  color: var(--text-tertiary);
-  transition: transform 0.22s ease;
-  flex-shrink: 0;
-}
-.pc-card.open .pc-card__chevron { transform: rotate(90deg); }
-
-/* Body — hidden until open */
-.pc-card__body {
-  display: none;
-  padding: 0 18px 18px;
-}
-.pc-card.open .pc-card__body { display: block; }
-
-/* Search bar inside card */
-.pc-search {
-  width: 100%;
-  padding: 9px 13px;
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  font-size: 0.83rem;
-  font-family: inherit;
-  color: var(--text-primary);
-  background: var(--bg);
-  outline: none;
-  margin-bottom: 12px;
-}
-.pc-search:focus { border-color: #9CA3AF; }
-
-/* Items list */
-.pc-list { display: flex; flex-direction: column; gap: 8px; }
-
-.pc-item {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  background: var(--bg);
-  border-radius: 10px;
-  padding: 10px 13px;
-  border: 1px solid var(--border);
-  gap: 10px;
-}
-
-.pc-item__left { flex: 1; min-width: 0; }
-.pc-item__name {
-  font-size: 0.85rem;
-  font-weight: 600;
-  color: var(--text-primary);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.pc-item__unit {
-  font-size: 0.72rem;
-  color: var(--text-tertiary);
-  margin-top: 2px;
-}
-
-.pc-item__right { text-align: right; flex-shrink: 0; }
-.pc-item__price {
-  font-size: 0.9rem;
-  font-weight: 800;
-  color: var(--green);
-}
-.pc-item__change {
-  font-size: 0.68rem;
-  font-weight: 700;
-  margin-top: 2px;
-}
-.pc-item__change.up   { color: #16a34a; }
-.pc-item__change.down { color: #dc2626; }
-.pc-item__change.flat { color: var(--text-tertiary); }
-
-/* Empty / error states inside card */
-.pc-inner-empty {
-  text-align: center;
-  padding: 24px 16px;
-  font-size: 0.82rem;
-  color: var(--text-tertiary);
-}
-.pc-inner-empty .emoji { font-size: 1.5rem; display: block; margin-bottom: 6px; }
-
-/* Loading skeleton */
-.pc-skeleton {
-  height: 44px;
-  background: linear-gradient(90deg, var(--bg) 25%, #e5e7eb 50%, var(--bg) 75%);
-  background-size: 200% 100%;
-  animation: pc-shimmer 1.4s infinite;
-  border-radius: 10px;
-  margin-bottom: 8px;
-}
-@keyframes pc-shimmer {
-  0%   { background-position: 200% 0; }
-  100% { background-position: -200% 0; }
-}
-
-/* Refresh button */
-.pc-refresh-row {
-  display: flex;
-  justify-content: flex-end;
-  margin-bottom: 10px;
-}
-.pc-refresh-btn {
-  background: none;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 5px 12px;
-  font-size: 0.75rem;
-  font-family: inherit;
-  color: var(--text-secondary);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 5px;
-}
-.pc-refresh-btn:active { opacity: 0.7; }
-.pc-refresh-btn.spinning .pc-refresh-icon { animation: pc-spin 0.8s linear infinite; }
-@keyframes pc-spin { to { transform: rotate(360deg); } }
-
-/* Last updated tag */
-.pc-updated {
-  font-size: 0.68rem;
-  color: var(--text-tertiary);
-  text-align: right;
-  margin-top: 8px;
-}
-</style>
-
-<div class="pc-grid">
-
-  <!-- ── CARD 1: Agricultural Inputs ── -->
-  <div class="pc-card" id="pc-inputs">
-    <div class="pc-card__header" onclick="pcToggle('inputs')">
-      <div class="pc-card__icon ic-green">🌱</div>
-      <div class="pc-card__meta">
-        <div class="pc-card__title">Agricultural Inputs</div>
-        <div class="pc-card__sub">Seeds, fertilisers, pesticides &amp; chemicals</div>
+      <!-- ── CARD 1: Agricultural Inputs ── -->
+      <div class="pc-card" id="pc-inputs">
+        <div class="pc-card__header" onclick="pcToggle('inputs')">
+          <div class="pc-card__icon ic-green">🌱</div>
+          <div class="pc-card__meta">
+            <div class="pc-card__title">Agricultural Inputs</div>
+            <div class="pc-card__sub">Seeds, fertilisers, pesticides &amp; chemicals</div>
+          </div>
+          <span class="pc-card__chevron">›</span>
+        </div>
+        <div class="pc-card__body">
+          <div class="pc-refresh-row">
+            <button class="pc-refresh-btn" id="pc-inputs-refresh" onclick="pcLoad('inputs', true)">
+              <span class="pc-refresh-icon">↻</span> Refresh
+            </button>
+          </div>
+          <input class="pc-search" id="pc-inputs-search" placeholder="🔍  Search inputs…"
+                 oninput="pcFilter('inputs', this.value)">
+          <div class="pc-list" id="pc-inputs-list">
+            <div class="pc-skeleton"></div>
+            <div class="pc-skeleton"></div>
+            <div class="pc-skeleton"></div>
+          </div>
+          <div class="pc-updated" id="pc-inputs-updated"></div>
+        </div>
       </div>
-      <span class="pc-card__chevron">›</span>
-    </div>
-    <div class="pc-card__body">
-      <div class="pc-refresh-row">
-        <button class="pc-refresh-btn" id="pc-inputs-refresh" onclick="pcLoad('inputs', true)">
-          <span class="pc-refresh-icon">↻</span> Refresh
-        </button>
+
+      <!-- ── CARD 2: Agricultural Outputs ── -->
+      <div class="pc-card" id="pc-outputs">
+        <div class="pc-card__header" onclick="pcToggle('outputs')">
+          <div class="pc-card__icon ic-orange">🌾</div>
+          <div class="pc-card__meta">
+            <div class="pc-card__title">Agricultural Outputs</div>
+            <div class="pc-card__sub">Crops, grains, livestock &amp; produce</div>
+          </div>
+          <span class="pc-card__chevron">›</span>
+        </div>
+        <div class="pc-card__body">
+          <div class="pc-refresh-row">
+            <button class="pc-refresh-btn" id="pc-outputs-refresh" onclick="pcLoad('outputs', true)">
+              <span class="pc-refresh-icon">↻</span> Refresh
+            </button>
+          </div>
+          <input class="pc-search" id="pc-outputs-search" placeholder="🔍  Search outputs…"
+                 oninput="pcFilter('outputs', this.value)">
+          <div class="pc-list" id="pc-outputs-list">
+            <div class="pc-skeleton"></div>
+            <div class="pc-skeleton"></div>
+            <div class="pc-skeleton"></div>
+          </div>
+          <div class="pc-updated" id="pc-outputs-updated"></div>
+        </div>
       </div>
-      <input class="pc-search" id="pc-inputs-search" placeholder="🔍  Search inputs…"
-             oninput="pcFilter('inputs', this.value)">
-      <div class="pc-list" id="pc-inputs-list">
-        <div class="pc-skeleton"></div>
-        <div class="pc-skeleton"></div>
-        <div class="pc-skeleton"></div>
+
+      <!-- ── CARD 3: Equipment & Machinery ── -->
+      <div class="pc-card" id="pc-equipment">
+        <div class="pc-card__header" onclick="pcToggle('equipment')">
+          <div class="pc-card__icon ic-blue">🚜</div>
+          <div class="pc-card__meta">
+            <div class="pc-card__title">Equipment &amp; Machinery</div>
+            <div class="pc-card__sub">Tools, tractors, irrigation &amp; storage</div>
+          </div>
+          <span class="pc-card__chevron">›</span>
+        </div>
+        <div class="pc-card__body">
+          <div class="pc-refresh-row">
+            <button class="pc-refresh-btn" id="pc-equipment-refresh" onclick="pcLoad('equipment', true)">
+              <span class="pc-refresh-icon">↻</span> Refresh
+            </button>
+          </div>
+          <input class="pc-search" id="pc-equipment-search" placeholder="🔍  Search equipment…"
+                 oninput="pcFilter('equipment', this.value)">
+          <div class="pc-list" id="pc-equipment-list">
+            <div class="pc-skeleton"></div>
+            <div class="pc-skeleton"></div>
+            <div class="pc-skeleton"></div>
+          </div>
+          <div class="pc-updated" id="pc-equipment-updated"></div>
+        </div>
       </div>
-      <div class="pc-updated" id="pc-inputs-updated"></div>
-    </div>
-  </div>
 
-  <!-- ── CARD 2: Agricultural Outputs ── -->
-  <div class="pc-card" id="pc-outputs">
-    <div class="pc-card__header" onclick="pcToggle('outputs')">
-      <div class="pc-card__icon ic-orange">🌾</div>
-      <div class="pc-card__meta">
-        <div class="pc-card__title">Agricultural Outputs</div>
-        <div class="pc-card__sub">Crops, grains, livestock &amp; produce</div>
-      </div>
-      <span class="pc-card__chevron">›</span>
-    </div>
-    <div class="pc-card__body">
-      <div class="pc-refresh-row">
-        <button class="pc-refresh-btn" id="pc-outputs-refresh" onclick="pcLoad('outputs', true)">
-          <span class="pc-refresh-icon">↻</span> Refresh
-        </button>
-      </div>
-      <input class="pc-search" id="pc-outputs-search" placeholder="🔍  Search outputs…"
-             oninput="pcFilter('outputs', this.value)">
-      <div class="pc-list" id="pc-outputs-list">
-        <div class="pc-skeleton"></div>
-        <div class="pc-skeleton"></div>
-        <div class="pc-skeleton"></div>
-      </div>
-      <div class="pc-updated" id="pc-outputs-updated"></div>
-    </div>
-  </div>
-
-  <!-- ── CARD 3: Equipment & Machinery ── -->
-  <div class="pc-card" id="pc-equipment">
-    <div class="pc-card__header" onclick="pcToggle('equipment')">
-      <div class="pc-card__icon ic-blue">🚜</div>
-      <div class="pc-card__meta">
-        <div class="pc-card__title">Equipment &amp; Machinery</div>
-        <div class="pc-card__sub">Tools, tractors, irrigation &amp; storage</div>
-      </div>
-      <span class="pc-card__chevron">›</span>
-    </div>
-    <div class="pc-card__body">
-      <div class="pc-refresh-row">
-        <button class="pc-refresh-btn" id="pc-equipment-refresh" onclick="pcLoad('equipment', true)">
-          <span class="pc-refresh-icon">↻</span> Refresh
-        </button>
-      </div>
-      <input class="pc-search" id="pc-equipment-search" placeholder="🔍  Search equipment…"
-             oninput="pcFilter('equipment', this.value)">
-      <div class="pc-list" id="pc-equipment-list">
-        <div class="pc-skeleton"></div>
-        <div class="pc-skeleton"></div>
-        <div class="pc-skeleton"></div>
-      </div>
-      <div class="pc-updated" id="pc-equipment-updated"></div>
-    </div>
-  </div>
-
-</div><!-- /pc-grid -->
-
-<script>
-/* ══════════════════════════════════════════════════════════════
-   PRICE CARDS — fully self-contained, no conflicts with script.js
-   All identifiers are prefixed with pc_ / PC_ to avoid collisions.
-   ══════════════════════════════════════════════════════════════ */
-
-/* ── Static price data (Uganda market reference prices, UGX) ──
-   Replace or augment with a real API call when available.        */
-const PC_DATA = {
-  inputs: [
-    { name: 'Maize Seed (hybrid)',      unit: 'per kg',     price: 12000,  change: +5  },
-    { name: 'Bean Seed (NABE)',         unit: 'per kg',     price: 8500,   change: 0   },
-    { name: 'Sunflower Seed',           unit: 'per kg',     price: 9000,   change: -3  },
-    { name: 'NPK Fertiliser (50 kg)',   unit: 'per bag',    price: 145000, change: +8  },
-    { name: 'Urea (50 kg)',             unit: 'per bag',    price: 130000, change: +2  },
-    { name: 'CAN Fertiliser (50 kg)',   unit: 'per bag',    price: 120000, change: 0   },
-    { name: 'Dithane (fungicide)',      unit: 'per kg',     price: 22000,  change: -5  },
-    { name: 'Cypermethrin (pesticide)', unit: 'per litre',  price: 18000,  change: +1  },
-    { name: 'Glyphosate (herbicide)',   unit: 'per litre',  price: 15000,  change: 0   },
-    { name: 'Lime (soil amendment)',    unit: 'per 50 kg',  price: 40000,  change: -2  },
-  ],
-  outputs: [
-    { name: 'Maize (dry grain)',        unit: 'per 100 kg', price: 85000,  change: +12 },
-    { name: 'Beans (dry)',              unit: 'per 100 kg', price: 210000, change: +6  },
-    { name: 'Groundnuts (shelled)',     unit: 'per 100 kg', price: 320000, change: -4  },
-    { name: 'Sorghum (grain)',          unit: 'per 100 kg', price: 70000,  change: +3  },
-    { name: 'Cassava (fresh)',          unit: 'per 100 kg', price: 55000,  change: 0   },
-    { name: 'Matoke (bunch)',           unit: 'per bunch',  price: 12000,  change: -8  },
-    { name: 'Coffee (FAQ)',             unit: 'per kg',     price: 9500,   change: +15 },
-    { name: 'Sunflower (seed)',         unit: 'per 100 kg', price: 180000, change: +2  },
-    { name: 'Rice (paddy)',             unit: 'per 100 kg', price: 160000, change: -1  },
-    { name: 'Cattle (live weight)',     unit: 'per kg',     price: 8000,   change: +4  },
-    { name: 'Goat (live)',             unit: 'per head',   price: 180000, change: 0   },
-    { name: 'Milk (fresh)',             unit: 'per litre',  price: 1200,   change: -3  },
-    { name: 'Eggs',                     unit: 'per tray',   price: 14000,  change: +5  },
-  ],
-  equipment: [
-    { name: 'Hand hoe',                 unit: 'per piece',  price: 18000,  change: 0   },
-    { name: 'Panga / Machete',          unit: 'per piece',  price: 12000,  change: +2  },
-    { name: 'Ox-plough (single)',       unit: 'per unit',   price: 280000, change: 0   },
-    { name: 'Knapsack sprayer (16 L)',  unit: 'per unit',   price: 85000,  change: -5  },
-    { name: 'Power sprayer (portable)', unit: 'per unit',   price: 450000, change: +3  },
-    { name: 'Maize sheller (manual)',   unit: 'per unit',   price: 120000, change: 0   },
-    { name: 'Thresher (motorised)',     unit: 'per unit',   price: 2800000,change: 0   },
-    { name: 'Water pump (2-inch)',      unit: 'per unit',   price: 680000, change: +7  },
-    { name: 'Drip irrigation kit',      unit: 'per acre',   price: 1200000,change: +4  },
-    { name: 'Tractor hire (2WD)',       unit: 'per hour',   price: 85000,  change: +10 },
-    { name: 'Polythene mulch (100 m)',  unit: 'per roll',   price: 95000,  change: -2  },
-    { name: 'Grain sack (100 kg)',      unit: 'per piece',  price: 3500,   change: 0   },
-  ]
-};
-
-/* Track which cards have been loaded */
-const _pcLoaded = { inputs: false, outputs: false, equipment: false };
-
-/* ── Toggle open / close ── */
-function pcToggle(type) {
-  const card = document.getElementById('pc-' + type);
-  if (!card) return;
-
-  const isOpen = card.classList.contains('open');
-
-  if (isOpen) {
-    card.classList.remove('open');
-  } else {
-    card.classList.add('open');
-    if (!_pcLoaded[type]) pcLoad(type, false);
-  }
-}
-
-/* ── Load (or reload) data into a card ── */
-function pcLoad(type, isRefresh) {
-  const listEl   = document.getElementById('pc-' + type + '-list');
-  const updated  = document.getElementById('pc-' + type + '-updated');
-  const refreshBtn = document.getElementById('pc-' + type + '-refresh');
-
-  if (!listEl) return;
-
-  /* Show skeleton while "loading" */
-  listEl.innerHTML = '<div class="pc-skeleton"></div>'
-                   + '<div class="pc-skeleton"></div>'
-                   + '<div class="pc-skeleton"></div>';
-
-  if (refreshBtn) refreshBtn.classList.add('spinning');
-
-  /* Simulate a short fetch delay so it feels live */
-  setTimeout(function() {
-    _pcLoaded[type] = true;
-
-    const items = PC_DATA[type] || [];
-    pcRender(type, items);
-
-    if (updated) {
-      const now = new Date();
-      updated.textContent = 'Updated ' + now.toLocaleTimeString('en-UG', { hour: '2-digit', minute: '2-digit' });
-    }
-    if (refreshBtn) refreshBtn.classList.remove('spinning');
-  }, isRefresh ? 900 : 400);
-}
-
-/* ── Render items into a card list ── */
-function pcRender(type, items) {
-  const listEl  = document.getElementById('pc-' + type + '-list');
-  const searchEl = document.getElementById('pc-' + type + '-search');
-  const query   = searchEl ? searchEl.value.toLowerCase().trim() : '';
-
-  if (!listEl) return;
-
-  if (items.length === 0) {
-    listEl.innerHTML = '<div class="pc-inner-empty">'
-      + '<span class="emoji">📭</span>No price data available.</div>';
-    return;
-  }
-
-  const filtered = query
-    ? items.filter(function(i) { return i.name.toLowerCase().includes(query); })
-    : items;
-
-  if (filtered.length === 0) {
-    listEl.innerHTML = '<div class="pc-inner-empty">'
-      + '<span class="emoji">🔍</span>No matches for "' + _pcEsc(query) + '".</div>';
-    return;
-  }
-
-  listEl.innerHTML = filtered.map(function(item) {
-    const changeSign = item.change > 0 ? '+' : '';
-    const changeClass = item.change > 0 ? 'up' : (item.change < 0 ? 'down' : 'flat');
-    const changeLabel = item.change === 0
-      ? '→ Stable'
-      : changeSign + item.change + '% this week';
-
-    return '<div class="pc-item">'
-      + '<div class="pc-item__left">'
-      + '<div class="pc-item__name">' + _pcEsc(item.name) + '</div>'
-      + '<div class="pc-item__unit">' + _pcEsc(item.unit) + '</div>'
-      + '</div>'
-      + '<div class="pc-item__right">'
-      + '<div class="pc-item__price">UGX ' + item.price.toLocaleString() + '</div>'
-      + '<div class="pc-item__change ' + changeClass + '">' + changeLabel + '</div>'
-      + '</div>'
-      + '</div>';
-  }).join('');
-}
-
-/* ── Filter on search input ── */
-function pcFilter(type, query) {
-  if (!_pcLoaded[type]) return;
-  pcRender(type, PC_DATA[type] || []);
-}
-
-/* ── XSS-safe escaping ── */
-function _pcEsc(str) {
-  return String(str)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;');
-}
-</script>
-
-<!-- ── CUT END ── -->
-  </div>
-
+    </div><!-- /pc-grid -->
+  </div><!-- /section-priceupdates -->
 
   <!-- ══ WEATHER CHANGES ══ -->
   <div class="page-section" id="section-weather">
     <button class="back-btn" onclick="showSection('home')">Dashboard</button>
     <div class="page-header"><h2>Weather Changes</h2><p>Track weather forecasts and climate alerts.</p></div>
-    <!-- ═══════════════════════════════════════════════
-     AGROSPHERE — WEATHER DASHBOARD SECTION
-     Uganda District Weather System (Live-ready)
-══════════════════════════════════════════════════ -->
 
-<style>
-
-/* ── WEATHER GRID ── */
-.pc-grid {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-  margin-bottom: 24px;
-}
-
-/* ── CARD BASE ── */
-.pc-card {
-  background: var(--card-bg, #fff);
-  border-radius: 16px;
-  border: 1px solid var(--border, #e5e7eb);
-  box-shadow: var(--shadow, 0 6px 18px rgba(0,0,0,0.08));
-  overflow: hidden;
-}
-
-/* HEADER */
-.pc-card__header {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  padding: 16px 18px;
-  cursor: pointer;
-  user-select: none;
-}
-
-.pc-card__icon {
-  width: 46px;
-  height: 46px;
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.3rem;
-}
-
-.ic-blue { background: #dbeafe; }
-
-.pc-card__meta { flex: 1; }
-.pc-card__title { font-weight: 700; font-size: 0.95rem; }
-.pc-card__sub { font-size: 0.75rem; color: #6b7280; }
-
-.pc-card__chevron {
-  transition: transform 0.2s ease;
-}
-.pc-card.open .pc-card__chevron { transform: rotate(90deg); }
-
-/* BODY */
-.pc-card__body {
-  display: none;
-  padding: 0 18px 18px;
-}
-.pc-card.open .pc-card__body { display: block; }
-
-/* SEARCH */
-.pc-search {
-  width: 100%;
-  padding: 10px 12px;
-  border-radius: 10px;
-  border: 1px solid #e5e7eb;
-  margin-bottom: 12px;
-  outline: none;
-}
-
-/* LIST */
-.pc-list {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-/* ITEM */
-.pc-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 10px 12px;
-  border: 1px solid #e5e7eb;
-  border-radius: 10px;
-  background: #fafafa;
-}
-
-.pc-item__name {
-  font-weight: 600;
-  font-size: 0.85rem;
-}
-
-.pc-item__unit {
-  font-size: 0.72rem;
-  color: #6b7280;
-}
-
-.pc-item__price {
-  font-weight: 800;
-  font-size: 1rem;
-  color: #0f172a;
-}
-
-.pc-item__change {
-  font-size: 0.7rem;
-  color: #16a34a;
-}
-
-/* REFRESH */
-.pc-refresh-row {
-  display: flex;
-  justify-content: flex-end;
-  margin-bottom: 8px;
-}
-
-.pc-refresh-btn {
-  font-size: 0.75rem;
-  border: 1px solid #e5e7eb;
-  background: transparent;
-  padding: 5px 10px;
-  border-radius: 8px;
-  cursor: pointer;
-}
-
-.pc-refresh-btn.spinning {
-  animation: spin 0.8s linear infinite;
-}
-
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
-
-/* EMPTY */
-.pc-inner-empty {
-  text-align: center;
-  padding: 20px;
-  color: #6b7280;
-}
-
-.pc-skeleton {
-  height: 40px;
-  border-radius: 10px;
-  background: linear-gradient(90deg,#eee,#f5f5f5,#eee);
-  background-size: 200% 100%;
-  animation: shimmer 1.2s infinite;
-}
-
-@keyframes shimmer {
-  0% { background-position: 200% 0; }
-  100% { background-position: -200% 0; }
-}
-
-</style>
-
-<div class="pc-grid">
-
-  <!-- ═════════ WEATHER CARD ═════════ -->
-  <div class="pc-card" id="pc-weather">
-
-    <div class="pc-card__header" onclick="pcToggleWeather()">
-      <div class="pc-card__icon ic-blue">🌦️</div>
-      <div class="pc-card__meta">
-        <div class="pc-card__title">Uganda Weather Dashboard</div>
-        <div class="pc-card__sub">Live weather by district</div>
-      </div>
-      <span class="pc-card__chevron">›</span>
-    </div>
-
-    <div class="pc-card__body">
-
-      <!-- Refresh -->
-      <div class="pc-refresh-row">
-        <button class="pc-refresh-btn" onclick="pcWeatherLoad(true)">↻ Refresh</button>
-      </div>
-
-      <!-- Search -->
-      <input class="pc-search"
-             placeholder="Search district..."
-             oninput="pcWeatherFilter(this.value)">
-
-      <!-- List -->
-      <div class="pc-list" id="pc-weather-list"></div>
-
-      <div style="font-size:0.7rem;color:#6b7280;margin-top:8px;" id="pc-weather-updated"></div>
-
-    </div>
-  </div>
-
-</div>
-
-<script>
-
-/* ═════════ UGANDA WEATHER DATA ═════════ */
-const WEATHER_DATA = [
-  { name:"Abim", temp:29, condition:"Sunny", humidity:55 },
-  { name:"Adjumani", temp:31, condition:"Hot", humidity:60 },
-  { name:"Agago", temp:30, condition:"Sunny", humidity:58 },
-  { name:"Alebtong", temp:29, condition:"Partly Cloudy", humidity:62 },
-  { name:"Amolatar", temp:30, condition:"Hot", humidity:64 },
-  { name:"Amudat", temp:28, condition:"Windy", humidity:52 },
-  { name:"Amuria", temp:29, condition:"Cloudy", humidity:66 },
-  { name:"Amuru", temp:31, condition:"Hot", humidity:57 },
-  { name:"Apac", temp:30, condition:"Sunny", humidity:60 },
-  { name:"Arua", temp:32, condition:"Hot", humidity:50 },
-
-  { name:"Budaka", temp:27, condition:"Rainy", humidity:78 },
-  { name:"Bududa", temp:25, condition:"Heavy Rain", humidity:85 },
-  { name:"Bugiri", temp:27, condition:"Light Rain", humidity:74 },
-  { name:"Bugweri", temp:27, condition:"Cloudy", humidity:73 },
-  { name:"Buhweju", temp:23, condition:"Cold", humidity:88 },
-  { name:"Buikwe", temp:28, condition:"Humid", humidity:76 },
-  { name:"Bukedea", temp:28, condition:"Sunny", humidity:65 },
-  { name:"Bukomansimbi", temp:27, condition:"Cloudy", humidity:70 },
-  { name:"Bukwo", temp:22, condition:"Cold", humidity:90 },
-  { name:"Bulambuli", temp:24, condition:"Rainy", humidity:84 },
-
-  { name:"Buliisa", temp:32, condition:"Hot", humidity:48 },
-  { name:"Bundibugyo", temp:29, condition:"Rainy", humidity:82 },
-  { name:"Bunyangabu", temp:24, condition:"Foggy", humidity:83 },
-  { name:"Bushenyi", temp:25, condition:"Cloudy", humidity:78 },
-  { name:"Busia", temp:28, condition:"Humid", humidity:72 },
-  { name:"Butaleja", temp:27, condition:"Rainy", humidity:80 },
-  { name:"Butambala", temp:26, condition:"Cloudy", humidity:75 },
-  { name:"Butebo", temp:27, condition:"Rainy", humidity:77 },
-  { name:"Buvuma", temp:29, condition:"Humid", humidity:85 },
-  { name:"Buyende", temp:29, condition:"Sunny", humidity:63 },
-
-  { name:"Dokolo", temp:30, condition:"Sunny", humidity:59 },
-  { name:"Gomba", temp:27, condition:"Cloudy", humidity:71 },
-  { name:"Gulu", temp:30, condition:"Sunny", humidity:52 },
-  { name:"Hoima", temp:32, condition:"Hot", humidity:46 },
-  { name:"Ibanda", temp:26, condition:"Cloudy", humidity:74 },
-  { name:"Iganga", temp:27, condition:"Rainy", humidity:79 },
-  { name:"Isingiro", temp:27, condition:"Dry", humidity:60 },
-  { name:"Jinja", temp:27, condition:"Light Rain", humidity:78 },
-
-  { name:"Kaabong", temp:31, condition:"Hot", humidity:45 },
-  { name:"Kabale", temp:22, condition:"Cold", humidity:88 },
-  { name:"Kabarole", temp:24, condition:"Foggy", humidity:84 },
-  { name:"Kaberamaido", temp:29, condition:"Cloudy", humidity:66 },
-  { name:"Kagadi", temp:31, condition:"Hot", humidity:49 },
-  { name:"Kakumiro", temp:30, condition:"Sunny", humidity:55 },
-  { name:"Kalaki", temp:29, condition:"Cloudy", humidity:67 },
-  { name:"Kalangala", temp:29, condition:"Humid", humidity:90 },
-  { name:"Kaliro", temp:27, condition:"Rainy", humidity:78 },
-  { name:"Kalungu", temp:27, condition:"Cloudy", humidity:72 },
-
-  { name:"Kampala", temp:28, condition:"Partly Cloudy", humidity:66 },
-  { name:"Kamuli", temp:28, condition:"Rainy", humidity:75 },
-  { name:"Kamwenge", temp:25, condition:"Cloudy", humidity:80 },
-  { name:"Kanungu", temp:23, condition:"Cold", humidity:86 },
-  { name:"Kapchorwa", temp:21, condition:"Cold", humidity:89 },
-  { name:"Kapelebyong", temp:29, condition:"Sunny", humidity:61 },
-  { name:"Karenga", temp:31, condition:"Hot", humidity:44 },
-  { name:"Kasanda", temp:28, condition:"Cloudy", humidity:70 },
-  { name:"Kasese", temp:28, condition:"Rainy", humidity:82 },
-  { name:"Katakwi", temp:30, condition:"Hot", humidity:58 },
-
-  { name:"Kayunga", temp:28, condition:"Humid", humidity:75 },
-  { name:"Kazo", temp:26, condition:"Cloudy", humidity:72 },
-  { name:"Kibaale", temp:29, condition:"Sunny", humidity:62 },
-  { name:"Kiboga", temp:27, condition:"Cloudy", humidity:71 },
-  { name:"Kibuku", temp:27, condition:"Rainy", humidity:77 },
-  { name:"Kikuube", temp:31, condition:"Hot", humidity:50 },
-  { name:"Kiruhura", temp:26, condition:"Dry", humidity:55 },
-  { name:"Kiryandongo", temp:30, condition:"Hot", humidity:53 },
-  { name:"Kisoro", temp:21, condition:"Cold", humidity:90 },
-  { name:"Kitagwenda", temp:25, condition:"Cloudy", humidity:80 },
-
-  { name:"Kitgum", temp:30, condition:"Sunny", humidity:56 },
-  { name:"Koboko", temp:31, condition:"Hot", humidity:48 },
-  { name:"Kole", temp:30, condition:"Sunny", humidity:57 },
-  { name:"Kotido", temp:32, condition:"Very Hot", humidity:40 },
-  { name:"Kumi", temp:28, condition:"Cloudy", humidity:68 },
-  { name:"Kwania", temp:29, condition:"Sunny", humidity:60 },
-  { name:"Kween", temp:22, condition:"Cold", humidity:88 },
-  { name:"Kyankwanzi", temp:28, condition:"Cloudy", humidity:69 },
-  { name:"Kyegegwa", temp:26, condition:"Rainy", humidity:81 },
-  { name:"Kyenjojo", temp:25, condition:"Cloudy", humidity:82 },
-
-  { name:"Kyotera", temp:27, condition:"Cloudy", humidity:73 },
-  { name:"Lamwo", temp:30, condition:"Sunny", humidity:55 },
-  { name:"Lira", temp:29, condition:"Sunny", humidity:55 },
-  { name:"Luuka", temp:27, condition:"Rainy", humidity:76 },
-  { name:"Luwero", temp:28, condition:"Humid", humidity:74 },
-  { name:"Lwengo", temp:27, condition:"Cloudy", humidity:72 },
-  { name:"Lyantonde", temp:26, condition:"Dry", humidity:60 },
-  { name:"Madi-Okollo", temp:31, condition:"Hot", humidity:51 },
-  { name:"Manafwa", temp:24, condition:"Rainy", humidity:86 },
-  { name:"Maracha", temp:31, condition:"Hot", humidity:52 },
-
-  { name:"Masaka", temp:27, condition:"Cloudy", humidity:69 },
-  { name:"Masindi", temp:31, condition:"Hot", humidity:50 },
-  { name:"Mayuge", temp:27, condition:"Rainy", humidity:78 },
-  { name:"Mbale", temp:25, condition:"Rainy", humidity:81 },
-  { name:"Mbarara", temp:26, condition:"Cloudy", humidity:70 },
-  { name:"Mitooma", temp:25, condition:"Cloudy", humidity:75 },
-  { name:"Mityana", temp:27, condition:"Cloudy", humidity:73 },
-  { name:"Moroto", temp:33, condition:"Very Hot", humidity:38 },
-  { name:"Moyo", temp:31, condition:"Hot", humidity:52 },
-  { name:"Mpigi", temp:28, condition:"Humid", humidity:74 },
-
-  { name:"Mubende", temp:28, condition:"Cloudy", humidity:72 },
-  { name:"Mukono", temp:28, condition:"Humid", humidity:76 },
-  { name:"Nabilatuk", temp:31, condition:"Hot", humidity:45 },
-  { name:"Nakapiripirit", temp:30, condition:"Hot", humidity:46 },
-  { name:"Nakaseke", temp:28, condition:"Cloudy", humidity:70 },
-  { name:"Nakasongola", temp:30, condition:"Hot", humidity:58 },
-  { name:"Namayingo", temp:27, condition:"Rainy", humidity:80 },
-  { name:"Namisindwa", temp:24, condition:"Rainy", humidity:85 },
-  { name:"Namutumba", temp:27, condition:"Rainy", humidity:77 },
-  { name:"Napak", temp:32, condition:"Hot", humidity:42 },
-
-  { name:"Nebbi", temp:31, condition:"Hot", humidity:50 },
-  { name:"Ngora", temp:28, condition:"Cloudy", humidity:67 },
-  { name:"Ntoroko", temp:25, condition:"Rainy", humidity:83 },
-  { name:"Ntungamo", temp:26, condition:"Cloudy", humidity:74 },
-  { name:"Nwoya", temp:31, condition:"Hot", humidity:53 },
-  { name:"Obongi", temp:31, condition:"Hot", humidity:52 },
-  { name:"Omoro", temp:30, condition:"Sunny", humidity:56 },
-  { name:"Otuke", temp:29, condition:"Sunny", humidity:60 },
-  { name:"Oyam", temp:30, condition:"Sunny", humidity:58 },
-  { name:"Pader", temp:30, condition:"Sunny", humidity:57 },
-
-  { name:"Pakwach", temp:31, condition:"Hot", humidity:50 },
-  { name:"Pallisa", temp:28, condition:"Rainy", humidity:76 },
-  { name:"Rakai", temp:27, condition:"Cloudy", humidity:73 },
-  { name:"Rubanda", temp:22, condition:"Cold", humidity:89 },
-  { name:"Rubirizi", temp:25, condition:"Cloudy", humidity:81 },
-  { name:"Rukiga", temp:21, condition:"Cold", humidity:90 },
-  { name:"Rukungiri", temp:24, condition:"Cloudy", humidity:83 },
-  { name:"Rwampara", temp:26, condition:"Cloudy", humidity:75 },
-  { name:"Serere", temp:28, condition:"Rainy", humidity:77 },
-  { name:"Sheema", temp:25, condition:"Cloudy", humidity:78 },
-
-  { name:"Sironko", temp:24, condition:"Rainy", humidity:84 },
-  { name:"Soroti", temp:30, condition:"Hot", humidity:50 },
-  { name:"Ssembabule", temp:27, condition:"Cloudy", humidity:72 },
-  { name:"Tororo", temp:27, condition:"Rainy", humidity:79 },
-  { name:"Wakiso", temp:28, condition:"Humid", humidity:77 },
-  { name:"Yumbe", temp:31, condition:"Hot", humidity:49 },
-  { name:"Zombo", temp:31, condition:"Hot", humidity:50 }
-];
-
-let WEATHER_OPEN = false;
-
-/* ── Toggle ── */
-function pcToggleWeather() {
-  const card = document.getElementById("pc-weather");
-  card.classList.toggle("open");
-
-  if (!WEATHER_OPEN) {
-    WEATHER_OPEN = true;
-    pcWeatherLoad();
-  }
-}
-
-/* ── Load weather ── */
-function pcWeatherLoad(refresh=false) {
-  const list = document.getElementById("pc-weather-list");
-  const updated = document.getElementById("pc-weather-updated");
-  const btn = document.querySelector(".pc-refresh-btn");
-
-  list.innerHTML = "<div class='pc-skeleton'></div><div class='pc-skeleton'></div>";
-
-  setTimeout(() => {
-    renderWeather(WEATHER_DATA);
-
-    const now = new Date();
-    updated.textContent = "Updated " + now.toLocaleTimeString();
-
-  }, refresh ? 800 : 400);
-}
-
-/* ── Render ── */
-function renderWeather(data) {
-  const list = document.getElementById("pc-weather-list");
-
-  list.innerHTML = data.map(d => `
-    <div class="pc-item">
-      <div>
-        <div class="pc-item__name">${d.name}</div>
-        <div class="pc-item__unit">${d.condition} • Humidity ${d.humidity}%</div>
-      </div>
-      <div style="text-align:right">
-        <div class="pc-item__price">${d.temp}°C</div>
-        <div class="pc-item__change">Live</div>
+    <div class="pc-grid">
+      <div class="pc-card" id="pc-weather">
+        <div class="pc-card__header" onclick="pcToggleWeather()">
+          <div class="pc-card__icon ic-blue">🌦️</div>
+          <div class="pc-card__meta">
+            <div class="pc-card__title">Uganda Weather Dashboard</div>
+            <div class="pc-card__sub">Live weather by district</div>
+          </div>
+          <span class="pc-card__chevron">›</span>
+        </div>
+        <div class="pc-card__body">
+          <div class="pc-refresh-row">
+            <button class="pc-refresh-btn" id="pc-weather-refresh" onclick="pcWeatherLoad(true)">↻ Refresh</button>
+          </div>
+          <input class="pc-search" placeholder="Search district…" oninput="pcWeatherFilter(this.value)">
+          <div class="pc-list" id="pc-weather-list"></div>
+          <div class="pc-updated" id="pc-weather-updated"></div>
+        </div>
       </div>
     </div>
-  `).join("");
-}
-
-/* ── Search ── */
-function pcWeatherFilter(q) {
-  const filtered = WEATHER_DATA.filter(d =>
-    d.name.toLowerCase().includes(q.toLowerCase())
-  );
-  renderWeather(filtered);
-}
-
-</script>
-  </div>
+  </div><!-- /section-weather -->
 
   <!-- ══ ARTICLES ══ -->
   <div class="page-section" id="section-articles">
-
-    <button class="back-btn"
-            onclick="showSection('home')">
-        Dashboard
-    </button>
-
+    <button class="back-btn" onclick="showSection('home')">Dashboard</button>
     <div class="page-header">
-        <h2>Expert Articles</h2>
-        <p>Knowledge shared by AGROSPHERE experts.</p>
+      <h2>Expert Articles</h2>
+      <p>Knowledge shared by AGROSPHERE experts.</p>
     </div>
 
     {% if articles %}
-
-        {% for a in articles %}
-
-        <div class="list-card social-post">
-
-            <div class="post-header">
-
-                <div class="meta">
-                    👨‍🌾 {{ a.expert_name }}
-                    · {{ a.created_at.strftime('%d %b %Y') }}
-                </div>
-
-                <button class="post-menu-btn">⋮</button>
-
-            </div>
-
-            <h3 class="article-title">
-                {{ a.title }}
-            </h3>
-
-            <div class="post-content collapsed">
-                {{ a.content }}
-            </div>
-
-            <span class="read-more"
-                  onclick="toggleReadMore(this)">
-                Read More
-            </span>
-
-            {% if a.photos %}
-
-            <div class="post-media">
-
-                {% for photo in a.photos %}
-
-                <img src="{{ photo.url }}"
-                     class="post-photo"
-                     alt="Article Image">
-
-                {% endfor %}
-
-            </div>
-
-            {% endif %}
-
+      {% for a in articles %}
+      <div class="list-card social-post">
+        <div class="post-header">
+          <div class="meta">👨‍🌾 {{ a.expert_name }} · {{ a.created_at.strftime('%d %b %Y') }}</div>
+          <button class="post-menu-btn">⋮</button>
         </div>
-
-        {% endfor %}
-
+        <h3 class="article-title">{{ a.title }}</h3>
+        <div class="post-content collapsed">{{ a.content }}</div>
+        <span class="read-more" onclick="toggleReadMore(this)">Read More</span>
+        {% if a.photos %}
+        <div class="post-media">
+          {% for photo in a.photos %}
+          <img src="{{ photo.url }}" class="post-photo" alt="Article Image">
+          {% endfor %}
+        </div>
+        {% endif %}
+      </div>
+      {% endfor %}
     {% else %}
-
-        <div class="empty-state">
-            <div class="emoji">📝</div>
-            No articles published yet.
-        </div>
-
+      <div class="empty-state"><div class="emoji">📝</div>No articles published yet.</div>
     {% endif %}
+  </div><!-- /section-articles -->
 
-</div>
-
- <!-- ══ COMMUNITY POSTS ══ -->
+  <!-- ══ COMMUNITY POSTS ══ -->
   <div class="page-section" id="section-communityposts">
-
-    <button class="back-btn"
-            onclick="showSection('home')">
-        Dashboard
-    </button>
-
+    <button class="back-btn" onclick="showSection('home')">Dashboard</button>
     <div class="page-header">
-        <h2>Community Posts</h2>
-        <p>Tips and experiences from farmers.</p>
+      <h2>Community Posts</h2>
+      <p>Tips and experiences from farmers.</p>
     </div>
 
     {% if community_posts %}
-
-        {% for post in community_posts %}
-
-        <div class="list-card social-post">
-
-            <div class="post-header">
-
-                <div class="meta">
-                    🌱 {{ post.author_name.upper() }}
-                    · {{ post.created_at.strftime('%d %b %Y, %H:%M') }}
-                </div>
-
-                <button class="post-menu-btn">⋮</button>
-
-            </div>
-
-            <div class="post-content collapsed">
-                {{ post.text }}
-            </div>
-
-            <span class="read-more"
-                  onclick="toggleReadMore(this)">
-                Read More
-            </span>
-
-            {% if post.photos %}
-            <div class="post-media">
-                {% for photo in post.photos %}
-                    <img src="{{ photo.url }}"
-                         class="post-photo"
-                         alt="">
-                {% endfor %}
-            </div>
-            {% endif %}
-
+      {% for post in community_posts %}
+      <div class="list-card social-post">
+        <div class="post-header">
+          <div class="meta">🌱 {{ post.author_name.upper() }} · {{ post.created_at.strftime('%d %b %Y, %H:%M') }}</div>
+          <button class="post-menu-btn">⋮</button>
         </div>
-
-        {% endfor %}
-
+        <div class="post-content collapsed">{{ post.text }}</div>
+        <span class="read-more" onclick="toggleReadMore(this)">Read More</span>
+        {% if post.photos %}
+        <div class="post-media">
+          {% for photo in post.photos %}
+            <img src="{{ photo.url }}" class="post-photo" alt="">
+          {% endfor %}
+        </div>
+        {% endif %}
+      </div>
+      {% endfor %}
     {% else %}
-
-        <div class="empty-state">
-            <div class="emoji">🌱</div>
-            No community posts yet.
-        </div>
-
+      <div class="empty-state"><div class="emoji">🌱</div>No community posts yet.</div>
     {% endif %}
+  </div><!-- /section-communityposts -->
 
-</div>
-
-
-  
- <!-- ══ ANNOUNCEMENTS ══ -->
-<div class="page-section" id="section-announcements">
-  <button class="back-btn" onclick="showSection('home')">Dashboard</button>
-
-  <div class="page-header">
-    <h2>Announcements</h2>
-    <p>Updates from AGROSPHERE admins.</p>
-  </div>
-
-  {% if announcements %}
-    {% for a in announcements %}
-    <div class="list-card">
-
-      <div class="meta">
-        <span class="tag">{{ a.category }}</span>
-        <span>{{ a.created_at.strftime('%d %b %Y, %H:%M') }}</span>
-      </div>
-
-      <h4 style="font-weight:700; margin-bottom:10px;">
-        {{ a.title }}
-      </h4>
-
-      <div class="announcement-body collapsed"
-           id="announcement-{{ loop.index }}">
-        {{ a.body }}
-      </div>
-
-      <button class="read-more-btn"
-              onclick="toggleAnnouncement('announcement-{{ loop.index }}', this)">
-        Read More
-      </button>
-
+  <!-- ══ ANNOUNCEMENTS ══ -->
+  <div class="page-section" id="section-announcements">
+    <button class="back-btn" onclick="showSection('home')">Dashboard</button>
+    <div class="page-header">
+      <h2>Announcements</h2>
+      <p>Updates from AGROSPHERE admins.</p>
     </div>
-    {% endfor %}
-  {% else %}
-    <div class="empty-state">
-      <div class="emoji">📢</div>
-      No announcements yet.
-    </div>
-  {% endif %}
-</div>
+
+    {% if announcements %}
+      {% for a in announcements %}
+      <div class="list-card">
+        <div class="meta">
+          <span class="tag">{{ a.category }}</span>
+          <span>{{ a.created_at.strftime('%d %b %Y, %H:%M') }}</span>
+        </div>
+        <h4 style="font-weight:700; margin-bottom:10px;">{{ a.title }}</h4>
+        <div class="announcement-body collapsed" id="announcement-{{ loop.index }}">{{ a.body }}</div>
+        <button class="read-more-btn" onclick="toggleAnnouncement('announcement-{{ loop.index }}', this)">Read More</button>
+      </div>
+      {% endfor %}
+    {% else %}
+      <div class="empty-state"><div class="emoji">📢</div>No announcements yet.</div>
+    {% endif %}
+  </div><!-- /section-announcements -->
 
   <!-- ══ PUBLIC Q&A ══ -->
   <div class="page-section" id="section-publicqa">
@@ -1421,10 +633,10 @@ function pcWeatherFilter(q) {
       <div class="answer-box"><div class="lbl">Answer by {{ q.assigned_expert }}</div><p>{{ q.answer }}</p></div>
     </div>
     {% endfor %}{% else %}<div class="empty-state"><div class="emoji">🌐</div>No public Q&A yet.</div>{% endif %}
-  </div>
+  </div><!-- /section-publicqa -->
 
-    
-<!-- ── ONE support FAB (only one, correct ID) ── -->
+</div><!-- /scroll-area -->
+
 <!-- Support FAB -->
 <button class="support-fab" id="supportFab" title="Contact Support">🛠</button>
 
@@ -1469,10 +681,32 @@ function showSection(id) {
 function switchTab(sid, tid) {
   showSection(sid);
   document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active'));
-  document.getElementById(tid).classList.add('active');
+  const tab = document.getElementById(tid);
+  if (tab) tab.classList.add('active');
 }
 
-// ── Support modal ──
+/* ══ READ MORE TOGGLE (social posts / articles) ══ */
+function toggleReadMore(btn) {
+  const text = btn.previousElementSibling;
+  text.classList.toggle('collapsed');
+  btn.textContent = text.classList.contains('collapsed') ? 'Read More' : 'Show Less';
+}
+
+/* ══ READ MORE TOGGLE (announcements) ══ */
+function toggleAnnouncement(id, btn) {
+  const content = document.getElementById(id);
+  if (content.classList.contains('collapsed')) {
+    content.classList.remove('collapsed');
+    content.classList.add('expanded');
+    btn.textContent = 'Read Less';
+  } else {
+    content.classList.remove('expanded');
+    content.classList.add('collapsed');
+    btn.textContent = 'Read More';
+  }
+}
+
+/* ══ Support modal ══ */
 const fab   = document.getElementById('supportFab');
 const modal = document.getElementById('supportModal');
 const toast = document.getElementById('toast');
@@ -1537,7 +771,8 @@ async function loadSupportThread() {
 }
 
 async function sendSupportMessage() {
-  const msg = document.getElementById('supportMessage').value.trim();
+  const msgEl = document.getElementById('supportMessage');
+  const msg = msgEl.value.trim();
   if (!msg) return;
   try {
     const res  = await fetch('/support/send', {
@@ -1547,7 +782,7 @@ async function sendSupportMessage() {
     });
     const data = await res.json();
     if (res.ok) {
-      document.getElementById('supportMessage').value = '';
+      msgEl.value = '';
       toast.style.display = 'block';
       setTimeout(() => { toast.style.display = 'none'; }, 3000);
       loadSupportThread();
@@ -1559,29 +794,225 @@ async function sendSupportMessage() {
   }
 }
 
-// ── Payment toggle ──
-function dashTogglePayment(v) {
-  document.getElementById('dash-momo-field').style.display = v === 'card' ? 'none' : 'block';
-  document.getElementById('dash-card-field').style.display = v === 'card' ? 'block' : 'none';
+/* ══ Photo/video preview for "Create a Post" form ══ */
+function previewMedia(event, targetId, type) {
+  const target = document.getElementById(targetId);
+  if (!target) return;
+  target.innerHTML = '';
+  Array.from(event.target.files).forEach(file => {
+    const url = URL.createObjectURL(file);
+    const el = document.createElement(type === 'video' ? 'video' : 'img');
+    el.src = url;
+    if (type === 'video') el.controls = true;
+    target.appendChild(el);
+  });
 }
 
-function toggleReadMore(btn) {
-  const text = btn.previousElementSibling;
-  text.classList.toggle('collapsed');
-  btn.textContent = text.classList.contains('collapsed') ? 'Read More' : 'Show Less';
-}
-function toggleAnnouncement(id, btn){
-    const content = document.getElementById(id);
+/* ══════════════════════════════════════════════════════════════
+   PRICE CARDS
+   ══════════════════════════════════════════════════════════════ */
+const PC_DATA = {
+  inputs: [
+    { name: 'Maize Seed (hybrid)',      unit: 'per kg',     price: 12000,  change: +5  },
+    { name: 'Bean Seed (NABE)',         unit: 'per kg',     price: 8500,   change: 0   },
+    { name: 'Sunflower Seed',           unit: 'per kg',     price: 9000,   change: -3  },
+    { name: 'NPK Fertiliser (50 kg)',   unit: 'per bag',    price: 145000, change: +8  },
+    { name: 'Urea (50 kg)',             unit: 'per bag',    price: 130000, change: +2  },
+    { name: 'CAN Fertiliser (50 kg)',   unit: 'per bag',    price: 120000, change: 0   },
+    { name: 'Dithane (fungicide)',      unit: 'per kg',     price: 22000,  change: -5  },
+    { name: 'Cypermethrin (pesticide)', unit: 'per litre',  price: 18000,  change: +1  },
+    { name: 'Glyphosate (herbicide)',   unit: 'per litre',  price: 15000,  change: 0   },
+    { name: 'Lime (soil amendment)',    unit: 'per 50 kg',  price: 40000,  change: -2  },
+  ],
+  outputs: [
+    { name: 'Maize (dry grain)',        unit: 'per 100 kg', price: 85000,  change: +12 },
+    { name: 'Beans (dry)',              unit: 'per 100 kg', price: 210000, change: +6  },
+    { name: 'Groundnuts (shelled)',     unit: 'per 100 kg', price: 320000, change: -4  },
+    { name: 'Sorghum (grain)',          unit: 'per 100 kg', price: 70000,  change: +3  },
+    { name: 'Cassava (fresh)',          unit: 'per 100 kg', price: 55000,  change: 0   },
+    { name: 'Matoke (bunch)',           unit: 'per bunch',  price: 12000,  change: -8  },
+    { name: 'Coffee (FAQ)',             unit: 'per kg',     price: 9500,   change: +15 },
+    { name: 'Sunflower (seed)',         unit: 'per 100 kg', price: 180000, change: +2  },
+    { name: 'Rice (paddy)',             unit: 'per 100 kg', price: 160000, change: -1  },
+    { name: 'Cattle (live weight)',     unit: 'per kg',     price: 8000,   change: +4  },
+    { name: 'Goat (live)',              unit: 'per head',   price: 180000, change: 0   },
+    { name: 'Milk (fresh)',             unit: 'per litre',  price: 1200,   change: -3  },
+    { name: 'Eggs',                     unit: 'per tray',   price: 14000,  change: +5  },
+  ],
+  equipment: [
+    { name: 'Hand hoe',                 unit: 'per piece',  price: 18000,  change: 0   },
+    { name: 'Panga / Machete',          unit: 'per piece',  price: 12000,  change: +2  },
+    { name: 'Ox-plough (single)',       unit: 'per unit',   price: 280000, change: 0   },
+    { name: 'Knapsack sprayer (16 L)',  unit: 'per unit',   price: 85000,  change: -5  },
+    { name: 'Power sprayer (portable)', unit: 'per unit',   price: 450000, change: +3  },
+    { name: 'Maize sheller (manual)',   unit: 'per unit',   price: 120000, change: 0   },
+    { name: 'Thresher (motorised)',     unit: 'per unit',   price: 2800000,change: 0   },
+    { name: 'Water pump (2-inch)',      unit: 'per unit',   price: 680000, change: +7  },
+    { name: 'Drip irrigation kit',      unit: 'per acre',   price: 1200000,change: +4  },
+    { name: 'Tractor hire (2WD)',       unit: 'per hour',   price: 85000,  change: +10 },
+    { name: 'Polythene mulch (100 m)',  unit: 'per roll',   price: 95000,  change: -2  },
+    { name: 'Grain sack (100 kg)',      unit: 'per piece',  price: 3500,   change: 0   },
+  ]
+};
+const _pcLoaded = { inputs: false, outputs: false, equipment: false };
 
-    if(content.classList.contains("collapsed")){
-        content.classList.remove("collapsed");
-        content.classList.add("expanded");
-        btn.textContent = "Read Less";
-    }else{
-        content.classList.remove("expanded");
-        content.classList.add("collapsed");
-        btn.textContent = "Read More";
-    }
+function pcToggle(type) {
+  const card = document.getElementById('pc-' + type);
+  if (!card) return;
+  const isOpen = card.classList.toggle('open');
+  if (isOpen && !_pcLoaded[type]) pcLoad(type, false);
+}
+
+function pcLoad(type, isRefresh) {
+  const listEl     = document.getElementById('pc-' + type + '-list');
+  const updatedEl  = document.getElementById('pc-' + type + '-updated');
+  const refreshBtn = document.getElementById('pc-' + type + '-refresh');
+  if (!listEl) return;
+  listEl.innerHTML = '<div class="pc-skeleton"></div>'.repeat(3);
+  if (refreshBtn) refreshBtn.classList.add('spinning');
+  setTimeout(() => {
+    _pcLoaded[type] = true;
+    pcRender(type, PC_DATA[type] || []);
+    if (updatedEl) updatedEl.textContent = 'Updated ' + new Date().toLocaleTimeString('en-UG', { hour: '2-digit', minute: '2-digit' });
+    if (refreshBtn) refreshBtn.classList.remove('spinning');
+  }, isRefresh ? 900 : 400);
+}
+
+function pcRender(type, items) {
+  const listEl   = document.getElementById('pc-' + type + '-list');
+  const searchEl = document.getElementById('pc-' + type + '-search');
+  const query    = searchEl ? searchEl.value.toLowerCase().trim() : '';
+  if (!listEl) return;
+  const filtered = query ? items.filter(i => i.name.toLowerCase().includes(query)) : items;
+  if (!filtered.length) {
+    listEl.innerHTML = `<div class="pc-inner-empty"><span class="emoji">🔍</span>No matches for "${_pcEsc(query)}".</div>`;
+    return;
+  }
+  listEl.innerHTML = filtered.map(item => {
+    const sign  = item.change > 0 ? '+' : '';
+    const cls   = item.change > 0 ? 'up' : item.change < 0 ? 'down' : 'flat';
+    const label = item.change === 0 ? '→ Stable' : sign + item.change + '% this week';
+    return `<div class="pc-item">
+      <div class="pc-item__left"><div class="pc-item__name">${_pcEsc(item.name)}</div><div class="pc-item__unit">${_pcEsc(item.unit)}</div></div>
+      <div class="pc-item__right"><div class="pc-item__price">UGX ${item.price.toLocaleString()}</div><div class="pc-item__change ${cls}">${label}</div></div>
+    </div>`;
+  }).join('');
+}
+
+function pcFilter(type) {
+  if (!_pcLoaded[type]) return;
+  pcRender(type, PC_DATA[type] || []);
+}
+
+function _pcEsc(str) {
+  return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+/* ══ WEATHER CARD ══ */
+const WEATHER_DATA = [
+  {name:"Abim",temp:29,condition:"Sunny",humidity:55},{name:"Adjumani",temp:31,condition:"Hot",humidity:60},
+  {name:"Agago",temp:30,condition:"Sunny",humidity:58},{name:"Alebtong",temp:29,condition:"Partly Cloudy",humidity:62},
+  {name:"Amolatar",temp:30,condition:"Hot",humidity:64},{name:"Amudat",temp:28,condition:"Windy",humidity:52},
+  {name:"Amuria",temp:29,condition:"Cloudy",humidity:66},{name:"Amuru",temp:31,condition:"Hot",humidity:57},
+  {name:"Apac",temp:30,condition:"Sunny",humidity:60},{name:"Arua",temp:32,condition:"Hot",humidity:50},
+  {name:"Budaka",temp:27,condition:"Rainy",humidity:78},{name:"Bududa",temp:25,condition:"Heavy Rain",humidity:85},
+  {name:"Bugiri",temp:27,condition:"Light Rain",humidity:74},{name:"Bugweri",temp:27,condition:"Cloudy",humidity:73},
+  {name:"Buhweju",temp:23,condition:"Cold",humidity:88},{name:"Buikwe",temp:28,condition:"Humid",humidity:76},
+  {name:"Bukedea",temp:28,condition:"Sunny",humidity:65},{name:"Bukomansimbi",temp:27,condition:"Cloudy",humidity:70},
+  {name:"Bukwo",temp:22,condition:"Cold",humidity:90},{name:"Bulambuli",temp:24,condition:"Rainy",humidity:84},
+  {name:"Buliisa",temp:32,condition:"Hot",humidity:48},{name:"Bundibugyo",temp:29,condition:"Rainy",humidity:82},
+  {name:"Bunyangabu",temp:24,condition:"Foggy",humidity:83},{name:"Bushenyi",temp:25,condition:"Cloudy",humidity:78},
+  {name:"Busia",temp:28,condition:"Humid",humidity:72},{name:"Butaleja",temp:27,condition:"Rainy",humidity:80},
+  {name:"Butambala",temp:26,condition:"Cloudy",humidity:75},{name:"Butebo",temp:27,condition:"Rainy",humidity:77},
+  {name:"Buvuma",temp:29,condition:"Humid",humidity:85},{name:"Buyende",temp:29,condition:"Sunny",humidity:63},
+  {name:"Dokolo",temp:30,condition:"Sunny",humidity:59},{name:"Gomba",temp:27,condition:"Cloudy",humidity:71},
+  {name:"Gulu",temp:30,condition:"Sunny",humidity:52},{name:"Hoima",temp:32,condition:"Hot",humidity:46},
+  {name:"Ibanda",temp:26,condition:"Cloudy",humidity:74},{name:"Iganga",temp:27,condition:"Rainy",humidity:79},
+  {name:"Isingiro",temp:27,condition:"Dry",humidity:60},{name:"Jinja",temp:27,condition:"Light Rain",humidity:78},
+  {name:"Kaabong",temp:31,condition:"Hot",humidity:45},{name:"Kabale",temp:22,condition:"Cold",humidity:88},
+  {name:"Kabarole",temp:24,condition:"Foggy",humidity:84},{name:"Kaberamaido",temp:29,condition:"Cloudy",humidity:66},
+  {name:"Kagadi",temp:31,condition:"Hot",humidity:49},{name:"Kakumiro",temp:30,condition:"Sunny",humidity:55},
+  {name:"Kalaki",temp:29,condition:"Cloudy",humidity:67},{name:"Kalangala",temp:29,condition:"Humid",humidity:90},
+  {name:"Kaliro",temp:27,condition:"Rainy",humidity:78},{name:"Kalungu",temp:27,condition:"Cloudy",humidity:72},
+  {name:"Kampala",temp:28,condition:"Partly Cloudy",humidity:66},{name:"Kamuli",temp:28,condition:"Rainy",humidity:75},
+  {name:"Kamwenge",temp:25,condition:"Cloudy",humidity:80},{name:"Kanungu",temp:23,condition:"Cold",humidity:86},
+  {name:"Kapchorwa",temp:21,condition:"Cold",humidity:89},{name:"Kapelebyong",temp:29,condition:"Sunny",humidity:61},
+  {name:"Karenga",temp:31,condition:"Hot",humidity:44},{name:"Kasanda",temp:28,condition:"Cloudy",humidity:70},
+  {name:"Kasese",temp:28,condition:"Rainy",humidity:82},{name:"Katakwi",temp:30,condition:"Hot",humidity:58},
+  {name:"Kayunga",temp:28,condition:"Humid",humidity:75},{name:"Kazo",temp:26,condition:"Cloudy",humidity:72},
+  {name:"Kibaale",temp:29,condition:"Sunny",humidity:62},{name:"Kiboga",temp:27,condition:"Cloudy",humidity:71},
+  {name:"Kibuku",temp:27,condition:"Rainy",humidity:77},{name:"Kikuube",temp:31,condition:"Hot",humidity:50},
+  {name:"Kiruhura",temp:26,condition:"Dry",humidity:55},{name:"Kiryandongo",temp:30,condition:"Hot",humidity:53},
+  {name:"Kisoro",temp:21,condition:"Cold",humidity:90},{name:"Kitagwenda",temp:25,condition:"Cloudy",humidity:80},
+  {name:"Kitgum",temp:30,condition:"Sunny",humidity:56},{name:"Koboko",temp:31,condition:"Hot",humidity:48},
+  {name:"Kole",temp:30,condition:"Sunny",humidity:57},{name:"Kotido",temp:32,condition:"Very Hot",humidity:40},
+  {name:"Kumi",temp:28,condition:"Cloudy",humidity:68},{name:"Kwania",temp:29,condition:"Sunny",humidity:60},
+  {name:"Kween",temp:22,condition:"Cold",humidity:88},{name:"Kyankwanzi",temp:28,condition:"Cloudy",humidity:69},
+  {name:"Kyegegwa",temp:26,condition:"Rainy",humidity:81},{name:"Kyenjojo",temp:25,condition:"Cloudy",humidity:82},
+  {name:"Kyotera",temp:27,condition:"Cloudy",humidity:73},{name:"Lamwo",temp:30,condition:"Sunny",humidity:55},
+  {name:"Lira",temp:29,condition:"Sunny",humidity:55},{name:"Luuka",temp:27,condition:"Rainy",humidity:76},
+  {name:"Luwero",temp:28,condition:"Humid",humidity:74},{name:"Lwengo",temp:27,condition:"Cloudy",humidity:72},
+  {name:"Lyantonde",temp:26,condition:"Dry",humidity:60},{name:"Madi-Okollo",temp:31,condition:"Hot",humidity:51},
+  {name:"Manafwa",temp:24,condition:"Rainy",humidity:86},{name:"Maracha",temp:31,condition:"Hot",humidity:52},
+  {name:"Masaka",temp:27,condition:"Cloudy",humidity:69},{name:"Masindi",temp:31,condition:"Hot",humidity:50},
+  {name:"Mayuge",temp:27,condition:"Rainy",humidity:78},{name:"Mbale",temp:25,condition:"Rainy",humidity:81},
+  {name:"Mbarara",temp:26,condition:"Cloudy",humidity:70},{name:"Mitooma",temp:25,condition:"Cloudy",humidity:75},
+  {name:"Mityana",temp:27,condition:"Cloudy",humidity:73},{name:"Moroto",temp:33,condition:"Very Hot",humidity:38},
+  {name:"Moyo",temp:31,condition:"Hot",humidity:52},{name:"Mpigi",temp:28,condition:"Humid",humidity:74},
+  {name:"Mubende",temp:28,condition:"Cloudy",humidity:72},{name:"Mukono",temp:28,condition:"Humid",humidity:76},
+  {name:"Nabilatuk",temp:31,condition:"Hot",humidity:45},{name:"Nakapiripirit",temp:30,condition:"Hot",humidity:46},
+  {name:"Nakaseke",temp:28,condition:"Cloudy",humidity:70},{name:"Nakasongola",temp:30,condition:"Hot",humidity:58},
+  {name:"Namayingo",temp:27,condition:"Rainy",humidity:80},{name:"Namisindwa",temp:24,condition:"Rainy",humidity:85},
+  {name:"Namutumba",temp:27,condition:"Rainy",humidity:77},{name:"Napak",temp:32,condition:"Hot",humidity:42},
+  {name:"Nebbi",temp:31,condition:"Hot",humidity:50},{name:"Ngora",temp:28,condition:"Cloudy",humidity:67},
+  {name:"Ntoroko",temp:25,condition:"Rainy",humidity:83},{name:"Ntungamo",temp:26,condition:"Cloudy",humidity:74},
+  {name:"Nwoya",temp:31,condition:"Hot",humidity:53},{name:"Obongi",temp:31,condition:"Hot",humidity:52},
+  {name:"Omoro",temp:30,condition:"Sunny",humidity:56},{name:"Otuke",temp:29,condition:"Sunny",humidity:60},
+  {name:"Oyam",temp:30,condition:"Sunny",humidity:58},{name:"Pader",temp:30,condition:"Sunny",humidity:57},
+  {name:"Pakwach",temp:31,condition:"Hot",humidity:50},{name:"Pallisa",temp:28,condition:"Rainy",humidity:76},
+  {name:"Rakai",temp:27,condition:"Cloudy",humidity:73},{name:"Rubanda",temp:22,condition:"Cold",humidity:89},
+  {name:"Rubirizi",temp:25,condition:"Cloudy",humidity:81},{name:"Rukiga",temp:21,condition:"Cold",humidity:90},
+  {name:"Rukungiri",temp:24,condition:"Cloudy",humidity:83},{name:"Rwampara",temp:26,condition:"Cloudy",humidity:75},
+  {name:"Serere",temp:28,condition:"Rainy",humidity:77},{name:"Sheema",temp:25,condition:"Cloudy",humidity:78},
+  {name:"Sironko",temp:24,condition:"Rainy",humidity:84},{name:"Soroti",temp:30,condition:"Hot",humidity:50},
+  {name:"Ssembabule",temp:27,condition:"Cloudy",humidity:72},{name:"Tororo",temp:27,condition:"Rainy",humidity:79},
+  {name:"Wakiso",temp:28,condition:"Humid",humidity:77},{name:"Yumbe",temp:31,condition:"Hot",humidity:49},
+  {name:"Zombo",temp:31,condition:"Hot",humidity:50}
+];
+let _weatherLoaded = false;
+
+function pcToggleWeather() {
+  const card = document.getElementById('pc-weather');
+  const isOpen = card.classList.toggle('open');
+  if (isOpen && !_weatherLoaded) pcWeatherLoad(false);
+}
+
+function pcWeatherLoad(isRefresh) {
+  const list    = document.getElementById('pc-weather-list');
+  const updated = document.getElementById('pc-weather-updated');
+  const btn     = document.getElementById('pc-weather-refresh');
+  list.innerHTML = '<div class="pc-skeleton"></div>'.repeat(3);
+  if (btn) btn.classList.add('spinning');
+  setTimeout(() => {
+    _weatherLoaded = true;
+    renderWeather(WEATHER_DATA);
+    if (updated) updated.textContent = 'Updated ' + new Date().toLocaleTimeString();
+    if (btn) btn.classList.remove('spinning');
+  }, isRefresh ? 800 : 400);
+}
+
+function renderWeather(data) {
+  const list = document.getElementById('pc-weather-list');
+  if (!data.length) { list.innerHTML = '<div class="pc-inner-empty"><span class="emoji">🔍</span>No districts found.</div>'; return; }
+  list.innerHTML = data.map(d => `
+    <div class="pc-item">
+      <div class="pc-item__left"><div class="pc-item__name">${d.name}</div><div class="pc-item__unit">${d.condition} • Humidity ${d.humidity}%</div></div>
+      <div class="pc-item__right"><div class="pc-item__price">${d.temp}°C</div><div class="pc-item__change flat">Live</div></div>
+    </div>`).join('');
+}
+
+function pcWeatherFilter(q) {
+  renderWeather(WEATHER_DATA.filter(d => d.name.toLowerCase().includes(q.toLowerCase())));
 }
 </script>
 </body>

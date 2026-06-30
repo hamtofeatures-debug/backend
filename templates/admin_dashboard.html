@@ -168,6 +168,11 @@ textarea { min-height:90px; }
 .post-photo { width:100%; max-height:500px; object-fit:cover; border-radius:14px; display:block; }
 .article-title { margin:10px 0; font-size:1.1rem; color:#222; font-weight:700; }
 
+/* ─── ANNOUNCEMENT BODY COLLAPSE ─── */
+.announcement-body { white-space:pre-wrap; line-height:1.6; font-size:0.88rem; color:#374151; margin-bottom:8px; }
+.announcement-body.collapsed { display:-webkit-box; -webkit-box-orient:vertical; -webkit-line-clamp:4; line-clamp:4; overflow:hidden; }
+.read-more-btn { background:none; border:none; color:#2E7D32; font-weight:700; font-size:0.8rem; cursor:pointer; padding:0; font-family:inherit; }
+
 /* ─── PRICE CARDS ─── */
 .pc-grid { display:flex; flex-direction:column; gap:14px; margin-bottom:24px; }
 .pc-card { background:var(--card-bg); border-radius:16px; border:1px solid var(--border); box-shadow:var(--shadow); overflow:hidden; transition:box-shadow 0.2s; }
@@ -284,11 +289,7 @@ textarea { min-height:90px; }
         <div class="card-body"><h3>Expert Rankings</h3><p>Top experts by score.</p></div>
         <span class="arrow">›</span>
       </button>
-      <button class="nav-card" onclick="showSection('publicqa')">
-        <div class="icon-box ic-blue">🌐</div>
-        <div class="card-body"><h3>Public Q&amp;A</h3><p>Published answers visible to all.</p></div>
-        <span class="arrow">›</span>
-      </button>
+
       <button class="nav-card" onclick="showSection('businesses')">
         <div class="icon-box ic-purple">🏢</div>
         <div class="card-body"><h3>Businesses</h3><p>Approve and verify businesses.</p></div>
@@ -322,7 +323,7 @@ textarea { min-height:90px; }
       <div class="stat-pill"><div class="val">{{ stats.experts }}</div><div class="lbl">Experts</div></div>
       <div class="stat-pill"><div class="val">{{ stats.questions }}</div><div class="lbl">Questions</div></div>
       <div class="stat-pill"><div class="val">{{ stats.pending }}</div><div class="lbl">Pending Review</div></div>
-      <div class="stat-pill"><div class="val">{{ stats.published }}</div><div class="lbl">Published Q&A</div></div>
+      <div class="stat-pill"><div class="val">{{ stats.published }}</div><div class="lbl">Published Q&amp;A</div></div>
     </div>
     <div class="list-card">
       <div style="font-weight:700;font-size:0.9rem;">👤 {{ current_user.fullname }}</div>
@@ -495,7 +496,7 @@ textarea { min-height:90px; }
   <div class="page-section" id="section-articles">
     <button class="back-btn" onclick="showSection('home')">Dashboard</button>
     <div class="page-header"><h2>Expert Articles</h2><p>Published expert knowledge.</p></div>
-    {% if expert_articles %}{% for a in expert_articles %}
+    {% if approved_articles %}{% for a in approved_articles %}
     <div class="list-card social-post">
       <div class="post-header">
         <div class="meta">👨‍🌾 {{ a.expert_name }} · {{ a.created_at.strftime('%d %b %Y') if a.created_at else '' }}</div>
@@ -512,6 +513,7 @@ textarea { min-height:90px; }
   <div class="page-section" id="section-announcements">
     <button class="back-btn" onclick="showSection('home')">Dashboard</button>
     <div class="page-header"><h2>Announcements</h2><p>Post updates to all users.</p></div>
+
     <div class="panel">
       <h3>New Announcement</h3>
       <label class="form-label">Title</label>
@@ -525,48 +527,24 @@ textarea { min-height:90px; }
       <textarea id="ann-body" placeholder="Write your announcement…"></textarea>
       <button class="btn btn-green" style="width:100%;margin-top:12px;" id="post-announcement-btn">Post Announcement</button>
     </div>
-    <!-- ══ ANNOUNCEMENTS ══ -->
-<div class="page-section" id="section-announcements">
-  <button class="back-btn" onclick="showSection('home')">Dashboard</button>
 
-  <div class="page-header">
-    <h2>Announcements</h2>
-    <p>Updates from AGROSPHERE admins.</p>
+    <div class="section-title">Previously Posted</div>
+    {% if announcements %}
+      {% for a in announcements %}
+      <div class="list-card">
+        <div class="meta">
+          <span class="tag">{{ a.category }}</span>
+          <span>{{ a.created_at.strftime('%d %b %Y, %H:%M') }}</span>
+        </div>
+        <h4 style="font-weight:700; margin-bottom:10px;">{{ a.title }}</h4>
+        <div class="announcement-body collapsed" id="announcement-{{ loop.index }}">{{ a.body }}</div>
+        <button class="read-more-btn" onclick="toggleAnnouncement('announcement-{{ loop.index }}', this)">Read More</button>
+      </div>
+      {% endfor %}
+    {% else %}
+      <div class="empty-state"><div class="emoji">📢</div>No announcements yet.</div>
+    {% endif %}
   </div>
-
-  {% if announcements %}
-    {% for a in announcements %}
-    <div class="list-card">
-
-      <div class="meta">
-        <span class="tag">{{ a.category }}</span>
-        <span>{{ a.created_at.strftime('%d %b %Y, %H:%M') }}</span>
-      </div>
-
-      <h4 style="font-weight:700; margin-bottom:10px;">
-        {{ a.title }}
-      </h4>
-
-      <div class="announcement-body collapsed"
-           id="announcement-{{ loop.index }}">
-        {{ a.body }}
-      </div>
-
-      <button class="read-more-btn"
-              onclick="toggleAnnouncement('announcement-{{ loop.index }}', this)">
-        Read More
-      </button>
-
-    </div>
-    {% endfor %}
-  {% else %}
-    <div class="empty-state">
-      <div class="emoji">📢</div>
-      No announcements yet.
-    </div>
-  {% endif %}
-</div>
-</div>
 
   <!-- ══ COMMUNITY POSTS ══ -->
   <div class="page-section" id="section-communityposts">
@@ -600,19 +578,6 @@ textarea { min-height:90px; }
     {% endfor %}{% else %}<div class="empty-state"><div class="emoji">🏆</div>No experts yet.</div>{% endif %}
   </div>
 
-  <!-- ══ PUBLIC Q&A ══ -->
-  <div class="page-section" id="section-publicqa">
-    <button class="back-btn" onclick="showSection('home')">Dashboard</button>
-    <div class="page-header"><h2>Public Q&amp;A</h2><p>Approved answers visible to all users.</p></div>
-    {% if public_qa %}{% for q in public_qa %}
-    <div class="list-card">
-      <div class="meta"><span class="tag">{{ q.category }}</span><span>{{ q.farmer_name }}</span><span>{{ q.answered_at.strftime('%d %b %Y') if q.answered_at else '' }}</span></div>
-      <p><strong>Q:</strong> {{ q.question }}</p>
-      <div class="answer-box"><div class="lbl">Answer by {{ q.assigned_expert }}</div><p>{{ q.answer }}</p></div>
-    </div>
-    {% endfor %}{% else %}<div class="empty-state"><div class="emoji">🌐</div>No published Q&A yet.</div>{% endif %}
-  </div>
-
   <!-- ══ BUSINESSES ══ -->
   <div class="page-section" id="section-businesses">
     <button class="back-btn" onclick="showSection('home')">Dashboard</button>
@@ -641,20 +606,34 @@ textarea { min-height:90px; }
     {% endfor %}{% else %}<div class="empty-state"><div class="emoji">🏢</div>No businesses registered yet.</div>{% endif %}
   </div>
 
-  <!-- ══ BUSINESS POSTS ══ -->
-  <div class="page-section" id="section-businessposts">
-    <button class="back-btn" onclick="showSection('home')">Dashboard</button>
-    <div class="page-header"><h2>Business Posts</h2><p>Products and services shared by businesses.</p></div>
-    {% if business_posts %}{% for post in business_posts %}
-    <div class="list-card">
-      <div class="meta">🏢 {{ post.business_name }} · {{ post.created_at.strftime('%d %b %Y') }}</div>
-      <h4>{{ post.title }}</h4>
-      <p>{{ post.description }}</p>
-      {% if post.media %}<div class="media-grid">{% for item in post.media %}{% if item.type=='video' %}<video src="{{ item.url }}" controls></video>{% else %}<img src="{{ item.url }}" alt="Post media">{% endif %}{% endfor %}</div>{% endif %}
-      <p style="font-size:0.75rem;color:var(--text-tertiary);margin-top:8px;">👍 {{ post.likes_count }} · 👁️ {{ post.views_count }}</p>
+ <!-- ══ BUSINESS POSTS ══ -->
+<div class="page-section" id="section-businessposts">
+  <button class="back-btn" onclick="showSection('home')">Dashboard</button>
+  <div class="page-header"><h2>Business Posts</h2><p>Products and services shared by businesses.</p></div>
+  {% if business_posts %}{% for post in business_posts %}
+  <div class="list-card social-post">
+    <div class="post-header">
+      <div class="meta">🏢 {{ post.business_name.upper() }} · {{ post.created_at.strftime('%d %b %Y') }}</div>
+      <button class="post-menu-btn">⋮</button>
     </div>
-    {% endfor %}{% else %}<div class="empty-state"><div class="emoji">🏪</div>No business posts yet.</div>{% endif %}
+    <h3 class="article-title">{{ post.title }}</h3>
+    <div class="post-content collapsed">{{ post.description }}</div>
+    <span class="read-more" onclick="toggleReadMore(this)">Read More</span>
+    {% if post.media %}
+    <div class="post-media">
+      {% for item in post.media %}
+        {% if item.type == 'video' %}
+          <video src="{{ item.url }}" class="post-photo" controls></video>
+        {% else %}
+          <img src="{{ item.url }}" class="post-photo" alt="Post media">
+        {% endif %}
+      {% endfor %}
+    </div>
+    {% endif %}
+    <p style="font-size:0.75rem;color:var(--text-tertiary);margin-top:10px;">👍 {{ post.likes_count }} · 👁️ {{ post.views_count }}</p>
   </div>
+  {% endfor %}{% else %}<div class="empty-state"><div class="emoji">🏪</div>No business posts yet.</div>{% endif %}
+</div>
 
   <!-- ══ SUPPORT MESSAGES ══ -->
   <div class="page-section" id="section-supportmessages">
@@ -730,54 +709,9 @@ textarea { min-height:90px; }
 
 </div><!-- /scroll-area -->
 
-<!-- ── TAB BAR ── -->
-<nav class="tab-bar">
-  <button class="tab-item active" id="tab-home" onclick="switchTab('home','tab-home')">
-    <span class="tab-icon">🏠</span><span class="tab-label">Home</span>
-  </button>
-  <button class="tab-item" id="tab-users" onclick="switchTab('users','tab-users')">
-    <span class="tab-icon">👥</span><span class="tab-label">Users</span>
-  </button>
-  <button class="tab-item" id="tab-pending" onclick="switchTab('pending','tab-pending')">
-    <span class="tab-icon">🔍</span><span class="tab-label">Review</span>
-  </button>
-  <button class="tab-item" id="tab-support" onclick="switchTab('supportmessages','tab-support')">
-    <span class="tab-icon">💬</span><span class="tab-label">Support</span>
-  </button>
-  <button class="tab-item" id="tab-settings" onclick="switchTab('settings','tab-settings')">
-    <span class="tab-icon">⚙️</span><span class="tab-label">Settings</span>
-  </button>
-</nav>
-
-<!-- ── SUPPORT FAB ── -->
-<button class="support-fab" id="supportFab" title="My Support Thread">🛠</button>
-
-<!-- ── SUPPORT MODAL ── -->
-<div class="support-modal" id="supportModal">
-  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
-    <h4 style="margin:0;">Admin Support</h4>
-    <button onclick="toggleSupport()" style="background:none;border:none;font-size:1.2rem;cursor:pointer;color:#6b7280;">✕</button>
-  </div>
-  <p class="sub">Your support thread with the system.</p>
-  <div id="supportThread" style="display:none;">
-    <div id="supportChatBox" style="max-height:260px;overflow-y:auto;background:#f9fafb;border:1px solid #e5e7eb;border-radius:10px;padding:10px;margin-bottom:10px;"></div>
-    <p id="supportClosedMsg" style="display:none;text-align:center;color:#dc2626;font-size:0.85rem;font-weight:600;margin:8px 0;">This thread has been closed.</p>
-  </div>
-  <div id="supportNewForm">
-    <textarea id="supportMessage" placeholder="Describe your issue…"></textarea>
-    <div class="support-modal-btns">
-      <button class="btn btn-green" onclick="sendSupportMessage()">Send</button>
-      <button class="btn btn-ghost" onclick="toggleSupport()">Cancel</button>
-    </div>
-  </div>
-</div>
-
-<div class="toast" id="toast">✓ Done!</div>
-
 <!-- ══════════════════════════════════════════════════════════
      SCRIPTS
 ══════════════════════════════════════════════════════════ -->
-<script src="{{ url_for('static', filename='js/script.js') }}"></script>
 <script>
 
 /* ══ NAVIGATION ══ */
@@ -810,6 +744,7 @@ if (searchInput) {
 /* ══ TOAST HELPER ══ */
 function showToast(msg, color) {
   const t = document.getElementById('toast');
+  if (!t) return;
   t.textContent = msg;
   t.style.background = color || '#1B5E20';
   t.style.display = 'block';
@@ -993,10 +928,13 @@ document.getElementById('post-announcement-btn').addEventListener('click', async
   const body     = document.getElementById('ann-body').value.trim();
   if (!title || !body) { alert('Please fill in both the title and message.'); return; }
   try {
-    const res  = await fetch('/admin/announcement', {
+    const res  = await fetch('/admin/announcements', {
       method:  'POST',
       headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify({ title, category, body })
+      body:    JSON.stringify({
+        title, category, body,
+        admin_id: document.body.dataset.userId
+      })
     });
     const data = await res.json();
     if (res.ok) {
@@ -1041,17 +979,19 @@ async function closeThread(btn) {
 const fab   = document.getElementById('supportFab');
 const modal = document.getElementById('supportModal');
 
-function toggleSupport() {
-  const isOpening = !modal.classList.contains('open');
-  modal.classList.toggle('open');
-  if (isOpening) loadSupportThread();
-}
+if (fab && modal) {
+  function toggleSupport() {
+    const isOpening = !modal.classList.contains('open');
+    modal.classList.toggle('open');
+    if (isOpening) loadSupportThread();
+  }
 
-fab.addEventListener('click', toggleSupport);
-document.addEventListener('click', e => {
-  if (!modal.contains(e.target) && e.target !== fab)
-    modal.classList.remove('open');
-});
+  fab.addEventListener('click', toggleSupport);
+  document.addEventListener('click', e => {
+    if (!modal.contains(e.target) && e.target !== fab)
+      modal.classList.remove('open');
+  });
+}
 
 async function loadSupportThread() {
   try {
@@ -1061,6 +1001,7 @@ async function loadSupportThread() {
     const newForm   = document.getElementById('supportNewForm');
     const chatBox   = document.getElementById('supportChatBox');
     const closedMsg = document.getElementById('supportClosedMsg');
+    if (!thread || !newForm || !chatBox) return;
 
     if (data.thread) {
       thread.style.display  = 'block';
@@ -1084,7 +1025,7 @@ async function loadSupportThread() {
       });
       chatBox.innerHTML = html;
       chatBox.scrollTop = chatBox.scrollHeight;
-      closedMsg.style.display = data.thread.is_closed ? 'block' : 'none';
+      if (closedMsg) closedMsg.style.display = data.thread.is_closed ? 'block' : 'none';
     } else {
       thread.style.display  = 'none';
       newForm.style.display = 'block';
@@ -1095,7 +1036,9 @@ async function loadSupportThread() {
 }
 
 async function sendSupportMessage() {
-  const msg = document.getElementById('supportMessage').value.trim();
+  const msgEl = document.getElementById('supportMessage');
+  if (!msgEl) return;
+  const msg = msgEl.value.trim();
   if (!msg) return;
   try {
     const res  = await fetch('/support/send', {
@@ -1105,18 +1048,32 @@ async function sendSupportMessage() {
     });
     const data = await res.json();
     if (res.ok) {
-      document.getElementById('supportMessage').value = '';
+      msgEl.value = '';
       showToast('✓ Message sent!');
       loadSupportThread();
     } else { alert(data.error || 'Failed to send message.'); }
   } catch { alert('Network error.'); }
 }
 
-/* ══ READ MORE TOGGLE ══ */
+/* ══ READ MORE TOGGLE (social posts / articles) ══ */
 function toggleReadMore(btn) {
   const text = btn.previousElementSibling;
   text.classList.toggle('collapsed');
   btn.textContent = text.classList.contains('collapsed') ? 'Read More' : 'Show Less';
+}
+
+/* ══ READ MORE TOGGLE (announcements) ══ */
+function toggleAnnouncement(id, btn) {
+  const content = document.getElementById(id);
+  if (content.classList.contains('collapsed')) {
+    content.classList.remove('collapsed');
+    content.classList.add('expanded');
+    btn.textContent = 'Read Less';
+  } else {
+    content.classList.remove('expanded');
+    content.classList.add('collapsed');
+    btn.textContent = 'Read More';
+  }
 }
 
 /* ══ PRICE CARDS ══ */
@@ -1276,19 +1233,6 @@ function renderWeather(data) {
 
 function pcWeatherFilter(q) {
   renderWeather(WEATHER_DATA.filter(d => d.name.toLowerCase().includes(q.toLowerCase())));
-}
-function toggleAnnouncement(id, btn){
-    const content = document.getElementById(id);
-
-    if(content.classList.contains("collapsed")){
-        content.classList.remove("collapsed");
-        content.classList.add("expanded");
-        btn.textContent = "Read Less";
-    }else{
-        content.classList.remove("expanded");
-        content.classList.add("collapsed");
-        btn.textContent = "Read More";
-    }
 }
 </script>
 </body>
