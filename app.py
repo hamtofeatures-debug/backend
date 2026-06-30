@@ -54,9 +54,6 @@ from routes.support import support_bp
 
 app = Flask(__name__)
 app.config.from_object(Config)
-print("=" * 60)
-print("DATABASE URI:", app.config["SQLALCHEMY_DATABASE_URI"])
-print("=" * 60)
 db.init_app(app)
 CORS(app)
 migrate = Migrate(app, db)
